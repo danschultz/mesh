@@ -1,0 +1,84 @@
+package mesh
+{
+	import flash.events.EventDispatcher;
+	import flash.utils.getDefinitionByName;
+	import flash.utils.getQualifiedClassName;
+
+	/**
+	 * An entity.
+	 * 
+	 * @author Dan Schultz
+	 */
+	public dynamic class Entity extends EventDispatcher
+	{
+		public function Entity(id:EntityID)
+		{
+			super();
+			_id = id;
+		}
+		
+		/**
+		 * Checks if two entities are equal.  By default, two entities are equal
+		 * when they are of the same type, and their ID's are the same.
+		 * 
+		 * @param entity The entity to check.
+		 * @return <code>true</code> if the entities are equal.
+		 */
+		public function equals(entity:Entity):Boolean
+		{
+			return entity != null && 
+				   clazz == entity.clazz &&
+				   id.guid == entity.id.guid;
+		}
+		
+		/**
+		 * Returns a generated hash value for this entity.  Two entities that represent
+		 * the same data should return the same hash code.
+		 * 
+		 * @return A hash value.
+		 */
+		public function hashCode():Object
+		{
+			return id.guid;
+		}
+		
+		/**
+		 * Marks this entity as dirty.
+		 */
+		public function modified():void
+		{
+			_isDirty = true;
+		}
+		
+		/**
+		 * Marks this entity as being persisted.
+		 */
+		public function saved():void
+		{
+			_isDirty = false;
+		}
+		
+		/**
+		 * The class for this entity.
+		 */
+		public function get clazz():Class
+		{
+			return getDefinitionByName(getQualifiedClassName(this)) as Class;
+		}
+		
+		private var _id:EntityID;
+		public function get id():EntityID
+		{
+			return _id;
+		}
+		
+		private var _isDirty:Boolean;
+		/**
+		 * <code>true</code> if this entity is dirty and needs to be persisted.
+		 */
+		public function get isDirty():Boolean
+		{
+			return _isDirty;
+		}
+	}
+}

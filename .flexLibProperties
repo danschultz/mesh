@@ -1,6 +1,15 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <flexLibProperties includeAllClasses="true" useMultiPlatformConfig="false" version="3">
-  <includeClasses/>
+  <includeClasses>
+    <classEntry path="operations.Operation"/>
+    <classEntry path="operations.FinishedOperationEvent"/>
+    <classEntry path="operations.ResultOperationEvent"/>
+    <classEntry path="operations.FaultOperationEvent"/>
+    <classEntry path="operations.OperationEvent"/>
+    <classEntry path="operations.NetworkOperation"/>
+    <classEntry path="operations.CompoundOperation"/>
+    <classEntry path="operations.ParallelOperation"/>
+  </includeClasses>
   <includeResources/>
   <namespaceManifests/>
 </flexLibProperties>
