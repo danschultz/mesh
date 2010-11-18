@@ -18,6 +18,7 @@
     <classEntry path="operations.SequentialOperation"/>
     <classEntry path="operations.CompoundOperationTests"/>
     <classEntry path="operations.MockOperation"/>
+    <classEntry path="operations.EmptyOperation"/>
   </includeClasses>
   <includeResources/>
   <namespaceManifests/>

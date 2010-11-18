@@ -7,7 +7,7 @@ package operations
 	 * will fault and dispatch the <code>FaultOperationEvent.FAULT</code> event.
 	 * 
 	 * <p>
-	 * <strong>Using a method operation:</strong>
+	 * <strong>Example:</strong> Using a method operation:
 	 * 
 	 * <listing version="3.0">
 	 * var str:String = "Hello World";
