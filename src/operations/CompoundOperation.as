@@ -1,14 +1,10 @@
 package operations
 {
 	import collections.ArraySet;
-	
-	import flash.events.Event;
-	
-	import mx.rpc.Fault;
 
 	/**
 	 * A base class for an operation that contains a set of other operations to
-	 * execute. There are two types of compound operations: paralleled and chained.
+	 * execute. There are two types of compound operations: parallel and chained.
 	 * A parallel operation will execute its operations together, where as, a
 	 * chained operation will execute each of its operations one at a time, in a 
 	 * sequence.
@@ -17,6 +13,22 @@ package operations
 	 * This class only allows the adding and removing of operations when the this 
 	 * operation is not executing.
 	 * </p>
+	 * 
+	 * <p>
+	 * If an operation belonging to this operation fails, this operation will cancel
+	 * all remaining operations and dispatch an unsuccessful
+	 * <code>FinishedOperationEvent.FINISHED</code> event. Clients that need to respond
+	 * to the operation's fault, should add fault listeners to the individual commands.
+	 * </p>
+	 * 
+	 * <p>
+	 * Clients shouldn't need to work with this class directly. All operations have
+	 * a <code>Operation.during()</code> and <code>Operation.then()</code> methods
+	 * that can be used for combining operations.
+	 * </p>
+	 * 
+	 * @see operations.Operation#during()
+	 * @see operations.Operation#then()
 	 * 
 	 * @author Dan Schultz
 	 */
@@ -27,10 +39,14 @@ package operations
 		
 		/**
 		 * Constructor.
+		 * 
+		 * @param operations A set of <code>Operation</code>s that this operation will 
+		 * 	execute.
 		 */
-		public function CompoundOperation()
+		public function CompoundOperation(operations:Vector.<Operation> = null)
 		{
 			super();
+			_operations.addAll(operations);
 		}
 		
 		/**
@@ -54,6 +70,7 @@ package operations
 			super.cancelRequest();
 			
 			for each (var operation:Operation in _executingOperations) {
+				operation.removeEventListener(FinishedOperationEvent.FINISHED, handleOperationFinished);
 				operation.cancel();
 			}
 		}
@@ -84,12 +101,12 @@ package operations
 				operation.addEventListener(FinishedOperationEvent.FINISHED, handleOperationFinished);
 				operation.addEventListener(FaultOperationEvent.FAULT, handleOperationFault);
 				_executingOperations.add(operation);
+				operation.execute();
 			}
 		}
 		
 		private function handleOperationFault(event:FaultOperationEvent):void
 		{
-			fault(event.summary, event.detail);
 			cancel();
 		}
 		
@@ -112,8 +129,23 @@ package operations
 			}
 			// get the next operation to execute.
 			else {
-				
+				var nextOperation:Operation = nextOperation(_finishedOperationsCount);
+				if (nextOperation != null) {
+					executeOperation(nextOperation);
+				}
 			}
+		}
+		
+		/**
+		 * Determines the next operation to be executed. If no operations are left to execute,
+		 * this method should return <code>null</code>.
+		 * 
+		 * @param finishedOperationsCount The number of operations that have finished.
+		 * @return The next operation to execute, or <code>null</code> no operations are left.
+		 */
+		protected function nextOperation(finishedOperationsCount:int):Operation
+		{
+			return null;
 		}
 		
 		/**
@@ -133,7 +165,7 @@ package operations
 		/**
 		 * The list of <code>Operation</code>s to be executed.
 		 */
-		protected function get operations():ArraySet
+		protected function get operationSet():ArraySet
 		{
 			return _operations;
 		}

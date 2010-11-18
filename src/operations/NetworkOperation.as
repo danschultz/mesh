@@ -63,7 +63,8 @@ package operations
 		 * than 1 will be reset to 1.
 		 * 
 		 * <p>
-		 * <strong>Setting the retry attempts and their delays for a network operation:</strong>
+		 * <strong>Example:</strong> Setting the retry attempts and their delays for a network 
+		 * operation:
 		 * 
 		 * <listing version="3.0">
 		 * var delayedOperation:NetworkOperation = new NetworkOperation();
@@ -190,7 +191,7 @@ package operations
 		 * object where you can change the unit of time for the timeout.
 		 * 
 		 * <p>
-		 * <strong>Setting the timeout for a network operation:</strong>
+		 * <strong>Example:</strong> Setting the timeout for a network operation:
 		 * 
 		 * <listing version="3.0">
 		 * var operation:NetworkOperation = new NetworkOperation();

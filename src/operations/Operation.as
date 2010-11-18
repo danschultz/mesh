@@ -1,6 +1,7 @@
 package operations
 {
 	import flash.events.EventDispatcher;
+	import flash.utils.getQualifiedClassName;
 	
 	/**
 	 * Dispatched when the execution of an operation has been canceled.
@@ -91,6 +92,44 @@ package operations
 		}
 		
 		/**
+		 * Chains the given operation to execute while this operation is executing.
+		 * 
+		 * <p>
+		 * Combining operations allows multiple operations to behave as a single operation.
+		 * For instance, clients could add a single <code>FinishedOperationEvent.FINISHED</code>
+		 * listener to the combined operation to see when all operations have finished
+		 * executing.
+		 * </p>
+		 * 
+		 * <p>
+		 * <strong>Example:</strong> Combining multiple operations together:
+		 * 
+		 * <listing version="3.0">
+		 * var str:String = "Hello World";
+		 * var operation1:MethodOperation = new MethodOperation(str.substr, 0, 5);
+		 * var operation2:MethodOperation = new MethodOperation(str.substr, 6, 5);
+		 * var operation3:MethodOperation = new MethodOperation(str.substr, 0, str.length);
+		 * 
+		 * var chained:Operation = operation1.during(operation2).then(operation3));
+		 * chained.addEventListener(FinishedOperationEvent.FINISHED, handleChainedOperationFinished);
+		 * chained.execute();
+		 * 
+		 * function handleChainedOperationFinished(event:FinishedOperationEvent):void
+		 * {
+		 * 	trace("all operations have finished");
+		 * }
+		 * </listing>
+		 * </p>
+		 * 
+		 * @param operation The operation to execute while this operation is executing.
+		 * @return A chained operation.
+		 */
+		public function during(operation:Operation):Operation
+		{
+			return new ParallelOperation(new <Operation>[this, operation]);
+		}
+		
+		/**
 		 * Called by sub-classes to indicate that an error or fault occurred during 
 		 * the execution of the event. Calling this method will mark the operation
 		 * as finished.
@@ -149,6 +188,19 @@ package operations
 		}
 		
 		/**
+		 * Called when result data is received during the execution of the operation.
+		 * This method is called during the <code>result()</code> method, and allows
+		 * sub-classes to parse and modify the original result data.
+		 * 
+		 * @param data The result data.
+		 * @return The parsed result data.
+		 */
+		protected function parseResult(data:Object):Object
+		{
+			return data;
+		}
+		
+		/**
 		 * Called by a sub-class to indicate that a result was received during the 
 		 * execution of the operation.
 		 * 
@@ -177,16 +229,51 @@ package operations
 		}
 		
 		/**
-		 * Called when result data is received during the execution of the operation.
-		 * This method is called during the <code>result()</code> method, and allows
-		 * sub-classes to parse and modify the original result data.
+		 * Chains the given operation to execute after this operation has finished.
 		 * 
-		 * @param data The result data.
-		 * @return The parsed result data.
+		 * <p>
+		 * Combining operations allows multiple operations to behave as a single operation.
+		 * For instance, clients could add a single <code>FinishedOperationEvent.FINISHED</code>
+		 * listener to the combined operation to see when all operations have finished
+		 * executing.
+		 * </p>
+		 * 
+		 * <p>
+		 * <strong>Example:</strong> Combining multiple operations together:
+		 * 
+		 * <listing version="3.0">
+		 * var str:String = "Hello World";
+		 * var operation1:MethodOperation = new MethodOperation(str.substr, 0, 5);
+		 * var operation2:MethodOperation = new MethodOperation(str.substr, 6, 5);
+		 * var operation3:MethodOperation = new MethodOperation(str.substr, 0, str.length);
+		 * 
+		 * var chained:Operation = operation1.during(operation2).then(operation3));
+		 * chained.addEventListener(FinishedOperationEvent.FINISHED, handleChainedOperationFinished);
+		 * chained.execute();
+		 * 
+		 * function handleChainedOperationFinished(event:FinishedOperationEvent):void
+		 * {
+		 * 	trace("all operations have finished");
+		 * }
+		 * </listing>
+		 * </p>
+		 * 
+		 * @param operation The operation to execute after this operation has finished.
+		 * @return A chained operation.
 		 */
-		protected function parseResult(data:Object):Object
+		public function then(operation:Operation):Operation
 		{
-			return data;
+			return new SequentialOperation(new <Operation>[this, operation]);
+		}
+		
+		/**
+		 * @private
+		 */
+		override public function toString():String
+		{
+			var qualifiedName:String = getQualifiedClassName(this);
+			var classNameParts:Array = qualifiedName.split("::");
+			return classNameParts.length > 1 ? classNameParts[1] : classNameParts[0];
 		}
 		
 		private var _isExecuting:Boolean;

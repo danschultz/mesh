@@ -15,6 +15,9 @@
     <classEntry path="operations.ResultOperationEvent"/>
     <classEntry path="operations.MethodOperationTests"/>
     <classEntry path="operations.NetworkOperationTests"/>
+    <classEntry path="operations.SequentialOperation"/>
+    <classEntry path="operations.CompoundOperationTests"/>
+    <classEntry path="operations.MockOperation"/>
   </includeClasses>
   <includeResources/>
   <namespaceManifests/>
