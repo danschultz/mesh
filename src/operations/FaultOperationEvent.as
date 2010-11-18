@@ -25,8 +25,8 @@ package operations
 		{
 			super(FAULT);
 			
-			_summary = summary;
-			_detail = detail;
+			_summary = summary == null ? "" : summary;
+			_detail = detail == null ? "" : detail;
 		}
 		
 		/**

@@ -54,7 +54,6 @@ package operations
 		final public function cancel():void
 		{
 			if (isExecuting) {
-				_isExecuting = false;
 				cancelRequest();
 				fireCanceled();
 				finish(false);
@@ -99,7 +98,7 @@ package operations
 		 * @param summary A simple description of the fault.
 		 * @param detail A more detailed description of the fault.
 		 */
-		final protected function fault(summary:String, detail:String = ""):void
+		protected function fault(summary:String, detail:String = ""):void
 		{
 			if (isExecuting) {
 				fireFault(summary, detail);
@@ -131,7 +130,7 @@ package operations
 		
 		private function fireExecuted():void
 		{
-			dispatchEvent( new OperationEvent(OperationEvent.CANCELED) );
+			dispatchEvent( new OperationEvent(OperationEvent.EXECUTED) );
 		}
 		
 		private function fireFault(summary:String, detail:String = ""):void
@@ -165,7 +164,7 @@ package operations
 		 * 
 		 * @param data The unparsed result data.
 		 */
-		final protected function result(data:Object):void
+		protected function result(data:Object):void
 		{
 			if (isExecuting) {
 				try {

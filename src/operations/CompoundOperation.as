@@ -3,6 +3,8 @@ package operations
 	import collections.ArraySet;
 	
 	import flash.events.Event;
+	
+	import mx.rpc.Fault;
 
 	/**
 	 * A base class for an operation that contains a set of other operations to
@@ -12,8 +14,8 @@ package operations
 	 * sequence.
 	 * 
 	 * <p>
-	 * This class only allows the addition and removal of operations when the the
-	 * compound operation is not executing.
+	 * This class only allows the adding and removing of operations when the this 
+	 * operation is not executing.
 	 * </p>
 	 * 
 	 * @author Dan Schultz
@@ -37,16 +39,47 @@ package operations
 		 * 
 		 * @param operation The operation to add.
 		 */
-		public function add(operation:Operation):void
+		final public function add(operation:Operation):void
 		{
 			if (!isExecuting) {
-				remove(operation);
 				_operations.add(operation);
 			}
 		}
 		
-		protected function executeOperation(operation:Operation):void
+		/**
+		 * @inheritDoc
+		 */
+		final override protected function cancelRequest():void
 		{
+			super.cancelRequest();
+			
+			for each (var operation:Operation in _executingOperations) {
+				operation.cancel();
+			}
+		}
+		
+		/**
+		 * @inheritDoc
+		 */
+		override protected function executeRequest():void
+		{
+			super.executeRequest();
+			_finishedOperationsCount = 0;
+		}
+		
+		/**
+		 * Attempts to execute the given operation. If the operation is running it will not
+		 * be executed.
+		 * 
+		 * @param operation The operation to execute.
+		 * @throws ArgumentError If the operation does not belong to this compound operation.
+		 */
+		final protected function executeOperation(operation:Operation):void
+		{
+			if (!_operations.contains(operation)) {
+				throw new ArgumentError(operation + " must belong to this compound operation.");
+			}
+			
 			if (!operation.isExecuting) {
 				operation.addEventListener(FinishedOperationEvent.FINISHED, handleOperationFinished);
 				operation.addEventListener(FaultOperationEvent.FAULT, handleOperationFault);
@@ -56,7 +89,8 @@ package operations
 		
 		private function handleOperationFault(event:FaultOperationEvent):void
 		{
-			// TODO Auto-generated method stub
+			fault(event.summary, event.detail);
+			cancel();
 		}
 		
 		private function handleOperationFinished(event:FinishedOperationEvent):void
@@ -71,14 +105,24 @@ package operations
 			
 			_executingOperations.remove(operation);
 			_finishedOperationsCount++;
+			
+			// check to see if all the operations are finished.
+			if (isExecuting && _finishedOperationsCount == _operations.length) {
+				finish(true);
+			}
+			// get the next operation to execute.
+			else {
+				
+			}
 		}
 		
 		/**
-		 * Removes an operation from this operation.
+		 * Removes an operation from this operation. The operation will not be removed if
+		 * the this operation is currently running.
 		 * 
 		 * @param operation The operation to remove.
 		 */
-		public function remove(operation:Operation):void
+		final public function remove(operation:Operation):void
 		{
 			if (!isExecuting) {
 				_operations.remove(operation);

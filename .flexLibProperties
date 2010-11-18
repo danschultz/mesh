@@ -1,14 +1,20 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<flexLibProperties includeAllClasses="true" useMultiPlatformConfig="false" version="3">
+<?xml version="1.0" encoding="UTF-8"?>
+<flexLibProperties includeAllClasses="false" useMultiPlatformConfig="false" version="3">
   <includeClasses>
-    <classEntry path="operations.Operation"/>
-    <classEntry path="operations.FinishedOperationEvent"/>
-    <classEntry path="operations.ResultOperationEvent"/>
-    <classEntry path="operations.FaultOperationEvent"/>
-    <classEntry path="operations.OperationEvent"/>
-    <classEntry path="operations.NetworkOperation"/>
+    <classEntry path="mesh.Entity"/>
+    <classEntry path="mesh.EntityID"/>
+    <classEntry path="mesh.Repository"/>
     <classEntry path="operations.CompoundOperation"/>
+    <classEntry path="operations.FaultOperationEvent"/>
+    <classEntry path="operations.FinishedOperationEvent"/>
+    <classEntry path="operations.MethodOperation"/>
+    <classEntry path="operations.NetworkOperation"/>
+    <classEntry path="operations.Operation"/>
+    <classEntry path="operations.OperationEvent"/>
     <classEntry path="operations.ParallelOperation"/>
+    <classEntry path="operations.ResultOperationEvent"/>
+    <classEntry path="operations.MethodOperationTests"/>
+    <classEntry path="operations.NetworkOperationTests"/>
   </includeClasses>
   <includeResources/>
   <namespaceManifests/>
