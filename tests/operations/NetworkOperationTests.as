@@ -123,7 +123,7 @@ class MockNetworkOperation extends NetworkOperation
 		_requestCount++;
 		
 		if (_fails) {
-			fault("Error");
+			retry("Error");
 		}
 		
 		if (_results) {

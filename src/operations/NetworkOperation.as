@@ -5,8 +5,8 @@ package operations
 	import flash.utils.Timer;
 
 	/**
-	 * An base class for asynchronous operations that make a network connection. Network
-	 * operations support timeouts and retries of their requests. Clients can change the
+	 * A base class for asynchronous operations that make a network connection. Network
+	 * operations support timeouts and retries of failed requests. Clients can change the
 	 * time interval for the timeout and also the time intervals between each retry 
 	 * attempt.
 	 * 
@@ -108,13 +108,7 @@ package operations
 		final override protected function fault(summary:String, detail:String = ""):void
 		{
 			stopTimeoutTimer();
-			stopAttempt();
-			
-			if (attemptsCount < _attempt.maxAttempts) {
-				executeRequest();
-			} else {
-				super.fault(summary, detail);
-			}
+			super.fault(summary, detail);
 		}
 		
 		private function handleAttemptTimerComplete(event:TimerEvent):void
@@ -148,6 +142,22 @@ package operations
 		{
 			stopTimeoutTimer();
 			super.result(data);
+		}
+		
+		/**
+		 * Called by sub-classes to retry a failed request. If no more retry attempts can be made,
+		 * the operation fails and dispatches a <code>FaultOperationEvent.FAULT</code> event.
+		 * 
+		 * @param summary A simple description of the fault.
+		 * @param detail A more detailed description of the fault.
+		 */
+		protected function retry(summary:String, detail:String = ""):void
+		{
+			if (attemptsCount < _attempt.maxAttempts) {
+				executeRequest();
+			} else {
+				fault(summary, detail);
+			}
 		}
 		
 		private function startTimeoutTimer():void
