@@ -11,10 +11,12 @@ package mesh
 	 */
 	public dynamic class Entity extends EventDispatcher
 	{
-		public function Entity(id:EntityID)
+		/**
+		 * Constructor.
+		 */
+		public function Entity()
 		{
 			super();
-			_id = id;
 		}
 		
 		/**
@@ -26,9 +28,7 @@ package mesh
 		 */
 		public function equals(entity:Entity):Boolean
 		{
-			return entity != null && 
-				   clazz == entity.clazz &&
-				   id.guid == entity.id.guid;
+			return entity != null && id.equals(entity.id);
 		}
 		
 		/**
@@ -66,7 +66,10 @@ package mesh
 			return getDefinitionByName(getQualifiedClassName(this)) as Class;
 		}
 		
-		private var _id:EntityID;
+		private var _id:EntityID = new EntityID();
+		/**
+		 * An object that represents the ID for this entity.
+		 */
 		public function get id():EntityID
 		{
 			return _id;

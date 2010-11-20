@@ -9,6 +9,11 @@ package mesh
 			_guid = UIDUtil.createUID();
 		}
 		
+		public function equals(obj:EntityID):Boolean
+		{
+			return obj != null && guid == obj.guid;
+		}
+		
 		private var _externalID:Object;
 		public function get externalID():Object
 		{
