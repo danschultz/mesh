@@ -1,6 +1,10 @@
 package mesh
 {
+	import collections.HashSet;
 	import collections.Set;
+	
+	import flash.utils.describeType;
+	import flash.utils.getDefinitionByName;
 
 	/**
 	 * A class that describes the relationships for an entity and how it's persisted.
@@ -20,6 +24,31 @@ package mesh
 		{
 			_entity = entity;
 			_relationships = relationships;
+		}
+		
+		/**
+		 * Generates an entity description from the given entity class.
+		 * 
+		 * @param entity The entity to generate the description from.
+		 * @return A new entity description.
+		 */
+		public static function fromEntity(entity:Class):EntityDescription
+		{
+			var classInfo:XML = describeType(entity);
+			var relationships:HashSet = new HashSet();
+			
+			var relationsshipsXML:XMLList = classInfo..metadata.(@name == "Relationship");
+			for each (var relationshipXML:XML in relationsshipsXML) {
+				var to:XMLList = relationshipXML.arg.(@key == "to");
+				var deletionRule:XMLList = relationshipXML.arg.(@key == "deletionRule");
+				
+				relationships.add( new Relationship(entity, 
+													relationshipXML.parent().@name, 
+													getDefinitionByName(to.length() > 0 ? to.@value : relationshipXML.parent().@type) as Class, 
+													deletionRule.length() > 0 ? deletionRule.@value : Relationship.NOTHING) );
+			}
+			
+			return new EntityDescription(entity, relationships);
 		}
 		
 		/**

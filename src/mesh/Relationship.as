@@ -36,6 +36,29 @@ package mesh
 			_deletionRule = deletionRule;
 		}
 		
+		/**
+		 * Checks that two relationships are equal.
+		 * 
+		 * @param relationship The relationship to check with.
+		 * @return <code>true</code> if the two are equal.
+		 */
+		public function equals(relationship:Relationship):Boolean
+		{
+			return relationship != null && 
+				   source == relationship.source &&
+				   property == relationship.property &&
+				   destination == relationship.destination &&
+				   deletionRule == relationship.deletionRule;
+		}
+		
+		/**
+		 * @private
+		 */
+		public function hashCode():Object
+		{
+			return property;
+		}
+		
 		private var _deletionRule:String;
 		/**
 		 * How the destination should be handled when the source is removed.

@@ -1,5 +1,8 @@
 package mesh
 {
+	import collections.HashMap;
+	import collections.Set;
+	
 	import flash.events.EventDispatcher;
 	import flash.utils.getDefinitionByName;
 	import flash.utils.getQualifiedClassName;
@@ -11,6 +14,8 @@ package mesh
 	 */
 	public dynamic class Entity extends EventDispatcher
 	{
+		private static const DESCRIPTIONS:HashMap = new HashMap();
+		
 		/**
 		 * Constructor.
 		 */
@@ -82,6 +87,17 @@ package mesh
 		public function get isDirty():Boolean
 		{
 			return _isDirty;
+		}
+		
+		/**
+		 * Returns the set of <code>Relationship</code>s for this entity.
+		 */
+		public function get relationships():Set
+		{
+			if (!DESCRIPTIONS.containsKey(clazz)) {
+				DESCRIPTIONS.put(clazz, EntityDescription.fromEntity(clazz));
+			}
+			return DESCRIPTIONS.grab(clazz).relationships;
 		}
 	}
 }
