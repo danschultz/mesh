@@ -1,0 +1,130 @@
+package mesh
+{
+	import collections.ArraySet;
+	import collections.HashMap;
+	
+	import flash.utils.describeType;
+	import flash.utils.getDefinitionByName;
+	
+	import reflection.newInstance;
+
+	/**
+	 * An aggregate represents a relationship that an entity has with a value object. It
+	 * expresses relationships like <em>Person is composed of an Address.</em>  When an
+	 * aggregate is defined on an entity, the value objects's properties will be accessible on
+	 * the entity.
+	 * 
+	 * @author Dan Schultz
+	 */
+	public class Aggregate
+	{
+		private var _options:Object;
+		
+		private var _mappingOrder:Array;
+		private var _mapping:Object;
+		
+		/**
+		 * Constructor.
+		 * 
+		 * @param entity The host entity.
+		 * @param property The property on the entity that the aggregate is mapped to.
+		 * @param type The aggregate type class.
+		 * @param constructor A function that generates a new value object.
+		 * @param options
+		 */
+		public function Aggregate(entity:Class, property:String, type:Class, options:Object = null)
+		{
+			_entity = entity;
+			_property = property;
+			_type = type;
+			_options = options;
+			
+			_mapping = {};
+			_mappingOrder = [];
+			for each (var mapping:String in options.mapping) {
+				var keyValue:Array = mapping.split(":");
+				
+				if (keyValue.length == 1) {
+					keyValue.push(keyValue[0]);
+				}
+				
+				if (options.prefix != null && options.prefix.length > 0) {
+					keyValue[0] = options.prefix + keyValue[0].substr(0, 1).toUpperCase() + keyValue[0].substr(1);
+				}
+				
+				_mappingOrder.push(keyValue[0]);
+				_mapping[keyValue[0]] = keyValue[1];
+			}
+		}
+		
+		/**
+		 * Checks if two aggregates are equal.
+		 * 
+		 * @param aggregate The aggregate to check.
+		 * @return <code>true</code> if the aggregates are equal.
+		 */
+		public function equals(aggregate:Aggregate):Boolean
+		{
+			return aggregate != null && 
+				   entity == aggregate.entity && 
+				   property == aggregate.property;
+		}
+		
+		public function getValue(entity:Entity, entityProperty:String):*
+		{
+			var typeProperty:String = _mapping[entityProperty];
+			var aggregate:Object = entity[property];
+			return aggregate != null ? aggregate[typeProperty] : null;
+		}
+		
+		/**
+		 * @private
+		 */
+		public function hashCode():Object
+		{
+			return _property;
+		}
+		
+		public function hasMappedProperty(property:String):Boolean
+		{
+			return _mapping.hasOwnProperty(property);
+		}
+		
+		public function setValue(entity:Entity, entityProperty:String, value:*):void
+		{
+			entity[property] = newInstance.apply(null, [type].concat(_mappingOrder.map(function(item:String, index:int, array:Array):Object {
+				if (item == entityProperty) {
+					return value;
+				}
+				return getValue(entity, item);
+			})));
+		}
+		
+		private var _entity:Class;
+		/**
+		 * The entity the aggregate.
+		 */
+		public function get entity():Class
+		{
+			return _entity;
+		}
+		
+		private var _property:String;
+		/**
+		 * The property on the entity that the aggregate is mapped to.
+		 */
+		public function get property():String
+		{
+			return _property;
+		}
+		
+		private var _type:Class;
+		/**
+		 * The aggregate class.
+		 */
+		public function get type():Class
+		{
+			return _type;
+		}
+	}
+}
