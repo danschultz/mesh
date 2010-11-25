@@ -1,13 +1,10 @@
 package mesh
 {
 	import collections.HashMap;
-	import collections.HashSet;
 	import collections.Set;
 	
 	import flash.utils.Proxy;
 	import flash.utils.flash_proxy;
-	import flash.utils.getDefinitionByName;
-	import flash.utils.getQualifiedClassName;
 	
 	import reflection.clazz;
 
@@ -53,6 +50,16 @@ package mesh
 		public function hashCode():Object
 		{
 			return id.guid;
+		}
+		
+		/**
+		 * Runs the validations defined on this entity.
+		 *
+		 * @return 
+		 */
+		public function isValid():void
+		{
+			var validators:Set = DESCRIPTIONS.grab(clazz).validators;
 		}
 		
 		/**

@@ -1,5 +1,7 @@
 package mesh
 {
+	[Validate(property="street", validator="Length", lessThan="10")]
+	
 	[ComposedOf(property="address", type="mesh.Address", prefix="address", mapping="street,city")]
 	public dynamic class Customer extends Entity
 	{

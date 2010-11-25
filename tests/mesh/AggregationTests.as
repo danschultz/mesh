@@ -2,6 +2,7 @@ package mesh
 {
 	import org.flexunit.assertThat;
 	import org.hamcrest.object.equalTo;
+	import org.hamcrest.object.nullValue;
 
 	public class AggregationTests
 	{
@@ -52,6 +53,12 @@ package mesh
 			_customer.cityAddress = "San Jose";
 			assertThat(_customer.streetAddress, equalTo("2306 Zanker Rd"));
 			assertThat(_customer.cityAddress, equalTo("San Jose"));
+		}
+		
+		[Test]
+		public function testGetAggregatePropertyNull():void
+		{
+			assertThat(_customer.addressStreet, nullValue());
 		}
 	}
 }

@@ -6,6 +6,8 @@ package mesh
 	import flash.utils.describeType;
 	import flash.utils.getDefinitionByName;
 	
+	import mesh.validations.Validator;
+	
 	import mx.utils.StringUtil;
 
 	/**
@@ -15,40 +17,6 @@ package mesh
 	 */
 	public class EntityDescription
 	{
-		/**
-		 * Constructor.
-		 * 
-		 * @param entity The entity being described.
-		 */
-		public function EntityDescription(entity:Class)
-		{
-			_entity = entity;
-		}
-		
-		/**
-		 * Adds an aggregate to the entity.
-		 * 
-		 * @param property The property on the entity that contains the aggregate.
-		 * @param type The type of aggregate.
-		 * @param options The options for the aggregate.
-		 */
-		public function composedOf(property:String, type:Class, options:Object = null):void
-		{
-			options = options == null ? {} : options;
-			_aggregates.add( new Aggregate(entity, property, type, options) );
-		}
-		
-		/**
-		 * Adds a relationship to the entity.
-		 * 
-		 * @param property The property on the entity that defines the relationship.
-		 * @param type The entity type to define for the relationship.
-		 */
-		public function hasRelationship(property:String, type:Class):void
-		{
-			_relationships.add( new Relationship(entity, property, type, Relationship.NOTHING) );
-		}
-		
 		/**
 		 * Generates an entity description from the given entity class.
 		 * 
@@ -85,6 +53,40 @@ package mesh
 		}
 		
 		/**
+		 * Constructor.
+		 * 
+		 * @param entity The entity being described.
+		 */
+		public function EntityDescription(entity:Class)
+		{
+			_entity = entity;
+		}
+		
+		/**
+		 * Adds an aggregate to the entity.
+		 * 
+		 * @param property The property on the entity that contains the aggregate.
+		 * @param type The type of aggregate.
+		 * @param options The options for the aggregate.
+		 */
+		public function composedOf(property:String, type:Class, options:Object = null):void
+		{
+			options = options == null ? {} : options;
+			_aggregates.add( new Aggregate(entity, property, type, options) );
+		}
+		
+		/**
+		 * Adds a relationship to the entity.
+		 * 
+		 * @param property The property on the entity that defines the relationship.
+		 * @param type The entity type to define for the relationship.
+		 */
+		public function hasRelationship(property:String, type:Class):void
+		{
+			_relationships.add( new Relationship(entity, property, type, Relationship.NOTHING) );
+		}
+		
+		/**
 		 * Checks if two descriptions are equal.
 		 * 
 		 * @param description The description to check.
@@ -94,6 +96,17 @@ package mesh
 		{
 			return description != null && 
 				   entity == description.entity;
+		}
+		
+		/**
+		 * Adds a validator 
+		 * 
+		 * @param validator
+		 * 
+		 */
+		public function validate(validator:Validator):void
+		{
+			
 		}
 		
 		/**
@@ -116,6 +129,9 @@ package mesh
 		}
 		
 		private var _aggregates:Set = new HashSet();
+		/**
+		 * The <code>Aggregates</code> for this entity.
+		 */
 		public function get aggregates():Set
 		{
 			return _aggregates;
@@ -128,6 +144,15 @@ package mesh
 		public function get relationships():Set
 		{
 			return _relationships;
+		}
+		
+		private var _validators:Set = new HashSet();
+		/**
+		 * The <code>Validator</code>s for this entity.
+		 */
+		public function get validators():Set
+		{
+			return _validators;
 		}
 	}
 }
