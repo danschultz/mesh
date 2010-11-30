@@ -1,12 +1,19 @@
 package mesh
 {
+	import collections.ArraySet;
 	import collections.HashMap;
 	import collections.Set;
 	
 	import flash.utils.Proxy;
+	import flash.utils.describeType;
 	import flash.utils.flash_proxy;
+	import flash.utils.getDefinitionByName;
+	
+	import validations.ValidationError;
+	import validations.Validator;
 	
 	import reflection.clazz;
+	import reflection.newInstance;
 
 	/**
 	 * An entity.
@@ -53,13 +60,31 @@ package mesh
 		}
 		
 		/**
-		 * Runs the validations defined on this entity.
-		 *
-		 * @return 
+		 * Runs the validations defined for this entity and returns <code>true</code> if any
+		 * validations failed.
+		 * 
+		 * @return <code>true</code> if any validations failed.
+		 * 
+		 * @see #isValid()
+		 * @see #validate()
 		 */
-		public function isValid():void
+		final public function isInvalid():Boolean
 		{
-			var validators:Set = DESCRIPTIONS.grab(clazz).validators;
+			return !isValid();
+		}
+		
+		/**
+		 * Runs the validations defined for this entity and returns <code>true</code> if all
+		 * validations passed.
+		 * 
+		 * @return <code>true</code> if all validations passed.
+		 * 
+		 * @see #isInvalid()
+		 * @see #validate()
+		 */
+		final public function isValid():Boolean
+		{
+			return validate().length == 0;
 		}
 		
 		/**
@@ -76,6 +101,60 @@ package mesh
 		public function saved():void
 		{
 			_isDirty = false;
+		}
+		
+		/**
+		 * Runs the validations defined on this entity and returns the set of errors for
+		 * any validations that failed. If all validations passed, this method returns an
+		 * empty array.
+		 *
+		 * @return A set of <code>ValidationError</code>s.
+		 * 
+		 * @see #isInvalid()
+		 * @see #isValid()
+		 */
+		public function validate():Array
+		{
+			var errors:Array = [];
+			for each (var validator:Validator in validators()) {
+				var error:Object = validator.validate(this);
+				if (error) {
+					errors.push(error);
+				}
+			}
+			return errors;
+		}
+		
+		/**
+		 * Returns a set of validators defined for this entity. This method allows sub-classes
+		 * to override and supply their own validators without using metadata. The default
+		 * implementation of this method will return any validators that were defined in metadata.
+		 * 
+		 * @return A set of <code>Validator</code>s.
+		 */
+		protected function validators():Array
+		{
+			var descriptionXML:XML = describeType(this);
+			var validators:Array = [];
+			
+			for each (var validateXML:XML in descriptionXML..metadata.(@name == "Validate")) {
+				var property:String = validateXML.arg.(@key == "property").@value;
+				
+				if (validateXML.parent().name == "accessor") {
+					property = validateXML.parent().name;
+				}
+				
+				var validator:Object = newInstance(getDefinitionByName(validateXML.arg.(@key == "validator").@value) as Class);
+				for each (var argXML:XML in validateXML..arg) {
+					if (argXML.@key != "property" || argXML.@key != "validator") {
+						validator[argXML.@key] = argXML.@value;
+					}
+				}
+				
+				validators.push(validator);
+			}
+			
+			return validators;
 		}
 		
 		/**

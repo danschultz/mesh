@@ -1,4 +1,4 @@
-package mesh.validations
+package validations
 {
 	public class ValidatorResult
 	{

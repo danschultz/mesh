@@ -6,8 +6,6 @@ package mesh
 	import flash.utils.describeType;
 	import flash.utils.getDefinitionByName;
 	
-	import mesh.validations.Validator;
-	
 	import mx.utils.StringUtil;
 
 	/**
@@ -99,17 +97,6 @@ package mesh
 		}
 		
 		/**
-		 * Adds a validator 
-		 * 
-		 * @param validator
-		 * 
-		 */
-		public function validate(validator:Validator):void
-		{
-			
-		}
-		
-		/**
 		 * Returns the entity class of the description.
 		 * 
 		 * @return The entity class.
@@ -144,15 +131,6 @@ package mesh
 		public function get relationships():Set
 		{
 			return _relationships;
-		}
-		
-		private var _validators:Set = new HashSet();
-		/**
-		 * The <code>Validator</code>s for this entity.
-		 */
-		public function get validators():Set
-		{
-			return _validators;
 		}
 	}
 }
