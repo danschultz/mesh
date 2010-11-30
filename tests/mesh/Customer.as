@@ -1,6 +1,6 @@
 package mesh
 {
-	[Validate(property="street", validator="Length", lessThan="10")]
+	[Validate(properties="streetAddress,cityAddress", validator="validations.LengthValidator", minimum="1")]
 	
 	[ComposedOf(property="address", type="mesh.Address", prefix="address", mapping="street,city")]
 	public dynamic class Customer extends Entity
@@ -19,6 +19,22 @@ package mesh
 		public function set address2(value:Address):void
 		{
 			_address2 = value;
+		}
+		
+		private var _firstName:String;
+		[Validate(validator="validations.LengthValidator", maximum="50")]
+		public function get firstName():String
+		{
+			return _firstName;
+		}
+		public function set firstName(value:String):void
+		{
+			_firstName = value;
+		}
+		
+		public function get validations():Array
+		{
+			return validators();
 		}
 	}
 }

@@ -55,7 +55,7 @@ package validations
 			var result:ArraySet = new ArraySet();
 			
 			if (options.hasOwnProperty("properties")) {
-				result.add(options.properties);
+				result.addAll(options.properties);
 			}
 			
 			if (options.hasOwnProperty("property")) {

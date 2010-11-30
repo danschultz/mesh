@@ -1,6 +1,5 @@
 package mesh
 {
-	import collections.ArraySet;
 	import collections.HashMap;
 	import collections.Set;
 	
@@ -9,11 +8,13 @@ package mesh
 	import flash.utils.flash_proxy;
 	import flash.utils.getDefinitionByName;
 	
-	import validations.ValidationError;
-	import validations.Validator;
+	import mx.utils.ObjectUtil;
+	import mx.utils.StringUtil;
 	
 	import reflection.clazz;
 	import reflection.newInstance;
+	
+	import validations.Validator;
 
 	/**
 	 * An entity.
@@ -117,10 +118,7 @@ package mesh
 		{
 			var errors:Array = [];
 			for each (var validator:Validator in validators()) {
-				var error:Object = validator.validate(this);
-				if (error) {
-					errors.push(error);
-				}
+				errors = errors.concat(validator.validate(this));
 			}
 			return errors;
 		}
@@ -138,20 +136,23 @@ package mesh
 			var validators:Array = [];
 			
 			for each (var validateXML:XML in descriptionXML..metadata.(@name == "Validate")) {
-				var property:String = validateXML.arg.(@key == "property").@value;
+				var options:Object = {};
 				
-				if (validateXML.parent().name == "accessor") {
-					property = validateXML.parent().name;
-				}
-				
-				var validator:Object = newInstance(getDefinitionByName(validateXML.arg.(@key == "validator").@value) as Class);
 				for each (var argXML:XML in validateXML..arg) {
-					if (argXML.@key != "property" || argXML.@key != "validator") {
-						validator[argXML.@key] = argXML.@value;
+					if (argXML.@key != "validator") {
+						options[argXML.@key] = argXML.@value.toString();
 					}
 				}
 				
-				validators.push(validator);
+				if (validateXML.parent().name() == "accessor") {
+					options["property"] = validateXML.parent().@name.toString();
+				}
+				
+				if (options.hasOwnProperty("properties")) {
+					options.properties = StringUtil.trimArrayElements(options.properties, ",").split(",");
+				}
+				
+				validators.push(newInstance(getDefinitionByName(validateXML.arg.(@key == "validator").@value) as Class, options));
 			}
 			
 			return validators;

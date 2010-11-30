@@ -87,7 +87,7 @@ package validations
 		/**
 		 * The options that were defined for this validator as key-value pairs.
 		 */
-		protected function get options():Object
+		public function get options():Object
 		{
 			return _options;
 		}
