@@ -53,7 +53,7 @@ package validations
 		{
 			if (!options.hasOwnProperty("message")) {
 				for (var i:int = 0; i < replacements.length; i++) {
-					message = message.replace(new RegExp("\{" + i.toString() + "\}"), replacements[i]);
+					message = message.replace("{" + i.toString() + "}", replacements[i]);
 				}
 				return new ValidationError(message);
 			}

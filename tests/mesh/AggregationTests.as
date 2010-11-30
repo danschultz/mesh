@@ -1,64 +1,72 @@
 package mesh
 {
+	import mesh.models.Address;
+	import mesh.models.Customer;
+	import mesh.models.Name;
+	
 	import org.flexunit.assertThat;
 	import org.hamcrest.object.equalTo;
 	import org.hamcrest.object.nullValue;
 
 	public class AggregationTests
 	{
-		private var _customer:Customer;
+		private var _entity:Customer;
 		
 		[Before]
 		public function setup():void
 		{
-			_customer = new Customer();
+			_entity = new Customer();
 		}
 		
 		[Test]
 		public function testSetAggregateOnEntity():void
 		{
-			_customer.address = new Address("2306 Zanker Rd", "San Jose");
-			assertThat(_customer.address.equals(new Address("2306 Zanker Rd", "San Jose")), equalTo(true));
+			var address:Address = new Address("2306 Zanker Rd", "San Jose");
+			_entity.address = address;
+			assertThat(_entity.address.equals(address), equalTo(true));
 		}
 		
 		[Test]
 		public function testSetAggregatePrefixedProperty():void
 		{
-			_customer.addressStreet = "2306 Zanker Rd";
-			_customer.addressCity = "San Jose";
-			assertThat(_customer.address.equals(new Address("2306 Zanker Rd", "San Jose")), equalTo(true));
+			var address:Address = new Address("2306 Zanker Rd", "San Jose");
+			_entity.addressStreet = "2306 Zanker Rd";
+			_entity.addressCity = "San Jose";
+			assertThat(_entity.address.equals(address), equalTo(true));
 		}
 		
 		[Test]
 		public function testGetAggregatePrefixedProperty():void
 		{
-			_customer.addressStreet = "2306 Zanker Rd";
-			_customer.addressCity = "San Jose";
-			assertThat(_customer.addressStreet, equalTo("2306 Zanker Rd"));
-			assertThat(_customer.addressCity, equalTo("San Jose"));
+			_entity.addressStreet = "2306 Zanker Rd";
+			_entity.addressCity = "San Jose";
+			assertThat(_entity.addressStreet, equalTo("2306 Zanker Rd"));
+			assertThat(_entity.addressCity, equalTo("San Jose"));
 		}
 		
 		[Test]
 		public function testSetAggregateNonPrefixedProperty():void
 		{
-			_customer.streetAddress = "2306 Zanker Rd";
-			_customer.cityAddress = "San Jose";
-			assertThat(_customer.address2.equals(new Address("2306 Zanker Rd", "San Jose")), equalTo(true));
+			var name:Name = new Name("John", "Doe");
+			_entity.firstName = name.firstName;
+			_entity.lastName = name.lastName;
+			assertThat(_entity.fullName.equals(name), equalTo(true));
 		}
 		
 		[Test]
 		public function testGetAggregateNonPrefixedProperty():void
 		{
-			_customer.streetAddress = "2306 Zanker Rd";
-			_customer.cityAddress = "San Jose";
-			assertThat(_customer.streetAddress, equalTo("2306 Zanker Rd"));
-			assertThat(_customer.cityAddress, equalTo("San Jose"));
+			var name:Name = new Name("John", "Doe");
+			_entity.firstName = name.firstName;
+			_entity.lastName = name.lastName;
+			assertThat(_entity.firstName, equalTo(name.firstName));
+			assertThat(_entity.lastName, equalTo(name.lastName));
 		}
 		
 		[Test]
 		public function testGetAggregatePropertyNull():void
 		{
-			assertThat(_customer.addressStreet, nullValue());
+			assertThat(_entity.addressStreet, nullValue());
 		}
 	}
 }

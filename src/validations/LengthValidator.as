@@ -54,7 +54,7 @@ package validations
 			for (var check:String in CHECKS) {
 				if (options.hasOwnProperty(check)) {
 					if (!CHECKS[check](value, options[check])) {
-						return failWithMessage(MESSAGES[check], property, check);
+						return failWithMessage(MESSAGES[check], property, options[check]);
 					}
 				}
 			}

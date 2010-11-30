@@ -1,4 +1,4 @@
-package mesh
+package mesh.models
 {
 	public class Address
 	{

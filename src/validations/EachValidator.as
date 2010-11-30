@@ -52,17 +52,10 @@ package validations
 		 */
 		protected function get properties():Array
 		{
-			var result:ArraySet = new ArraySet();
-			
 			if (options.hasOwnProperty("properties")) {
-				result.addAll(options.properties);
+				return options.properties;
 			}
-			
-			if (options.hasOwnProperty("property")) {
-				result.add(options.property);
-			}
-			
-			return result.toArray();
+			return [options.property];
 		}
 	}
 }

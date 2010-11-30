@@ -24,6 +24,7 @@ package mesh
 	public dynamic class Entity extends Proxy
 	{
 		private static const DESCRIPTIONS:HashMap = new HashMap();
+		private static const VALIDATORS:HashMap = new HashMap();
 		
 		/**
 		 * Constructor.
@@ -32,8 +33,15 @@ package mesh
 		{
 			super();
 			
-			if (!DESCRIPTIONS.containsKey(clazz)) {
-				DESCRIPTIONS.put(clazz, EntityDescription.fromEntity(clazz));
+			var entityClass:Class = clazz;
+			
+			if (!DESCRIPTIONS.containsKey(entityClass)) {
+				DESCRIPTIONS.put(entityClass, EntityDescription.fromEntity(entityClass));
+			}
+			
+			// create and cache the validators.
+			if (!VALIDATORS.containsKey(entityClass)) {
+				VALIDATORS.put(entityClass, validators());
 			}
 		}
 		
@@ -117,7 +125,7 @@ package mesh
 		public function validate():Array
 		{
 			var errors:Array = [];
-			for each (var validator:Validator in validators()) {
+			for each (var validator:Validator in VALIDATORS.grab(clazz)) {
 				errors = errors.concat(validator.validate(this));
 			}
 			return errors;
@@ -200,17 +208,14 @@ package mesh
 			return DESCRIPTIONS.grab(clazz).relationships;
 		}
 		
-		private var _valueObjects:Object = {};
-		
+		private var _aggregrateValues:Object = {};
 		/**
 		 * @private
 		 */
 		override flash_proxy function getProperty(name:*):*
 		{
-			name = getNameFromQName(name);
-			
-			if (_valueObjects.hasOwnProperty(name)) {
-				return _valueObjects[name];
+			if (_aggregrateValues.hasOwnProperty(name)) {
+				return _aggregrateValues[name];
 			}
 			
 			for each (var aggregate:Aggregate in aggregates) {
@@ -235,10 +240,9 @@ package mesh
 		 */
 		override flash_proxy function setProperty(name:*, value:*):void
 		{
-			name = getNameFromQName(name);
 			for each (var aggregate:Aggregate in aggregates) {
 				if (aggregate.property == name) {
-					_valueObjects[name] = value;
+					_aggregrateValues[name] = value;
 					return;
 				}
 				
@@ -246,14 +250,6 @@ package mesh
 					aggregate.setValue(this, name, value);
 				}
 			}
-		}
-		
-		private function getNameFromQName(name:*):String
-		{
-			if (name is QName) {
-				name = name.localName;
-			}
-			return name;
 		}
 	}
 }
