@@ -32,6 +32,7 @@ package mesh
 	{
 		private static const DESCRIPTIONS:HashMap = new HashMap();
 		private static const VALIDATORS:HashMap = new HashMap();
+		private static const AGGREGATES:HashMap = new HashMap();
 		
 		private var _dispatcher:EventDispatcher;
 		
@@ -51,12 +52,48 @@ package mesh
 				DESCRIPTIONS.put(entityClass, EntityDescription.fromEntity(entityClass));
 			}
 			
+			if (!AGGREGATES.containsKey(entityClass)) {
+				var entityAggregates:HashMap = new HashMap();
+				for each (var aggregate:Aggregate in aggregates()) {
+					for each (var mapping:String in aggregate.mappings) {
+						entityAggregates.put(mapping, aggregate);
+					}
+				}
+				AGGREGATES.put(entityClass, entityAggregates);
+			}
+			
 			// create and cache the validators.
 			if (!VALIDATORS.containsKey(entityClass)) {
 				VALIDATORS.put(entityClass, validators());
 			}
 			
 			addEventListener(PropertyChangeEvent.PROPERTY_CHANGE, handlePropertyChange);
+		}
+		
+		private static function aggregatesForEntity(entity:Entity):HashMap
+		{
+			return AGGREGATES.grab(clazz(entity)) as HashMap;
+		}
+		
+		protected function aggregates():Array
+		{
+			var descriptionXML:XML = describeType(this);
+			var aggregates:Array = [];
+			
+			for each (var composedOfXML:XML in descriptionXML..metadata.(@name == "ComposedOf")) {
+				var property:XMLList = composedOfXML.arg.(@key == "property");
+				var type:XMLList = composedOfXML.arg.(@key == "type");
+				var prefix:XMLList = composedOfXML.arg.(@key == "prefix");
+				var mapping:XMLList = composedOfXML.arg.(@key == "mapping");
+				
+				var options:Object = {};
+				options.prefix = prefix.@value.toString();
+				options.mapping = StringUtil.trimArrayElements(mapping.@value.toString(), ",").split(",");
+				
+				aggregates.push( new Aggregate(clazz(this), property.length() > 0 ? property.@value : composedOfXML.parent().@name, getDefinitionByName(type.length() > 0 ? type.@value : composedOfXML.parent().@type) as Class, options) );
+			}
+			
+			return aggregates;
 		}
 		
 		/**
@@ -285,14 +322,6 @@ package mesh
 		}
 		
 		/**
-		 * Returns the set of <code>Aggregate</code>s for this entity.
-		 */
-		public function get aggregates():Set
-		{
-			return DESCRIPTIONS.grab(clazz(this)).aggregates;
-		}
-		
-		/**
 		 * Returns the set of <code>Relationship</code>s for this entity.
 		 */
 		public function get relationships():Set
@@ -314,10 +343,9 @@ package mesh
 				return _properties[name];
 			}
 			
-			for each (var aggregate:Aggregate in aggregates) {
-				if (aggregate.hasMappedProperty(name)) {
-					return aggregate.getValue(this, name);
-				}
+			var aggregate:Aggregate = aggregatesForEntity(this).grab(name.toString()) as Aggregate;
+			if (aggregate != null) {
+				return aggregate.getValue(this, name);
 			}
 			
 			return undefined;
@@ -338,11 +366,10 @@ package mesh
 		{
 			_properties[name] = value;
 			
-			for each (var aggregate:Aggregate in aggregates) {
-				if (aggregate.hasMappedProperty(name)) {
-					aggregate.setValue(this, name, value);
-					return;
-				}
+			var aggregate:Aggregate = aggregatesForEntity(this).grab(name.toString()) as Aggregate;
+			if (aggregate != null) {
+				aggregate.setValue(this, name, value);
+				return;
 			}
 		}
 	}

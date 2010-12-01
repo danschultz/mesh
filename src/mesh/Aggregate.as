@@ -20,8 +20,8 @@ package mesh
 	{
 		private var _options:Object;
 		
-		private var _mappingOrder:Array;
-		private var _mapping:Object;
+		private var _mappingOrder:Array = [];
+		private var _mapping:Object = {};
 		
 		/**
 		 * Constructor.
@@ -39,8 +39,6 @@ package mesh
 			_type = type;
 			_options = options;
 			
-			_mapping = {};
-			_mappingOrder = [];
 			for each (var mapping:String in options.mapping) {
 				var keyValue:Array = mapping.split(":");
 				
@@ -107,6 +105,14 @@ package mesh
 		public function get entity():Class
 		{
 			return _entity;
+		}
+		
+		/**
+		 * The mappings defined on this aggregate.
+		 */
+		public function get mappings():Array
+		{
+			return _mappingOrder.concat();
 		}
 		
 		private var _property:String;
