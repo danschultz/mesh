@@ -306,12 +306,12 @@ package mesh
 		 */
 		override flash_proxy function getProperty(name:*):*
 		{
-			if (name.toString().lastIndexOf("Was") == name.toString().length-3) {
-				return _properties.oldValueOf(name.toString().substr(0, name.toString().length-3));
-			}
-			
 			if (_properties.hasOwnProperty(name)) {
 				return _properties[name];
+			}
+			
+			if (name.toString().lastIndexOf("Was") == name.toString().length-3) {
+				return _properties.oldValueOf(name.toString().substr(0, name.toString().length-3));
 			}
 			
 			for each (var aggregate:Aggregate in aggregates) {
