@@ -55,8 +55,8 @@ package mesh
 				var oldValue:Object = _oldValues[property];
 				var newValue:Object = _currentValues[property];
 				
-				if (oldValue !== newValue) {
-					return true;
+				if (oldValue === newValue) {
+					return false;
 				}
 				
 				if (oldValue != null && newValue != null && oldValue.hasOwnProperty("equals") && newValue.hasOwnProperty("equals")) {
@@ -92,6 +92,7 @@ package mesh
 			for (var property:String in _oldValues) {
 				_host[property] = _oldValues[property];
 			}
+			reset();
 		}
 		
 		public function reset():void

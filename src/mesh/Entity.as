@@ -133,7 +133,7 @@ package mesh
 		 */
 		public function revert():void
 		{
-			
+			_properties.revert();
 		}
 		
 		/**
