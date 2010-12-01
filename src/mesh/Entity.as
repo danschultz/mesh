@@ -3,28 +3,37 @@ package mesh
 	import collections.HashMap;
 	import collections.Set;
 	
+	import flash.events.Event;
+	import flash.events.EventDispatcher;
+	import flash.events.IEventDispatcher;
 	import flash.utils.Proxy;
 	import flash.utils.describeType;
 	import flash.utils.flash_proxy;
 	import flash.utils.getDefinitionByName;
 	
-	import mx.utils.ObjectUtil;
+	import mx.events.PropertyChangeEvent;
 	import mx.utils.StringUtil;
+	
+	import operations.EmptyOperation;
+	import operations.FinishedOperationEvent;
+	import operations.Operation;
 	
 	import reflection.clazz;
 	import reflection.newInstance;
 	
 	import validations.Validator;
-
+	
 	/**
 	 * An entity.
 	 * 
 	 * @author Dan Schultz
 	 */
-	public dynamic class Entity extends Proxy
+	public dynamic class Entity extends Proxy implements IEventDispatcher
 	{
 		private static const DESCRIPTIONS:HashMap = new HashMap();
 		private static const VALIDATORS:HashMap = new HashMap();
+		
+		private var _dispatcher:EventDispatcher;
 		
 		/**
 		 * Constructor.
@@ -33,8 +42,11 @@ package mesh
 		{
 			super();
 			
-			var entityClass:Class = clazz;
+			_dispatcher = new EventDispatcher(this);
 			
+			var entityClass:Class = clazz(this);
+			
+			// create and cache aggregates and relationships.
 			if (!DESCRIPTIONS.containsKey(entityClass)) {
 				DESCRIPTIONS.put(entityClass, EntityDescription.fromEntity(entityClass));
 			}
@@ -43,6 +55,8 @@ package mesh
 			if (!VALIDATORS.containsKey(entityClass)) {
 				VALIDATORS.put(entityClass, validators());
 			}
+			
+			addEventListener(PropertyChangeEvent.PROPERTY_CHANGE, handlePropertyChange);
 		}
 		
 		/**
@@ -55,6 +69,11 @@ package mesh
 		public function equals(entity:Entity):Boolean
 		{
 			return entity != null && id.equals(entity.id);
+		}
+		
+		private function handlePropertyChange(event:PropertyChangeEvent):void
+		{
+			propertyChanged(event.property.toString(), event.oldValue, event.newValue);
 		}
 		
 		/**
@@ -97,11 +116,53 @@ package mesh
 		}
 		
 		/**
-		 * Marks this entity as dirty.
+		 * Marks a property on the entity as being dirty. This method allows sub-classes to manually 
+		 * manage when a property changes.
+		 * 
+		 * @param property The property that was changed.
+		 * @param oldValue The property's old value.
+		 * @param newValue The property's new value.
 		 */
-		public function modified():void
+		protected function propertyChanged(property:String, oldValue:Object, newValue:Object):void
 		{
-			_isDirty = true;
+			_properties.changed(property, oldValue, newValue);
+		}
+		
+		/**
+		 * Reverts all changes made to this entity since the last save.
+		 */
+		public function revert():void
+		{
+			
+		}
+		
+		/**
+		 * Removes the entity.
+		 * 
+		 * @return An executing operation.
+		 */
+		public function remove():Operation
+		{
+			return new EmptyOperation();
+		}
+		
+		/**
+		 * Saves the entity.
+		 * 
+		 * @return An executing operation.
+		 */
+		public function save(validate:Boolean = true):Operation
+		{
+			var finishedFunc:Function = function(event:FinishedOperationEvent):void
+			{
+				saved();
+			};
+			
+			var operation:Operation = new EmptyOperation();
+			operation.addEventListener(FinishedOperationEvent.FINISHED, finishedFunc);
+			operation.execute();
+			
+			return operation;
 		}
 		
 		/**
@@ -109,7 +170,7 @@ package mesh
 		 */
 		public function saved():void
 		{
-			_isDirty = false;
+			_properties.reset();
 		}
 		
 		/**
@@ -125,7 +186,7 @@ package mesh
 		public function validate():Array
 		{
 			var errors:Array = [];
-			for each (var validator:Validator in VALIDATORS.grab(clazz)) {
+			for each (var validator:Validator in VALIDATORS.grab(clazz(this))) {
 				errors = errors.concat(validator.validate(this));
 			}
 			return errors;
@@ -167,11 +228,43 @@ package mesh
 		}
 		
 		/**
-		 * The class for this entity.
+		 * @inheritDoc
 		 */
-		public function get clazz():Class
+		public function addEventListener(type:String, listener:Function, useCapture:Boolean = false, priority:int = 0, useWeakReference:Boolean = false):void
 		{
-			return reflection.clazz(this);
+			_dispatcher.addEventListener(type, listener, useCapture, priority, useWeakReference);
+		}
+		
+		/**
+		 * @inheritDoc
+		 */
+		public function dispatchEvent(event:Event):Boolean
+		{
+			return _dispatcher.dispatchEvent(event);
+		}
+		
+		/**
+		 * @inheritDoc
+		 */
+		public function hasEventListener(type:String):Boolean
+		{
+			return _dispatcher.hasEventListener(type);
+		}
+		
+		/**
+		 * @inheritDoc
+		 */
+		public function removeEventListener(type:String, listener:Function, useCapture:Boolean = false):void
+		{
+			_dispatcher.removeEventListener(type, listener, useCapture);
+		}
+		
+		/**
+		 * @inheritDoc
+		 */
+		public function willTrigger(type:String):Boolean
+		{
+			return _dispatcher.willTrigger(type);
 		}
 		
 		private var _id:EntityID = new EntityID();
@@ -183,13 +276,12 @@ package mesh
 			return _id;
 		}
 		
-		private var _isDirty:Boolean;
 		/**
 		 * <code>true</code> if this entity is dirty and needs to be persisted.
 		 */
 		public function get isDirty():Boolean
 		{
-			return _isDirty;
+			return _properties.hasChanges;
 		}
 		
 		/**
@@ -197,7 +289,7 @@ package mesh
 		 */
 		public function get aggregates():Set
 		{
-			return DESCRIPTIONS.grab(clazz).aggregates;
+			return DESCRIPTIONS.grab(clazz(this)).aggregates;
 		}
 		
 		/**
@@ -205,17 +297,21 @@ package mesh
 		 */
 		public function get relationships():Set
 		{
-			return DESCRIPTIONS.grab(clazz).relationships;
+			return DESCRIPTIONS.grab(clazz(this)).relationships;
 		}
 		
-		private var _aggregrateValues:Object = {};
+		private var _properties:Properties = new Properties(this);
 		/**
 		 * @private
 		 */
 		override flash_proxy function getProperty(name:*):*
 		{
-			if (_aggregrateValues.hasOwnProperty(name)) {
-				return _aggregrateValues[name];
+			if (name.toString().lastIndexOf("Was") == name.toString().length-3) {
+				return _properties.oldValueOf(name.toString().substr(0, name.toString().length-3));
+			}
+			
+			if (_properties.hasOwnProperty(name)) {
+				return _properties[name];
 			}
 			
 			for each (var aggregate:Aggregate in aggregates) {
@@ -240,14 +336,12 @@ package mesh
 		 */
 		override flash_proxy function setProperty(name:*, value:*):void
 		{
+			_properties[name] = value;
+			
 			for each (var aggregate:Aggregate in aggregates) {
-				if (aggregate.property == name) {
-					_aggregrateValues[name] = value;
-					return;
-				}
-				
 				if (aggregate.hasMappedProperty(name)) {
 					aggregate.setValue(this, name, value);
+					return;
 				}
 			}
 		}

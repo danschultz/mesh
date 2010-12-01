@@ -24,6 +24,7 @@ package mesh.models
 		}
 		
 		private var _age:Number;
+		[Bindable]
 		[Validate(validator="validations.NumericValidator", between="1..120")]
 		public function get age():Number
 		{
