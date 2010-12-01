@@ -41,6 +41,14 @@ package mesh
 		}
 		
 		/**
+		 * Removes all original values.
+		 */
+		public function clear():void
+		{
+			_oldValues = {};
+		}
+		
+		/**
 		 * Performs a check to see if the given property has changed. This method will
 		 * first check based on the identity of the changed values. If this fails, it 
 		 * will use the <code>equals()</code> method defined on the value, if the method
@@ -92,12 +100,23 @@ package mesh
 			for (var property:String in _oldValues) {
 				_host[property] = _oldValues[property];
 			}
-			reset();
+			clear();
 		}
 		
-		public function reset():void
+		/**
+		 * Returns an object of key-value pairs where the key is a property that changed
+		 * and the value is an array where the first element is the previous value, and
+		 * the second element is the current value.
+		 */
+		public function get changes():Object
 		{
-			_oldValues = {};
+			var changes:Object = {};
+			for (var property:String in _currentValues) {
+				if (hasPropertyChanged(property)) {
+					changes[property] = [_oldValues[property], _currentValues[property]];
+				}
+			}
+			return changes;
 		}
 		
 		/**

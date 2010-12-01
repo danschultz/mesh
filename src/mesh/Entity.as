@@ -214,7 +214,7 @@ package mesh
 		 */
 		public function saved():void
 		{
-			_properties.reset();
+			_properties.clear();
 		}
 		
 		/**

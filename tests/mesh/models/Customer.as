@@ -12,6 +12,7 @@ package mesh.models
 		}
 		
 		private var _fullName:Name;
+		[Bindable]
 		[ComposedOf(mapping="firstName,lastName")]
 		[Validate(properties="firstName,lastName", validator="validations.LengthValidator", minimum="1")]
 		public function get fullName():Name
