@@ -75,6 +75,13 @@ package mesh
 			return AGGREGATES.grab(clazz(entity)) as HashMap;
 		}
 		
+		/**
+		 * Returns a set of aggregates defined for this entity. This method allows sub-classes
+		 * to override and supply their own aggregates without using metadata. The default
+		 * implementation of this method will return any aggregates that were defined in metadata.
+		 * 
+		 * @return A set of <code>Aggregate</code>s.
+		 */
 		protected function aggregates():Array
 		{
 			var descriptionXML:XML = describeType(this);
