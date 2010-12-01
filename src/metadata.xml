@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<annotations version="1.0">
+
+	<!-- 
+	[ComposedOf(property="address", type="mesh.models.Address", prefix="address", mapping="street,city")]
+	-->
+	<metadata name="ComposedOf" description="Add an aggregate on an entity.">
+		
+		<context name="class">
+			<attribute name="type" type="Class" hint="classes" required="true"/>
+			<attribute name="property" type="String" hint="properties"/>
+		</context>
+		<context name="getter"/>
+		<context name="setter"/>
+		<context name="variable"/>
+		
+		<attribute name="properties" type="Array" hint="properties"/>
+		<attribute name="prefix" type="String"/>
+		<attribute name="mapping" type="Array" required="true"/>
+	</metadata>
+	
+	<!-- 
+	[Validate(properties="addressStreet,addressCity", validator="validations.LengthValidator", minimum="1")]
+	-->
+	<metadata name="Validate" description="Add a validation to an entity.">
+		
+		<context name="class"/>
+		<context name="getter"/>
+		<context name="setter"/>
+		<context name="variable"/>
+		
+		<attribute name="validator" type="Class" hint="classes" hintType="validations.Validator" required="true"/>
+		<attribute name="property" type="String" hint="properties"/>
+		<attribute name="properties" type="Array" hint="properties"/>
+	</metadata>
+	
+</annotations>
