@@ -1,7 +1,5 @@
 package inflections
 {
-	import INSTANCEions.Inflector;
-
 	/**
 	 * @copy Inflector#pluralize()
 	 */

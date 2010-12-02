@@ -2,22 +2,41 @@ package inflections
 {
 	import collections.HashSet;
 
+	/**
+	 * A class that manages and handles rules for pluralizing and singularizing a word.
+	 * A singleton instance that contains a standard set of rules can be retrieved using
+	 * <code>Inflector.inflections()</code>.
+	 * 
+	 * @see pluralize()
+	 * @see singularize()
+	 * 
+	 * @author Dan Schultz
+	 */
 	public class Inflector
 	{
 		private var _plurals:Array = new Array();
 		private var _singulars:Array = new Array();
 		private var _ignored:HashSet = new HashSet();
 		
+		/**
+		 * Constructor.
+		 */
 		public function Inflector()
 		{
 			
 		}
 		
 		private static var INSTANCE:Inflector;
+		/**
+		 * Returns a singleton instance of an inflector that contains a standard set of
+		 * singularized and pluralized words.
+		 * 
+		 * @return An inflector.
+		 */
 		public static function inflections():Inflector
 		{
 			if (INSTANCE == null) {
-				INSTANCE = new INSTANCEor();
+				INSTANCE = new Inflector();
 				
 				INSTANCE.plural(/$/, 's');
 				INSTANCE.plural(/s$/i, 's');
@@ -72,13 +91,28 @@ package inflections
 				
 				INSTANCE.ignore("equipment", "information", "rice", "money", "species", "series", "fish", "sheep", "jeans")
 			}
+			
+			return INSTANCE;
 		}
 		
+		/**
+		 * Adds a set of words to be ignored during inflections.
+		 * 
+		 * @param words A set of words.
+		 */
 		public function ignore(... words):void
 		{
 			_ignored.addAll(words);
 		}
 		
+		/**
+		 * Adds a pluralization rule and a replacement for when the rule is matched. The rule
+		 * can either be a <code>String</code> or regular expression. <code>replacement</code>
+		 * honors the definition of <code>String.replace()</code>.
+		 * 
+		 * @param rule The pluralization rule.
+		 * @param replacement The replacement.
+		 */
 		public function plural(rule:Object, replacement:String):void
 		{
 			if (rule is String) {
@@ -87,6 +121,14 @@ package inflections
 			_plurals.push(rule, replacement);
 		}
 		
+		/**
+		 * Adds a singularization rule and a replacement for when the rule is matched. The rule
+		 * can either be a <code>String</code> or regular expression. <code>replacement</code>
+		 * honors the definition of <code>String.replace()</code>.
+		 * 
+		 * @param rule The singularization rule.
+		 * @param replacement The replacement.
+		 */
 		public function singular(rule:Object, replacement:String):void
 		{
 			if (rule is String) {
@@ -95,21 +137,28 @@ package inflections
 			_plurals.push(rule, replacement);
 		}
 		
-		public function irregular(singular:String, plural:String):void
+		/**
+		 * Adds a singularization and pluralization version for an irregular word. Regular
+		 * expressions are not supported.
+		 * 
+		 * @param singularized The singular version of a word.
+		 * @param pluralized The plural version of the word.
+		 */
+		public function irregular(singularized:String, pluralized:String):void
 		{
 			_ignored.removeAll([singular, plural]);
 			
-			if (singular.substr(0, 1).toUpperCase() == plural.substr(0, 1).toUpperCase()) {
-				plural(new RegExp("(" + singular.substr(0, 1) + ")" + singular.substr(1) + "$", "i"), "$1" + plural.substr(1));
-				plural(new RegExp("(" + plural.substr(0, 1) + ")" + plural.substr(1) + "$", "i"), "$1" + plural.substr(1));
-				singular(new RegExp("(" + plural.substr(0, 1) + ")" + plural.substr(1) + "$", "i"), "$1" + singular.substr(1));
+			if (singularized.substr(0, 1).toUpperCase() == pluralized.substr(0, 1).toUpperCase()) {
+				plural(new RegExp("(" + singularized.substr(0, 1) + ")" + singularized.substr(1) + "$", "i"), "$1" + pluralized.substr(1));
+				plural(new RegExp("(" + pluralized.substr(0, 1) + ")" + pluralized.substr(1) + "$", "i"), "$1" + pluralized.substr(1));
+				singular(new RegExp("(" + pluralized.substr(0, 1) + ")" + pluralized.substr(1) + "$", "i"), "$1" + singularized.substr(1));
 			} else {
-				plural(new RegExp(singular.substr(0, 1).toUpperCase() + "(?i)" + singular.substr(1) + "$"), plural.substr(0, 1).toUpperCase() + plural.substr(1));
-				plural(new RegExp(singular.substr(0, 1).toLowerCase() + "(?i)" + singular.substr(1) + "$"), plural.substr(0, 1).toLowerCase() + plural.substr(1));
-				plural(new RegExp(plural.substr(0, 1).toUpperCase() + "(?i)" + plural.substr(1) + "$"), plural.substr(0, 1).toUpperCase() + plural.substr(1));
-				plural(new RegExp(plural.substr(0, 1).toLowerCase() + "(?i)" + plural.substr(1) + "$"), plural.substr(0, 1).toLowerCase() + plural.substr(1));
-				singular(new RegExp(plural.substr(0, 1).toUpperCase() + "(?i)" + plural.substr(1)), singular.substr(0, 1).toUpperCase() + singular.substr(1));
-				singular(new RegExp(plural.substr(0, 1).toLowerCase() + "(?i)" + plural.substr(1)), singular.substr(0, 1).toLowerCase() + singular.substr(1));
+				plural(new RegExp(singularized.substr(0, 1).toUpperCase() + "(?i)" + singularized.substr(1) + "$"), pluralized.substr(0, 1).toUpperCase() + pluralized.substr(1));
+				plural(new RegExp(singularized.substr(0, 1).toLowerCase() + "(?i)" + singularized.substr(1) + "$"), pluralized.substr(0, 1).toLowerCase() + pluralized.substr(1));
+				plural(new RegExp(pluralized.substr(0, 1).toUpperCase() + "(?i)" + pluralized.substr(1) + "$"), pluralized.substr(0, 1).toUpperCase() + pluralized.substr(1));
+				plural(new RegExp(pluralized.substr(0, 1).toLowerCase() + "(?i)" + pluralized.substr(1) + "$"), pluralized.substr(0, 1).toLowerCase() + pluralized.substr(1));
+				singular(new RegExp(pluralized.substr(0, 1).toUpperCase() + "(?i)" + pluralized.substr(1)), singularized.substr(0, 1).toUpperCase() + singularized.substr(1));
+				singular(new RegExp(pluralized.substr(0, 1).toLowerCase() + "(?i)" + pluralized.substr(1)), singularized.substr(0, 1).toLowerCase() + singularized.substr(1));
 			}
 		}
 		
