@@ -1,39 +1,29 @@
 package mesh
 {
 	/**
-	 * A relationship represents an association between two entities, where the <code>source</code>
-	 * is the host of the <code>destination</code>. Take an example where you have an association
-	 * where a Post contains a set of Comments. In this example, Post would be your source and 
-	 * Comment is your destination.
+	 * A relationship represents an association between two entities, where the <code>owner</code>
+	 * is the host of the <code>target</code>. Take an example where you have an association
+	 * where a Post contains a set of Comments. In this example, Post would be your owner and 
+	 * Comment is your target.
 	 * 
 	 * @author Dan Schultz
 	 */
 	public class Relationship
 	{
 		/**
-		 * A deletion rule, where when the host is removed the destination is kept.
-		 */
-		public static const NOTHING:String = "nothing";
-		
-		/**
-		 * A deletion rule, where when the host is removed the destination is also removed.
-		 */
-		public static const CASCADE:String = "cascade";
-		
-		/**
 		 * Constructor.
 		 * 
-		 * @param source The source of the assocation.
+		 * @param owner The source of the assocation.
 		 * @param property The property or method on the source that references the destination.
-		 * @param destination The destination of the association.
-		 * @param deletionRule How the destination should be handled when the source is removed.
+		 * @param target The destination of the association.
+		 * @param options A set of options defined for this relationship.
 		 */
-		public function Relationship(source:Class, property:String, destination:Class, deletionRule:String)
+		public function Relationship(owner:Class, property:String, target:Class, options:Object)
 		{
-			_source = source;
+			_owner = owner;
 			_property = property;
-			_destination = destination;
-			_deletionRule = deletionRule;
+			_target = target;
+			_options = options;
 		}
 		
 		/**
@@ -45,10 +35,9 @@ package mesh
 		public function equals(relationship:Relationship):Boolean
 		{
 			return relationship != null && 
-				   source == relationship.source &&
+				   owner == relationship.owner &&
 				   property == relationship.property &&
-				   destination == relationship.destination &&
-				   deletionRule == relationship.deletionRule;
+				   target == relationship.target;
 		}
 		
 		/**
@@ -59,22 +48,22 @@ package mesh
 			return property;
 		}
 		
-		private var _deletionRule:String;
+		private var _options:Object;
 		/**
-		 * How the destination should be handled when the source is removed.
+		 * A set of options that a client has configured for this relationship.
 		 */
-		public function get deletionRule():String
+		public function get options():Object
 		{
-			return _deletionRule;
+			return _options;
 		}
 		
-		private var _destination:Class;
+		private var _owner:Class;
 		/**
-		 * The destination entity for the association.
+		 * The source entity for the association.
 		 */
-		public function get destination():Class
+		public function get owner():Class
 		{
-			return _destination;
+			return _owner;
 		}
 		
 		private var _property:String;
@@ -86,13 +75,13 @@ package mesh
 			return _property;
 		}
 		
-		private var _source:Class;
+		private var _target:Class;
 		/**
-		 * The source entity for the association.
+		 * The destination entity for the association.
 		 */
-		public function get source():Class
+		public function get target():Class
 		{
-			return _source;
+			return _target;
 		}
 	}
 }

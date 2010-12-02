@@ -20,6 +20,36 @@
 	</metadata>
 	
 	<!-- 
+	[HasOne(type="mesh.models.Order", property="orders")]
+	-->
+	<metadata name="HasOne" description="Add a one-to-one relationship to an entity.">
+		
+		<context name="class">
+			<attribute name="property" type="String"/>
+		</context>
+		<context name="getter"/>
+		<context name="setter"/>
+		<context name="variable"/>
+		
+		<attribute name="type" type="Class" hint="classes" hintType="mesh.Entity" required="true"/>
+	</metadata>
+	
+	<!-- 
+	[HasMany(type="mesh.models.Order", property="orders")]
+	-->
+	<metadata name="HasMany" description="Add a one-to-many relationship to an entity.">
+		
+		<context name="class">
+			<attribute name="property" type="String"/>
+		</context>
+		<context name="getter"/>
+		<context name="setter"/>
+		<context name="variable"/>
+		
+		<attribute name="type" type="Class" hint="classes" hintType="mesh.Entity" required="true"/>
+	</metadata>
+	
+	<!-- 
 	[Validate(properties="addressStreet,addressCity", validator="validations.LengthValidator", minimum="1")]
 	-->
 	<metadata name="Validate" description="Add a validation to an entity.">

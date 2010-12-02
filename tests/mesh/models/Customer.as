@@ -1,14 +1,21 @@
 package mesh.models
 {
+	import mesh.AssociationProxy;
 	import mesh.Entity;
 	
 	[Validate(properties="addressStreet,addressCity", validator="validations.LengthValidator", minimum="1")]
 	[ComposedOf(property="address", type="mesh.models.Address", prefix="address", mapping="street,city")]
+	
+	[HasMany(type="mesh.models.Order", property="orders")]
+	[HasMany(type="mesh.models.Car")]
 	public dynamic class Customer extends Entity
 	{
 		public function Customer()
 		{
 			super();
+			
+			Order;
+			Car;
 		}
 		
 		private var _fullName:Name;
@@ -34,6 +41,22 @@ package mesh.models
 		public function set age(value:Number):void
 		{
 			_age = value;
+		}
+		
+		private var _primaryCar:AssociationProxy;
+		[HasOne(type="mesh.models.Car")]
+		public function get primaryCar():AssociationProxy
+		{
+			return _primaryCar;
+		}
+		public function set primaryCar(value:AssociationProxy):void
+		{
+			_primaryCar = value;
+		}
+		
+		public function get associations():Array
+		{
+			return relationshipsForEntity(this).values();
 		}
 		
 		public function get validations():Array

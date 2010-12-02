@@ -11,6 +11,8 @@ package mesh
 	import flash.utils.flash_proxy;
 	import flash.utils.getDefinitionByName;
 	
+	import inflections.pluralize;
+	
 	import mx.events.PropertyChangeEvent;
 	import mx.utils.StringUtil;
 	
@@ -18,6 +20,7 @@ package mesh
 	import operations.FinishedOperationEvent;
 	import operations.Operation;
 	
+	import reflection.className;
 	import reflection.clazz;
 	import reflection.newInstance;
 	
@@ -33,6 +36,7 @@ package mesh
 		private static const DESCRIPTIONS:HashMap = new HashMap();
 		private static const VALIDATORS:HashMap = new HashMap();
 		private static const AGGREGATES:HashMap = new HashMap();
+		private static const RELATIONSHIPS:HashMap = new HashMap();
 		
 		private var _dispatcher:EventDispatcher;
 		
@@ -47,11 +51,7 @@ package mesh
 			
 			var entityClass:Class = clazz(this);
 			
-			// create and cache aggregates and relationships.
-			if (!DESCRIPTIONS.containsKey(entityClass)) {
-				DESCRIPTIONS.put(entityClass, EntityDescription.fromEntity(entityClass));
-			}
-			
+			// create and cache the aggregates.
 			if (!AGGREGATES.containsKey(entityClass)) {
 				var entityAggregates:HashMap = new HashMap();
 				for each (var aggregate:Aggregate in aggregates()) {
@@ -62,6 +62,12 @@ package mesh
 				AGGREGATES.put(entityClass, entityAggregates);
 			}
 			
+			// create and cache the relationships.
+			if (!RELATIONSHIPS.containsKey(entityClass)) {
+				RELATIONSHIPS.put(entityClass, new HashMap());
+				relationships();
+			}
+			
 			// create and cache the validators.
 			if (!VALIDATORS.containsKey(entityClass)) {
 				VALIDATORS.put(entityClass, validators());
@@ -70,7 +76,14 @@ package mesh
 			addEventListener(PropertyChangeEvent.PROPERTY_CHANGE, handlePropertyChange);
 		}
 		
-		private static function aggregatesForEntity(entity:Entity):HashMap
+		/**
+		 * Returns a mapping of aggregates for the given entity, where the key is the aggregate's
+		 * property and the value is the aggregate.
+		 * 
+		 * @param entity The entity to get the aggregates for.
+		 * @return A mapping of <code>Aggregate</code>s.
+		 */
+		protected static function aggregatesForEntity(entity:Entity):HashMap
 		{
 			return AGGREGATES.grab(clazz(entity)) as HashMap;
 		}
@@ -218,6 +231,90 @@ package mesh
 		}
 		
 		/**
+		 * Returns a mapping of relationships for the given entity, where the key is the relationship's
+		 * property and the value is the relationship.
+		 * 
+		 * @param entity The entity to get the relationships for.
+		 * @return A mapping of <code>Relationship</code>s.
+		 */
+		protected static function relationshipsForEntity(entity:Entity):HashMap
+		{
+			return RELATIONSHIPS.grab(clazz(entity)) as HashMap;
+		}
+		
+		/**
+		 * Invoked when the relationships are requested for an entity, but have not been cached
+		 * yet. By default, this method will parse any relationship metadata defined in the 
+		 * entity. Sub-classes can override this method and call the <code>hasMany()</code>
+		 * and <code>hasOne()</code> methods.
+		 * 
+		 * @see #hasOne()
+		 * @see #hasMany()
+		 */
+		protected function relationships():void
+		{
+			for each (var relationshipXML:XML in describeType(this)..metadata.(@name == "HasOne" || @name == "HasMany")) {
+				var kind:String = relationshipXML.@name;
+				var options:Object = {};
+				
+				for each (var argXML:XML in relationshipXML..arg) {
+					options[argXML.@key] = argXML.@value.toString();
+				}
+				
+				if (!options.hasOwnProperty("type")) {
+					options.type = relationshipXML.parent().@type;
+				}
+				options.type = getDefinitionByName(options.type) as Class;
+				
+				// try to grab the property auto-magically.
+				if (!options.hasOwnProperty("property")) {
+					// first try to see if there's an accessor we can use.
+					if (relationshipXML.parent().name() == "accessor") {
+						options.property = relationshipXML.parent().@name;
+					}
+					// pluralize the entity type if we're a has many.
+					else if (kind == "HasMany") {
+						var pluralizedClassName:String = pluralize(className(options.type));
+						options.property = pluralizedClassName.substr(0, 1).toLowerCase() + pluralizedClassName.substr(1);
+					}
+				}
+				
+				this[kind.substr(0, 1).toLowerCase() + kind.substr(1)](options.type, options.property, options);
+			}
+			
+		}
+		
+		/**
+		 * Adds a one-to-one relationship for this entity.
+		 * 
+		 * @param target The target entity class.
+		 * @param property The property mapping the relationship.
+		 * @param options Any options for the relationship.
+		 * 
+		 * @see #relationships()
+		 * @see #hasMany()
+		 */
+		protected function hasOne(target:Class, property:String, options:Object = null):void
+		{
+			relationshipsForEntity(this).put(property, new HasOneRelationship(clazz(this), property, target, options));
+		}
+		
+		/**
+		 * Adds a one-to-many relationship for this entity.
+		 * 
+		 * @param target The target entity class.
+		 * @param property The property mapping the relationship.
+		 * @param options Any options for the relationship.
+		 * 
+		 * @see #relationships()
+		 * @see #hasOne()
+		 */
+		protected function hasMany(target:Class, property:String, options:Object = null):void
+		{
+			relationshipsForEntity(this).put(property, new HasManyRelationship(clazz(this), property, target, options));
+		}
+		
+		/**
 		 * Runs the validations defined on this entity and returns the set of errors for
 		 * any validations that failed. If all validations passed, this method returns an
 		 * empty array.
@@ -326,14 +423,6 @@ package mesh
 		public function get isDirty():Boolean
 		{
 			return _properties.hasChanges;
-		}
-		
-		/**
-		 * Returns the set of <code>Relationship</code>s for this entity.
-		 */
-		public function get relationships():Set
-		{
-			return DESCRIPTIONS.grab(clazz(this)).relationships;
 		}
 		
 		private var _properties:Properties = new Properties(this);
