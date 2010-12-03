@@ -1,5 +1,6 @@
 package mesh
 {
+	import collections.ArrayList;
 	import collections.ArraySet;
 	
 	import mx.collections.IList;
@@ -11,17 +12,16 @@ package mesh
 
 	public class AssociationCollection extends AssociationProxy implements IList
 	{
-		private var _entities:mx.collections.ArrayList = new mx.collections.ArrayList();
-		private var _mirroredEntities:collections.ArrayList = new collections.ArrayList();
+		private var _mirroredEntities:collections.ArrayList;
 		private var _originalEntities:collections.ArrayList;
 		private var _removedEntities:ArraySet = new ArraySet();
 		
+		/**
+		 * @copy AssociationProxy#AssociationProxy()
+		 */
 		public function AssociationCollection(source:Entity, relationship:Relationship)
 		{
 			super(source, relationship);
-			
-			_entities.addEventListener(CollectionEvent.COLLECTION_CHANGE, handleEntitiesCollectionChange);
-			target = _entities;
 		}
 		
 		/**
@@ -29,7 +29,7 @@ package mesh
 		 */
 		public function addItem(item:Object):void
 		{
-			_entities.addItem(item);
+			target.addItem(item);
 		}
 		
 		/**
@@ -37,7 +37,7 @@ package mesh
 		 */
 		public function addItemAt(item:Object, index:int):void
 		{
-			_entities.addItemAt(item, index);
+			target.addItemAt(item, index);
 		}
 		
 		/**
@@ -45,7 +45,7 @@ package mesh
 		 */
 		public function getItemAt(index:int, prefetch:int = 0):Object
 		{
-			return _entities.getItemAt(index, prefetch);
+			return target.getItemAt(index, prefetch);
 		}
 		
 		/**
@@ -68,8 +68,8 @@ package mesh
 					_mirroredEntities.removeAll(event.items);
 					break;
 				case CollectionEventKind.RESET:
-					_removedEntities.addAll(_mirroredEntities);
-					_mirroredEntities.clear();
+					_removedEntities.addAll(_mirroredEntities.difference(new collections.ArrayList(target.toArray())));
+					_mirroredEntities = new collections.ArrayList(toArray());
 					break;
 			}
 			
@@ -81,12 +81,12 @@ package mesh
 		 */
 		public function itemUpdated(item:Object, property:Object = null, oldValue:Object = null, newValue:Object = null):void
 		{
-			_entities.itemUpdated(item, property, oldValue, newValue);
+			target.itemUpdated(item, property, oldValue, newValue);
 		}
 		
-		override protected function loaded():void
+		override public function loaded():void
 		{
-			_originalEntities = new collections.ArrayList(_entities.toArray());
+			_originalEntities = new collections.ArrayList(toArray());
 		}
 		
 		/**
@@ -94,7 +94,7 @@ package mesh
 		 */
 		public function removeAll():void
 		{
-			_entities.removeAll();
+			target.removeAll();
 		}
 		
 		/**
@@ -102,17 +102,31 @@ package mesh
 		 */
 		public function removeItemAt(index:int):Object
 		{
-			return _entities.removeItemAt(index);
+			return target.removeItemAt(index);
 		}
 		
 		/**
 		 * @inheritDoc
 		 */
-		override public function save(validate:Boolean = true):Operation
+		override public function revert():void
+		{
+			super.revert();
+			
+			target = _originalEntities;
+			
+			for each (var entity:Entity in _mirroredEntities) {
+				entity.revert();
+			}
+		}
+		
+		/**
+		 * @inheritDoc
+		 */
+		override public function save(validate:Boolean = true, execute:Boolean = true):Operation
 		{
 			var operation:Operation = new EmptyOperation();
 			
-			for each (var entity:Entity in _entities.toArray()) {
+			for each (var entity:Entity in _mirroredEntities) {
 				if (entity.isDirty) {
 					operation = entity.save(validate).during(operation);
 				}
@@ -132,7 +146,7 @@ package mesh
 		 */
 		public function setItemAt(item:Object, index:int):Object
 		{
-			return _entities.setItemAt(item, index);
+			return target.setItemAt(item, index);
 		}
 		
 		/**
@@ -140,7 +154,7 @@ package mesh
 		 */
 		public function toArray():Array
 		{
-			return _entities.toArray();
+			return target.toArray();
 		}
 		
 		/**
@@ -148,7 +162,33 @@ package mesh
 		 */
 		public function get length():int
 		{
-			return _entities.length;
+			return target.length;
+		}
+		
+		/**
+		 * @inheritDoc
+		 */
+		override public function get target():Object
+		{
+			return super.target;
+		}
+		override public function set target(value:Object):void
+		{
+			if (value != target) {
+				if (target != null) {
+					target.removeEventListener(CollectionEvent.COLLECTION_CHANGE, handleEntitiesCollectionChange);
+				}
+				
+				if (value.hasOwnProperty("toArray")) {
+					value = value.toArray();
+				}
+				
+				super.target = new mx.collections.ArrayList(value as Array);
+				_mirroredEntities = new collections.ArrayList(value);
+				
+				dispatchEvent(new CollectionEvent(CollectionEvent.COLLECTION_CHANGE, false, false, CollectionEventKind.RESET));
+				target.addEventListener(CollectionEvent.COLLECTION_CHANGE, handleEntitiesCollectionChange);
+			}
 		}
 	}
 }

@@ -84,79 +84,6 @@ package mesh
 		}
 		
 		/**
-		 * Returns the mapped instance of the service adaptor for the given entity.
-		 * 
-		 * @param entity The entity to get the service adaptor for.
-		 * @return A service adaptor.
-		 */
-		public static function adaptorForEntity(entity:Entity):ServiceAdaptor
-		{
-			return ADAPTORS.grab(clazz(entity)) as ServiceAdaptor;
-		}
-		
-		/**
-		 * Called when the entity is initialized for the first time to generate the service adaptor 
-		 * for the these types of entities. By default, this method will return a service adaptor 
-		 * that was defined in the entity's metadata. If a service adaptor is difficult to express
-		 * in metadata, sub-classes may choose to override this method and construct their own.
-		 * 
-		 * @return A service adaptor.
-		 */
-		protected function adaptor():ServiceAdaptor
-		{
-			for each (var adaptorXML:XML in describeType(this)..metadata.(@name == "ServiceAdaptor")) {
-				var options:Object = {};
-				
-				for each (var argXML:XML in adaptorXML..arg) {
-					options[argXML.@key] = argXML.@value.toString();
-				}
-				
-				return ServiceAdaptor( newInstance(getDefinitionByName(adaptorXML.arg.(@name == "type").@value) as Class, options) );
-			}
-			return null;
-		}
-		
-		/**
-		 * Returns a mapping of aggregates for the given entity, where the key is the aggregate's
-		 * property and the value is the aggregate.
-		 * 
-		 * @param entity The entity to get the aggregates for.
-		 * @return A mapping of <code>Aggregate</code>s.
-		 */
-		protected static function aggregatesForEntity(entity:Entity):HashMap
-		{
-			return AGGREGATES.grab(clazz(entity)) as HashMap;
-		}
-		
-		/**
-		 * Returns a set of aggregates defined for this entity. This method allows sub-classes
-		 * to override and supply their own aggregates without using metadata. The default
-		 * implementation of this method will return any aggregates that were defined in metadata.
-		 * 
-		 * @return A set of <code>Aggregate</code>s.
-		 */
-		protected function aggregates():Array
-		{
-			var descriptionXML:XML = describeType(this);
-			var aggregates:Array = [];
-			
-			for each (var composedOfXML:XML in descriptionXML..metadata.(@name == "ComposedOf")) {
-				var property:XMLList = composedOfXML.arg.(@key == "property");
-				var type:XMLList = composedOfXML.arg.(@key == "type");
-				var prefix:XMLList = composedOfXML.arg.(@key == "prefix");
-				var mapping:XMLList = composedOfXML.arg.(@key == "mapping");
-				
-				var options:Object = {};
-				options.prefix = prefix.@value.toString();
-				options.mapping = StringUtil.trimArrayElements(mapping.@value.toString(), ",").split(",");
-				
-				aggregates.push( new Aggregate(clazz(this), property.length() > 0 ? property.@value : composedOfXML.parent().@name, getDefinitionByName(type.length() > 0 ? type.@value : composedOfXML.parent().@type) as Class, options) );
-			}
-			
-			return aggregates;
-		}
-		
-		/**
 		 * Checks if two entities are equal.  By default, two entities are equal
 		 * when they are of the same type, and their ID's are the same.
 		 * 
@@ -175,7 +102,7 @@ package mesh
 		 * 
 		 * @return An executing operation.
 		 */
-		public function destroy():Operation
+		public function destroy(execute:Boolean = true):Operation
 		{
 			var operation:Operation = adaptorForEntity(this).destroy(this);
 			operation.addEventListener(FinishedOperationEvent.FINISHED, function(event:FinishedOperationEvent):void
@@ -298,6 +225,79 @@ package mesh
 		}
 		
 		/**
+		 * Returns the mapped instance of the service adaptor for the given entity.
+		 * 
+		 * @param entity The entity to get the service adaptor for.
+		 * @return A service adaptor.
+		 */
+		public static function adaptorForEntity(entity:Entity):ServiceAdaptor
+		{
+			return ADAPTORS.grab(clazz(entity)) as ServiceAdaptor;
+		}
+		
+		/**
+		 * Called when the entity is initialized for the first time to generate the service adaptor 
+		 * for the these types of entities. By default, this method will return a service adaptor 
+		 * that was defined in the entity's metadata. If a service adaptor is difficult to express
+		 * in metadata, sub-classes may choose to override this method and construct their own.
+		 * 
+		 * @return A service adaptor.
+		 */
+		protected function adaptor():ServiceAdaptor
+		{
+			for each (var adaptorXML:XML in describeType(this)..metadata.(@name == "ServiceAdaptor")) {
+				var options:Object = {};
+				
+				for each (var argXML:XML in adaptorXML..arg) {
+					options[argXML.@key] = argXML.@value.toString();
+				}
+				
+				return ServiceAdaptor( newInstance(getDefinitionByName(adaptorXML.arg.(@key == "type").@value) as Class, options) );
+			}
+			return null;
+		}
+		
+		/**
+		 * Returns a mapping of aggregates for the given entity, where the key is the aggregate's
+		 * property and the value is the aggregate.
+		 * 
+		 * @param entity The entity to get the aggregates for.
+		 * @return A mapping of <code>Aggregate</code>s.
+		 */
+		protected static function aggregatesForEntity(entity:Entity):HashMap
+		{
+			return AGGREGATES.grab(clazz(entity)) as HashMap;
+		}
+		
+		/**
+		 * Returns a set of aggregates defined for this entity. This method allows sub-classes
+		 * to override and supply their own aggregates without using metadata. The default
+		 * implementation of this method will return any aggregates that were defined in metadata.
+		 * 
+		 * @return A set of <code>Aggregate</code>s.
+		 */
+		protected function aggregates():Array
+		{
+			var descriptionXML:XML = describeType(this);
+			var aggregates:Array = [];
+			
+			for each (var composedOfXML:XML in descriptionXML..metadata.(@name == "ComposedOf")) {
+				var property:XMLList = composedOfXML.arg.(@key == "property");
+				var type:XMLList = composedOfXML.arg.(@key == "type");
+				var prefix:XMLList = composedOfXML.arg.(@key == "prefix");
+				var mapping:XMLList = composedOfXML.arg.(@key == "mapping");
+				
+				var options:Object = {};
+				options.prefix = prefix.@value.toString();
+				options.mapping = StringUtil.trimArrayElements(mapping.@value.toString(), ",").split(",");
+				
+				aggregates.push( new Aggregate(clazz(this), property.length() > 0 ? property.@value : composedOfXML.parent().@name, getDefinitionByName(type.length() > 0 ? type.@value : composedOfXML.parent().@type) as Class, options) );
+			}
+			
+			return aggregates;
+		}
+		
+		/**
 		 * Returns a mapping of relationships for the given entity, where the key is the relationship's
 		 * property and the value is the relationship.
 		 * 
@@ -391,7 +391,7 @@ package mesh
 		 * @see #isInvalid()
 		 * @see #isValid()
 		 */
-		protected function runValidations():Array
+		public function runValidations():Array
 		{
 			var errors:Array = [];
 			for each (var validator:Validator in VALIDATORS.grab(clazz(this))) {
@@ -493,7 +493,7 @@ package mesh
 			var relationship:Relationship = relationshipsForEntity(this).grab(name.toString()) as Relationship;
 			if (relationship != null) {
 				if (!_properties.hasOwnProperty(relationship.property)) {
-					this[relationship.property] = relationship.createProxy(this);
+					_properties.changed(relationship.property, undefined, relationship.createProxy(this));
 				}
 			}
 			

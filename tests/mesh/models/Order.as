@@ -1,8 +1,9 @@
 package mesh.models
 {
 	import mesh.Entity;
-
-	public class Order extends Entity
+	
+	[ComposedOf(property="shippingAddress", type="mesh.models.Address", prefix="shippingAddress", mapping="street,city")]
+	public dynamic class Order extends Entity
 	{
 		public function Order()
 		{

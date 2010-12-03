@@ -4,9 +4,12 @@ package mesh
 	import flash.events.EventDispatcher;
 	import flash.events.IEventDispatcher;
 	import flash.utils.Proxy;
+	import flash.utils.setTimeout;
 	
 	import operations.EmptyOperation;
+	import operations.FinishedOperationEvent;
 	import operations.Operation;
+	import operations.ResultOperationEvent;
 
 	/**
 	 * An association proxy is a class that contains the references to the objects in
@@ -33,70 +36,62 @@ package mesh
 			_relationship = relationship;
 		}
 		
-		public function load():Operation
+		/**
+		 * Executes an operation that will load the target for this association.
+		 * 
+		 * @return An executing operation.
+		 */
+		final public function load():Operation
 		{
-			return new EmptyOperation();
+			var operation:Operation = isLoaded ? new EmptyOperation() : generateLoadOperation();
+			operation.addEventListener(ResultOperationEvent.RESULT, function(event:ResultOperationEvent):void
+			{
+				target = event.data;
+			});
+			operation.addEventListener(FinishedOperationEvent.FINISHED, function(event:FinishedOperationEvent):void
+			{
+				if (event.successful) {
+					loaded();
+				}
+			});
+			setTimeout(operation.execute, 50);
+			return operation;
 		}
 		
-		protected function loaded():void
+		/**
+		 * Generates an unexecuted operation that will be used to load the target of the
+		 * association.
+		 * 
+		 * @return An unexecuted operation.
+		 */
+		protected function generateLoadOperation():Operation
 		{
-			
+			return null;
 		}
 		
+		public function loaded():void
+		{
+			_isLoaded = true;
+		}
+		
+		/**
+		 * Changes the state of the target for this association back to what it was at the
+		 * last save.
+		 */
 		public function revert():void
 		{
 			
 		}
 		
 		/**
-		 * 
+		 * Saves the target association.
 		 *  
 		 * @param validate
 		 * @return 
 		 */
-		public function save(validate:Boolean = true):Operation
+		public function save(validate:Boolean = true, execute:Boolean = true):Operation
 		{
 			return new EmptyOperation();
-		}
-		
-		/**
-		 * @inheritDoc
-		 */
-		public function addEventListener(type:String, listener:Function, useCapture:Boolean = false, priority:int = 0, useWeakReference:Boolean = false):void
-		{
-			_dispatcher.addEventListener(type, listener, useCapture, priority, useWeakReference);
-		}
-		
-		/**
-		 * @inheritDoc
-		 */
-		public function dispatchEvent(event:Event):Boolean
-		{
-			return _dispatcher.dispatchEvent(event);
-		}
-		
-		/**
-		 * @inheritDoc
-		 */
-		public function hasEventListener(type:String):Boolean
-		{
-			return _dispatcher.hasEventListener(type);
-		}
-		
-		/**
-		 * @inheritDoc
-		 */
-		public function removeEventListener(type:String, listener:Function, useCapture:Boolean = false):void
-		{
-			_dispatcher.removeEventListener(type, listener, useCapture);
-		}
-		
-		/**
-		 * @inheritDoc
-		 */
-		public function willTrigger(type:String):Boolean
-		{
-			return _dispatcher.willTrigger(type);
 		}
 		
 		private var _isLoaded:Boolean;
@@ -138,6 +133,46 @@ package mesh
 		public function set target(value:Object):void
 		{
 			_target = value;
+		}
+		
+		/**
+		 * @inheritDoc
+		 */
+		public function addEventListener(type:String, listener:Function, useCapture:Boolean = false, priority:int = 0, useWeakReference:Boolean = false):void
+		{
+			_dispatcher.addEventListener(type, listener, useCapture, priority, useWeakReference);
+		}
+		
+		/**
+		 * @inheritDoc
+		 */
+		public function dispatchEvent(event:Event):Boolean
+		{
+			return _dispatcher.dispatchEvent(event);
+		}
+		
+		/**
+		 * @inheritDoc
+		 */
+		public function hasEventListener(type:String):Boolean
+		{
+			return _dispatcher.hasEventListener(type);
+		}
+		
+		/**
+		 * @inheritDoc
+		 */
+		public function removeEventListener(type:String, listener:Function, useCapture:Boolean = false):void
+		{
+			_dispatcher.removeEventListener(type, listener, useCapture);
+		}
+		
+		/**
+		 * @inheritDoc
+		 */
+		public function willTrigger(type:String):Boolean
+		{
+			return _dispatcher.willTrigger(type);
 		}
 	}
 }
