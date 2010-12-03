@@ -1,9 +1,7 @@
 package mesh
 {
 	import collections.ArraySet;
-	import collections.HashSet;
 	
-	import mx.collections.ArrayList;
 	import mx.collections.IList;
 	import mx.events.CollectionEvent;
 	import mx.events.CollectionEventKind;
@@ -13,7 +11,9 @@ package mesh
 
 	public class AssociationCollection extends AssociationProxy implements IList
 	{
-		private var _entities:ArrayList = new ArrayList();
+		private var _entities:mx.collections.ArrayList = new mx.collections.ArrayList();
+		private var _mirroredEntities:collections.ArrayList = new collections.ArrayList();
+		private var _originalEntities:collections.ArrayList;
 		private var _removedEntities:ArraySet = new ArraySet();
 		
 		public function AssociationCollection(source:Entity, relationship:Relationship)
@@ -53,14 +53,23 @@ package mesh
 		 */
 		public function getItemIndex(item:Object):int
 		{
-			return _entities.getItemIndex(item);
+			return _mirroredEntities.indexOf(item);
 		}
 		
 		private function handleEntitiesCollectionChange(event:CollectionEvent):void
 		{
 			switch (event.kind) {
+				case CollectionEventKind.ADD:
+					_removedEntities.removeAll(event.items);
+					_mirroredEntities.addAllAt(event.items, event.location);
+					break;
 				case CollectionEventKind.REMOVE:
 					_removedEntities.addAll(event.items);
+					_mirroredEntities.removeAll(event.items);
+					break;
+				case CollectionEventKind.RESET:
+					_removedEntities.addAll(_mirroredEntities);
+					_mirroredEntities.clear();
 					break;
 			}
 			
@@ -73,6 +82,11 @@ package mesh
 		public function itemUpdated(item:Object, property:Object = null, oldValue:Object = null, newValue:Object = null):void
 		{
 			_entities.itemUpdated(item, property, oldValue, newValue);
+		}
+		
+		override protected function loaded():void
+		{
+			_originalEntities = new collections.ArrayList(_entities.toArray());
 		}
 		
 		/**
@@ -96,19 +110,21 @@ package mesh
 		 */
 		override public function save(validate:Boolean = true):Operation
 		{
-			var saveOperation:Operation = new EmptyOperation();
+			var operation:Operation = new EmptyOperation();
+			
 			for each (var entity:Entity in _entities.toArray()) {
 				if (entity.isDirty) {
-					saveOperation = entity.save().during(saveOperation);
+					operation = entity.save(validate).during(operation);
 				}
 			}
 			
-			var removeOperation:Operation = new EmptyOperation();
 			for each (var removedEntity:Entity in _removedEntities) {
-				removeOperation = removedEntity.destroy().during(removeOperation);
+				if (removedEntity.isPersisted) {
+					operation = removedEntity.destroy().during(operation);
+				}
 			}
 			
-			return saveOperation.then(removeOperation);
+			return operation;
 		}
 		
 		/**

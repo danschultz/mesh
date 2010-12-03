@@ -38,6 +38,16 @@ package mesh
 			return new EmptyOperation();
 		}
 		
+		protected function loaded():void
+		{
+			
+		}
+		
+		public function revert():void
+		{
+			
+		}
+		
 		/**
 		 * 
 		 *  
