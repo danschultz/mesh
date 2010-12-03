@@ -1,7 +1,6 @@
 package mesh
 {
 	import collections.HashMap;
-	import collections.Set;
 	
 	import flash.events.Event;
 	import flash.events.EventDispatcher;
@@ -10,13 +9,15 @@ package mesh
 	import flash.utils.describeType;
 	import flash.utils.flash_proxy;
 	import flash.utils.getDefinitionByName;
+	import flash.utils.setTimeout;
 	
 	import inflections.pluralize;
+	
+	import mesh.adaptors.ServiceAdaptor;
 	
 	import mx.events.PropertyChangeEvent;
 	import mx.utils.StringUtil;
 	
-	import operations.EmptyOperation;
 	import operations.FinishedOperationEvent;
 	import operations.Operation;
 	
@@ -33,10 +34,12 @@ package mesh
 	 */
 	public dynamic class Entity extends Proxy implements IEventDispatcher
 	{
-		private static const DESCRIPTIONS:HashMap = new HashMap();
-		private static const VALIDATORS:HashMap = new HashMap();
 		private static const AGGREGATES:HashMap = new HashMap();
+		private static const ADAPTORS:HashMap = new HashMap();
 		private static const RELATIONSHIPS:HashMap = new HashMap();
+		private static const VALIDATORS:HashMap = new HashMap();
+		
+		private static const EXECUTION_DELAY:int = 50;
 		
 		private var _dispatcher:EventDispatcher;
 		
@@ -73,7 +76,44 @@ package mesh
 				VALIDATORS.put(entityClass, validators());
 			}
 			
+			if (!ADAPTORS.containsKey(entityClass)) {
+				ADAPTORS.put(entityClass, adaptor());
+			}
+			
 			addEventListener(PropertyChangeEvent.PROPERTY_CHANGE, handlePropertyChange);
+		}
+		
+		/**
+		 * Returns the mapped instance of the service adaptor for the given entity.
+		 * 
+		 * @param entity The entity to get the service adaptor for.
+		 * @return A service adaptor.
+		 */
+		public static function adaptorForEntity(entity:Entity):ServiceAdaptor
+		{
+			return ADAPTORS.grab(clazz(entity)) as ServiceAdaptor;
+		}
+		
+		/**
+		 * Called when the entity is initialized for the first time to generate the service adaptor 
+		 * for the these types of entities. By default, this method will return a service adaptor 
+		 * that was defined in the entity's metadata. If a service adaptor is difficult to express
+		 * in metadata, sub-classes may choose to override this method and construct their own.
+		 * 
+		 * @return A service adaptor.
+		 */
+		protected function adaptor():ServiceAdaptor
+		{
+			for each (var adaptorXML:XML in describeType(this)..metadata.(@name == "ServiceAdaptor")) {
+				var options:Object = {};
+				
+				for each (var argXML:XML in adaptorXML..arg) {
+					options[argXML.@key] = argXML.@value.toString();
+				}
+				
+				return ServiceAdaptor( newInstance(getDefinitionByName(adaptorXML.arg.(@name == "type").@value) as Class, options) );
+			}
+			return null;
 		}
 		
 		/**
@@ -125,7 +165,27 @@ package mesh
 		 */
 		public function equals(entity:Entity):Boolean
 		{
-			return entity != null && id.equals(entity.id);
+			return entity != null && 
+				   id === entity.id && 
+				   clazz(this) == clazz(entity);
+		}
+		
+		/**
+		 * Removes the entity.
+		 * 
+		 * @return An executing operation.
+		 */
+		public function destroy():Operation
+		{
+			var operation:Operation = adaptorForEntity(this).destroy(this);
+			operation.addEventListener(FinishedOperationEvent.FINISHED, function(event:FinishedOperationEvent):void
+			{
+				if (event.successful) {
+					_isDestroyed = true;
+				}
+			});
+			setTimeout(operation.execute, EXECUTION_DELAY);
+			return operation;
 		}
 		
 		private function handlePropertyChange(event:PropertyChangeEvent):void
@@ -141,7 +201,7 @@ package mesh
 		 */
 		public function hashCode():Object
 		{
-			return id.guid;
+			return id;
 		}
 		
 		/**
@@ -169,7 +229,7 @@ package mesh
 		 */
 		final public function isValid():Boolean
 		{
-			return validate().length == 0;
+			return runValidations().length == 0;
 		}
 		
 		/**
@@ -194,30 +254,35 @@ package mesh
 		}
 		
 		/**
-		 * Removes the entity.
+		 * Saves the entity by executing either a create or update operation on the entity's 
+		 * service.
 		 * 
-		 * @return An executing operation.
-		 */
-		public function remove():Operation
-		{
-			return new EmptyOperation();
-		}
-		
-		/**
-		 * Saves the entity.
+		 * <p>
+		 * By default, save will always run the entity's validations. Clients can bypass this
+		 * functionality by passing <code>false</code>. If any validation fails, save will 
+		 * return <code>false</code>. Otherwise, an executed <code>Operation</code> is returned.
+		 * </p>
 		 * 
-		 * @return An executing operation.
+		 * @param validate <code>false</code> if validations should be ignored.
+		 * @return An executing operation, or <code>false</code> if a validation fails.
 		 */
-		public function save(validate:Boolean = true):Operation
+		public function save(validate:Boolean = true):Object
 		{
-			var finishedFunc:Function = function(event:FinishedOperationEvent):void
-			{
-				saved();
-			};
+			if (validate) {
+				var errors:Array = runValidations();
+				if (errors.length > 0) {
+					return false;
+				}
+			}
 			
-			var operation:Operation = new EmptyOperation();
-			operation.addEventListener(FinishedOperationEvent.FINISHED, finishedFunc);
-			operation.execute();
+			var operation:Operation = isNew ? adaptorForEntity(this).create(this) : adaptorForEntity(this).update(this);
+			operation.addEventListener(FinishedOperationEvent.FINISHED, function(event:FinishedOperationEvent):void
+			{
+				if (event.successful) {
+					saved();
+				}
+			});
+			setTimeout(operation.execute, EXECUTION_DELAY);
 			
 			return operation;
 		}
@@ -324,7 +389,7 @@ package mesh
 		 * @see #isInvalid()
 		 * @see #isValid()
 		 */
-		public function validate():Array
+		protected function runValidations():Array
 		{
 			var errors:Array = [];
 			for each (var validator:Validator in VALIDATORS.grab(clazz(this))) {
@@ -408,13 +473,26 @@ package mesh
 			return _dispatcher.willTrigger(type);
 		}
 		
-		private var _id:EntityID = new EntityID();
+		private var _id:Object;
 		/**
 		 * An object that represents the ID for this entity.
 		 */
-		public function get id():EntityID
+		public function get id():Object
 		{
 			return _id;
+		}
+		public function set id(value:Object):void
+		{
+			_id = value;
+		}
+		
+		private var _isDestroyed:Boolean;
+		/**
+		 * <code>true</code> if this record has been destroyed.
+		 */
+		public function get isDestroyed():Boolean
+		{
+			return _isDestroyed;
 		}
 		
 		/**
@@ -422,7 +500,17 @@ package mesh
 		 */
 		public function get isDirty():Boolean
 		{
-			return _properties.hasChanges;
+			return isNew || _properties.hasChanges;
+		}
+		
+		/**
+		 * <code>true</code> if this entity is a new record that needs to be persisted. By default, 
+		 * an entity is considered new if its ID is equal to 0. Sub-classes may override this implementation
+		 * and provide their own.
+		 */
+		public function get isNew():Boolean
+		{
+			return id == 0;
 		}
 		
 		private var _properties:Properties = new Properties(this);
@@ -431,6 +519,13 @@ package mesh
 		 */
 		override flash_proxy function getProperty(name:*):*
 		{
+			var relationship:Relationship = relationshipsForEntity(this).grab(name.toString()) as Relationship;
+			if (relationship != null) {
+				if (!_properties.hasOwnProperty(relationship.property)) {
+					this[relationship.property] = relationship.createProxy(this);
+				}
+			}
+			
 			if (_properties.hasOwnProperty(name)) {
 				return _properties[name];
 			}

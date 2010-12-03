@@ -16,5 +16,13 @@ package mesh
 		{
 			super(owner, property, target, options);
 		}
+		
+		/**
+		 * @inheritDoc
+		 */
+		override public function createProxy(entity:Entity):AssociationProxy
+		{
+			return new AssociationProxy(entity, this);
+		}
 	}
 }

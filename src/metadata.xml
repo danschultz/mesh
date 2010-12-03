@@ -32,6 +32,7 @@
 		<context name="variable"/>
 		
 		<attribute name="type" type="Class" hint="classes" hintType="mesh.Entity" required="true"/>
+		<attribute name="lazy" type="Boolean" defaultValue="true" hint="boolean"/>
 	</metadata>
 	
 	<!-- 
@@ -47,6 +48,7 @@
 		<context name="variable"/>
 		
 		<attribute name="type" type="Class" hint="classes" hintType="mesh.Entity" required="true"/>
+		<attribute name="lazy" type="Boolean" defaultValue="true" hint="boolean"/>
 	</metadata>
 	
 	<!-- 

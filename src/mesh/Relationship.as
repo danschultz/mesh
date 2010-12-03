@@ -1,5 +1,7 @@
 package mesh
 {
+	import flash.errors.IllegalOperationError;
+
 	/**
 	 * A relationship represents an association between two entities, where the <code>owner</code>
 	 * is the host of the <code>target</code>. Take an example where you have an association
@@ -24,6 +26,16 @@ package mesh
 			_property = property;
 			_target = target;
 			_options = options;
+		}
+		
+		/**
+		 * Generates a new association proxy for this relationship.
+		 * 
+		 * @return A new association proxy.
+		 */
+		public function createProxy(entity:Entity):AssociationProxy
+		{
+			throw new IllegalOperationError("Relationship.createProxy() must be overridden.");
 		}
 		
 		/**
