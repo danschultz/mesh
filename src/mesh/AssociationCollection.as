@@ -84,11 +84,6 @@ package mesh
 			target.itemUpdated(item, property, oldValue, newValue);
 		}
 		
-		override public function loaded():void
-		{
-			_originalEntities = new collections.ArrayList(toArray());
-		}
-		
 		/**
 		 * @inheritDoc
 		 */
@@ -103,6 +98,11 @@ package mesh
 		public function removeItemAt(index:int):Object
 		{
 			return target.removeItemAt(index);
+		}
+		
+		override public function loaded():void
+		{
+			_originalEntities = new collections.ArrayList(toArray());
 		}
 		
 		/**

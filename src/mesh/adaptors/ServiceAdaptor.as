@@ -26,6 +26,17 @@ package mesh.adaptors
 		}
 		
 		/**
+		 * Generates an operation to retrieve the entities belonging to a parent entity.
+		 * 
+		 * @param entity The parent entity to query with.
+		 * @return An unexecuted operation.
+		 */
+		public function belongingTo(entity:Entity):Operation
+		{
+			return new EmptyOperation();
+		}
+		
+		/**
 		 * Generates an operation to create an entity in the backend.
 		 * 
 		 * @param entity The entity to create.

@@ -100,18 +100,24 @@ package mesh
 		/**
 		 * Removes the entity.
 		 * 
+		 * @param execute <code>false</code> if the operation should be returned without being
+		 * 	executed.
 		 * @return An executing operation.
 		 */
 		public function destroy(execute:Boolean = true):Operation
 		{
-			var operation:Operation = adaptorForEntity(this).destroy(this);
+			var operation:Operation = adaptorFor(this).destroy(this);
 			operation.addEventListener(FinishedOperationEvent.FINISHED, function(event:FinishedOperationEvent):void
 			{
 				if (event.successful) {
 					_isDestroyed = true;
 				}
 			});
-			setTimeout(operation.execute, EXECUTION_DELAY);
+			
+			if (execute) {
+				setTimeout(operation.execute, EXECUTION_DELAY);
+			}
+			
 			return operation;
 		}
 		
@@ -179,7 +185,11 @@ package mesh
 		{
 			_properties.revert();
 			
-			// need to revert associations.
+			for each (var relationship:Relationship in relationshipsForEntity(this)) {
+				if (hasOwnProperty(relationship.property)) {
+					this[relationship.property].revert();
+				}
+			}
 		}
 		
 		/**
@@ -193,9 +203,11 @@ package mesh
 		 * </p>
 		 * 
 		 * @param validate <code>false</code> if validations should be ignored.
+		 * @param execute <code>false</code> if the operation should be returned without being
+		 * 	executed.
 		 * @return An executing operation, or <code>false</code> if a validation fails.
 		 */
-		public function save(validate:Boolean = true):Object
+		public function save(validate:Boolean = true, execute:Boolean = true):Object
 		{
 			if (validate) {
 				var errors:Array = runValidations();
@@ -204,14 +216,17 @@ package mesh
 				}
 			}
 			
-			var operation:Operation = isNew ? adaptorForEntity(this).create(this) : adaptorForEntity(this).update(this);
+			var operation:Operation = isNew ? adaptorFor(this).create(this) : adaptorFor(this).update(this);
 			operation.addEventListener(FinishedOperationEvent.FINISHED, function(event:FinishedOperationEvent):void
 			{
 				if (event.successful) {
 					saved();
 				}
 			});
-			setTimeout(operation.execute, EXECUTION_DELAY);
+			
+			if (execute) {
+				setTimeout(operation.execute, EXECUTION_DELAY);
+			}
 			
 			return operation;
 		}
@@ -230,9 +245,12 @@ package mesh
 		 * @param entity The entity to get the service adaptor for.
 		 * @return A service adaptor.
 		 */
-		public static function adaptorForEntity(entity:Entity):ServiceAdaptor
+		public static function adaptorFor(entity:Object):ServiceAdaptor
 		{
-			return ADAPTORS.grab(clazz(entity)) as ServiceAdaptor;
+			if (!(entity is Class)) {
+				entity = clazz(entity);
+			}
+			return ADAPTORS.grab(entity) as ServiceAdaptor;
 		}
 		
 		/**
