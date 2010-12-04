@@ -8,6 +8,8 @@ package mesh.models
 	
 	[HasMany(type="mesh.models.Order", property="orders")]
 	[HasMany(type="mesh.models.Car")]
+	
+	[ServiceAdaptor(type="mesh.adaptors.InMemoryAdaptor")]
 	public dynamic class Customer extends Entity
 	{
 		public function Customer()
