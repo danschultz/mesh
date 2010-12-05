@@ -9,6 +9,6 @@ package inflections
 	 */
 	public function underscore(str:String):String
 	{
-		return camelize(str).replace(/([A-Z]+)([A-Z][a-z])/g, "$1_$2").replace(/([a-z\d])([A-Z])/, "$1_$2").replace("-", "_").toLowerCase();
+		return camelize(str.replace(/-/g, "_")).replace(/([A-Z]+)([A-Z][a-z])/g, "$1_$2").replace(/([a-z\d])([A-Z])/g, "$1_$2").toLowerCase();
 	}
 }

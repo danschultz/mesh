@@ -9,14 +9,12 @@ package inflections
 	 * 	is uppercased.
 	 * @return A camelized string.
 	 */
-	public function camelize(str:String, uppercaseFirstLetter:Boolean = false):String
+	public function camelize(str:String, uppercaseFirstLetter:Boolean = true):String
 	{
-		if (uppercaseFirstLetter) {
-			return str.replace(/(?:^|_|\s)+(.)/g, function():String
-			{
-				return arguments[1].toUpperCase();
-			});
-		}
-		return str.substr(0, 1).toLowerCase() + camelize(str.substr(1), false);
+		str = str.replace(/(?:_|\s)+(.)/g, function():String
+		{
+			return arguments[1].toUpperCase();
+		});
+		return uppercaseFirstLetter ? str.substr(0, 1).toUpperCase() + str.substr(1) : str;
 	}
 }
