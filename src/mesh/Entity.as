@@ -453,15 +453,15 @@ package mesh
 			return validators;
 		}
 		
-		private var _id:Object;
+		private var _id:*;
 		/**
 		 * An object that represents the ID for this entity.
 		 */
-		public function get id():Object
+		public function get id():*
 		{
 			return _id;
 		}
-		public function set id(value:Object):void
+		public function set id(value:*):void
 		{
 			_id = value;
 		}

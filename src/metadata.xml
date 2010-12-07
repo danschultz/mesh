@@ -52,6 +52,16 @@
 	</metadata>
 	
 	<!-- 
+	[ServiceAdaptor(type="mesh.adaptors.ServiceAdaptor")]
+	-->
+	<metadata name="ServiceAdaptor" description="Add a one-to-many relationship to an entity.">
+		
+		<context name="class"/>
+		
+		<attribute name="type" type="Class" hint="classes" hintType="mesh.adaptors.ServiceAdaptor" required="true"/>
+	</metadata>
+	
+	<!-- 
 	[Validate(properties="addressStreet,addressCity", validator="validations.LengthValidator", minimum="1")]
 	-->
 	<metadata name="Validate" description="Add a validation to an entity.">
