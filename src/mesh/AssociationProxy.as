@@ -95,6 +95,14 @@ package mesh
 			return new EmptyOperation();
 		}
 		
+		/**
+		 * @copy Entity#isDirty
+		 */
+		public function get isDirty():Boolean
+		{
+			return target != null && target.isDirty;
+		}
+		
 		private var _isLoaded:Boolean;
 		/**
 		 * <code>true</code> if the association objects for this relationship have been
@@ -141,7 +149,7 @@ package mesh
 		 */
 		override flash_proxy function callProperty(name:*, ...parameters):*
 		{
-			if (isLoaded) {
+			if (target != null) {
 				return target[name].apply(null, parameters);
 			}
 			return undefined;
@@ -152,7 +160,7 @@ package mesh
 		 */
 		override flash_proxy function getProperty(name:*):*
 		{
-			if (isLoaded) {
+			if (target != null) {
 				return target[name];
 			}
 			return undefined;
@@ -171,7 +179,7 @@ package mesh
 		 */
 		override flash_proxy function setProperty(name:*, value:*):void
 		{
-			if (isLoaded) {
+			if (target != null) {
 				target[name] = value;
 			}
 		}

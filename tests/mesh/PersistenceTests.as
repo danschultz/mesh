@@ -4,10 +4,12 @@ package mesh
 	import mesh.models.Customer;
 	import mesh.models.Name;
 	
+	import operations.FaultOperationEvent;
 	import operations.FinishedOperationEvent;
 	import operations.Operation;
 	
 	import org.flexunit.assertThat;
+	import org.flexunit.asserts.fail;
 	import org.flexunit.async.Async;
 	import org.hamcrest.object.equalTo;
 
@@ -33,8 +35,12 @@ package mesh
 			customer.address = new Address("2306 Zanker Rd", "San Jose");
 			customer.age = 21;
 			
-			var operation:Operation = customer.save() as Operation;
+			var operation:Operation = customer.save();
 			operation.addEventListener(FinishedOperationEvent.FINISHED, Async.asyncHandler(this, assertion, 100));
+			operation.addEventListener(FaultOperationEvent.FAULT, function(event:FaultOperationEvent):void
+			{
+				fail(event.summary);
+			});
 		}
 		
 		[Test(async)]
@@ -52,7 +58,7 @@ package mesh
 			
 			assertion = Async.asyncHandler(this, assertion, 250);
 			
-			var operation:Operation = customer.save() as Operation;
+			var operation:Operation = customer.save();
 			operation.addEventListener(FinishedOperationEvent.FINISHED, function(event:FinishedOperationEvent):void
 			{
 				customer.fullName = new Name("Jane", "Doe");
@@ -61,6 +67,16 @@ package mesh
 				var operation:Operation = customer.save() as Operation;
 				operation.addEventListener(FinishedOperationEvent.FINISHED, assertion);
 			});
+			operation.addEventListener(FaultOperationEvent.FAULT, function(event:FaultOperationEvent):void
+			{
+				fail(event.summary);
+			});
+		}
+		
+		[Test(async)]
+		public function testSaveRelationships():void
+		{
+			
 		}
 	}
 }

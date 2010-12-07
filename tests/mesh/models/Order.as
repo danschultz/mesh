@@ -6,9 +6,11 @@ package mesh.models
 	[ServiceAdaptor(type="mesh.adaptors.InMemoryAdaptor")]
 	public dynamic class Order extends Entity
 	{
+		[Bindable] public var total:Number;
+		
 		public function Order()
 		{
-			
+			super();
 		}
 	}
 }

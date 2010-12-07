@@ -22,6 +22,7 @@ package mesh
 		public function AssociationCollection(source:Entity, relationship:Relationship)
 		{
 			super(source, relationship);
+			target = [];
 		}
 		
 		/**
@@ -168,6 +169,17 @@ package mesh
 		/**
 		 * @inheritDoc
 		 */
+		override public function get isDirty():Boolean
+		{
+			return toArray().some(function(entity:Entity, index:int, array:Array):Boolean
+			{
+				return entity.isDirty;
+			});
+		}
+		
+		/**
+		 * @inheritDoc
+		 */
 		override public function get target():Object
 		{
 			return super.target;
@@ -179,7 +191,7 @@ package mesh
 					target.removeEventListener(CollectionEvent.COLLECTION_CHANGE, handleEntitiesCollectionChange);
 				}
 				
-				if (value.hasOwnProperty("toArray")) {
+				if (value != null && value.hasOwnProperty("toArray")) {
 					value = value.toArray();
 				}
 				

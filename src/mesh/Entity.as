@@ -189,9 +189,9 @@ package mesh
 		{
 			_properties.revert();
 			
-			for each (var relationship:Relationship in relationshipsForEntity(this)) {
-				if (hasOwnProperty(relationship.property)) {
-					this[relationship.property].revert();
+			for each (var property:String in relationshipsForEntity(this).keys()) {
+				if (hasOwnProperty(property) && this[property] != null) {
+					this[property].revert();
 				}
 			}
 		}
@@ -223,7 +223,10 @@ package mesh
 			
 			var relationshipOperations:Vector.<Operation> = new Vector.<Operation>();
 			for each (var property:String in relationshipsForEntity(this).keys()) {
-				relationshipOperations.push(AssociationProxy( this[property] ).save(true, false));
+				var association:AssociationProxy = this[property];
+				if (association != null) {
+					relationshipOperations.push(association.save(true, false));
+				}
 			}
 			operation = operation.then(new ParallelOperation(relationshipOperations));
 			
@@ -553,7 +556,7 @@ package mesh
 		 * @see #isDirty
 		 * @see #hasDirtyAssociations
 		 */
-		protected function get hasPropertyChanges():Boolean
+		public function get hasPropertyChanges():Boolean
 		{
 			return isNew || _properties.hasChanges;
 		}
@@ -564,11 +567,11 @@ package mesh
 		 * @see #isDirty
 		 * @see #hasPropertyChanges
 		 */
-		protected function get hasDirtyAssociations():Boolean
+		public function get hasDirtyAssociations():Boolean
 		{
 			// more in depth check on the entity's relationships.
 			for each (var property:String in relationshipsForEntity(this).keys()) {
-				if (AssociationProxy( this[property] ).isDirty) {
+				if (this[property] != null && AssociationProxy( this[property] ).isDirty) {
 					return true;
 				}
 			}
@@ -605,6 +608,7 @@ package mesh
 		}
 		
 		private var _properties:Properties = new Properties(this);
+		private var _relationships:Properties = new Properties(this);
 		/**
 		 * @private
 		 */
@@ -612,9 +616,13 @@ package mesh
 		{
 			var relationship:Relationship = relationshipsForEntity(this).grab(name.toString()) as Relationship;
 			if (relationship != null) {
-				if (!_properties.hasOwnProperty(relationship.property)) {
-					_properties.changed(relationship.property, undefined, relationship.createProxy(this));
+				if (!_relationships.hasOwnProperty(relationship.property)) {
+					_relationships.changed(relationship.property, undefined, relationship.createProxy(this));
 				}
+			}
+			
+			if (_relationships.hasOwnProperty(name)) {
+				return _relationships[name];
 			}
 			
 			if (_properties.hasOwnProperty(name)) {
@@ -646,6 +654,11 @@ package mesh
 		 */
 		override flash_proxy function setProperty(name:*, value:*):void
 		{
+			var relationship:Relationship = relationshipsForEntity(this).grab(name.toString()) as Relationship;
+			if (relationship != null) {
+				return;
+			}
+			
 			_properties[name] = value;
 			
 			var aggregate:Aggregate = aggregatesForEntity(this).grab(name.toString()) as Aggregate;

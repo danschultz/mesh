@@ -3,8 +3,10 @@ package mesh
 	import mesh.models.Address;
 	import mesh.models.Customer;
 	import mesh.models.Name;
+	import mesh.models.Order;
 	
 	import org.flexunit.assertThat;
+	import org.flexunit.assumeThat;
 	import org.hamcrest.object.equalTo;
 	import org.hamcrest.object.notNullValue;
 
@@ -16,9 +18,15 @@ package mesh
 		public function setup():void
 		{
 			_customer = new Customer();
+			_customer.id = 1;
 			_customer.fullName = new Name("John", "Doe");
 			_customer.address = new Address("2306 Zanker Rd", "San Jose");
 			_customer.age = 21;
+			
+			var order:Order = new Order();
+			order.id = 1;
+			_customer.orders.addItem(order);
+			
 			_customer.saved();
 		}
 		
@@ -68,6 +76,8 @@ package mesh
 		public function testIsDirtyWhenPropertyChanges():void
 		{
 			_customer.address = new Address("1 Infinite Loop", "Cupertino");
+			assertThat(_customer.hasDirtyAssociations, equalTo(false));
+			assertThat(_customer.hasPropertyChanges, equalTo(true));
 			assertThat(_customer.isDirty, equalTo(true));
 		}
 		
@@ -79,7 +89,35 @@ package mesh
 			_customer.address = new Address("1 Infinite Loop", "Cupertino");
 			
 			_customer.revert();
+			assertThat(_customer.hasDirtyAssociations, equalTo(false));
+			assertThat(_customer.hasPropertyChanges, equalTo(false));
 			assertThat(_customer.isDirty, equalTo(false));
+		}
+		
+		[Test]
+		public function testIsNotDirtyWhenAssociationsReverted():void
+		{
+			_customer.orders.getItemAt(0).total = 10;
+			_customer.revert();
+			assertThat(_customer.isDirty, equalTo(false));
+		}
+		
+		[Test]
+		public function testDoesNotHaveDirtyAssociations():void
+		{
+			var order:Order = _customer.orders.getItemAt(0);
+			order.total = 10;
+			order.saved();
+			assertThat(_customer.hasDirtyAssociations, equalTo(false));
+		}
+		
+		[Test]
+		public function testIsDirtyWhenAssociationIsDirty():void
+		{
+			_customer.orders.getItemAt(0).total = 10;
+			assertThat(_customer.hasPropertyChanges, equalTo(false));
+			assertThat(_customer.hasDirtyAssociations, equalTo(true));
+			assertThat(_customer.isDirty, equalTo(true));
 		}
 	}
 }
