@@ -3,19 +3,37 @@ package mesh.adaptors
 	import collections.HashMap;
 	
 	import mesh.Entity;
+	import mesh.Relationship;
 	
 	import operations.FinishedOperationEvent;
 	import operations.MethodOperation;
 	import operations.Operation;
+	import operations.ResultOperationEvent;
 
 	public class InMemoryAdaptor extends ServiceAdaptor
 	{
 		private var _entities:HashMap = new HashMap();
 		private var _counter:int;
 		
-		public function InMemoryAdaptor(options:Object)
+		/**
+		 * @copy ServiceAdaptor#ServiceAdaptor()
+		 */
+		public function InMemoryAdaptor(entity:Class, options:Object)
 		{
-			super(options);
+			super(entity, options);
+		}
+		
+		/**
+		 * @inheritDoc
+		 */
+		override public function belongingTo(entity:Entity, relationship:Relationship):Operation
+		{
+			var operation:Operation = Entity.adaptorFor(entity).retrieve({id:entity.id});
+			operation.addEventListener(ResultOperationEvent.RESULT, function(event:ResultOperationEvent):void
+			{
+				event.data = event.data[relationship.property];
+			});
+			return operation;
 		}
 		
 		/**

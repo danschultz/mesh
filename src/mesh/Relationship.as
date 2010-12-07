@@ -60,6 +60,21 @@ package mesh
 			return property;
 		}
 		
+		/**
+		 * <code>true</code> if this relationship is lazy, and its data is not loaded when
+		 * the owner is loaded.
+		 */
+		public function get isLazy():Boolean
+		{
+			if (options.hasOwnProperty("lazy")) {
+				return options.lazy;
+			}
+			if (options.hasOwnProperty("isLazy")) {
+				return options.isLazy;
+			}
+			return false;
+		}
+		
 		private var _options:Object;
 		/**
 		 * A set of options that a client has configured for this relationship.

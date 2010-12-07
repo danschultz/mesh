@@ -66,7 +66,7 @@ package mesh
 		 */
 		protected function generateLoadOperation():Operation
 		{
-			return Entity.adaptorFor(relationship.target).belongingTo(owner);
+			return Entity.adaptorFor(relationship.target).belongingTo(owner, relationship);
 		}
 		
 		public function loaded():void

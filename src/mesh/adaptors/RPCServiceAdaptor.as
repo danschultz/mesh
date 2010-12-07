@@ -15,11 +15,12 @@ package mesh.adaptors
 		 * Constructor.
 		 * 
 		 * @param service The service for this adaptor.
+		 * @param entity The entity who owns this service adaptor.
 		 * @param options An options hash to configure the adaptor.
 		 */
-		public function RPCServiceAdaptor(service:AbstractService, options:Object)
+		public function RPCServiceAdaptor(service:AbstractService, entity:Class, options:Object)
 		{
-			super(options);
+			super(entity, options);
 			_service = service;
 		}
 		

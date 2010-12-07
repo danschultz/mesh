@@ -38,7 +38,7 @@ package operations
 		 */
 		override protected function request():void
 		{
-			super.executeRequest();
+			super.request();
 			
 			var token:AsyncToken = _service.getOperation(_name).send.apply(null, _args);
 			token.addResponder(new AsyncResponder(handleAsyncTokenResult, handleAsyncTokenFault, token));

@@ -1,11 +1,13 @@
 package mesh.adaptors
 {
+	import flash.errors.IllegalOperationError;
+	
 	import mesh.Entity;
+	import mesh.Relationship;
 	
-	import mx.rpc.AbstractService;
-	
-	import operations.EmptyOperation;
 	import operations.Operation;
+	
+	import reflection.className;
 	
 	/**
 	 * A service adaptor represents the required strategy for an entity to be persisted and
@@ -18,10 +20,12 @@ package mesh.adaptors
 		/**
 		 * Constructor.
 		 * 
+		 * @param entity The entity for this service adaptor.
 		 * @param options A set of options to configure this service adaptor.
 		 */
-		public function ServiceAdaptor(options:Object)
+		public function ServiceAdaptor(entity:Class, options:Object)
 		{
+			_entity = entity;
 			_options = options;
 		}
 		
@@ -31,9 +35,9 @@ package mesh.adaptors
 		 * @param entity The parent entity to query with.
 		 * @return An unexecuted operation.
 		 */
-		public function belongingTo(entity:Entity):Operation
+		public function belongingTo(entity:Entity, relationship:Relationship):Operation
 		{
-			return new EmptyOperation();
+			throw new IllegalOperationError(className(this) + " does not support retrieval of relationship '" + relationship + "'");
 		}
 		
 		/**
@@ -44,7 +48,7 @@ package mesh.adaptors
 		 */
 		public function create(entity:Entity):Operation
 		{
-			return new EmptyOperation();
+			throw new IllegalOperationError(className(this) + " does not support creation of entities");
 		}
 		
 		/**
@@ -55,7 +59,7 @@ package mesh.adaptors
 		 */
 		public function destroy(entity:Entity):Operation
 		{
-			return new EmptyOperation();
+			throw new IllegalOperationError(className(this) + " does not support destruction of entities");
 		}
 		
 		/**
@@ -66,7 +70,7 @@ package mesh.adaptors
 		 */
 		public function retrieve(options:Object):Operation
 		{
-			return new EmptyOperation();
+			throw new IllegalOperationError(className(this) + " does not support retrieval of entities");
 		}
 		
 		/**
@@ -77,7 +81,16 @@ package mesh.adaptors
 		 */
 		public function update(entity:Entity):Operation
 		{
-			return new EmptyOperation();
+			throw new IllegalOperationError(className(this) + " does not support updating of entities");
+		}
+		
+		private var _entity:Class;
+		/**
+		 * The entity that this service adaptor belongs to.
+		 */
+		protected function get entity():Class
+		{
+			return _entity;
 		}
 		
 		private var _options:Object;

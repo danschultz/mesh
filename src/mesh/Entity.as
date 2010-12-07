@@ -1,6 +1,9 @@
 package mesh
 {
 	import collections.HashMap;
+	import collections.HashSet;
+	import collections.ISet;
+	import collections.Set;
 	
 	import flash.events.Event;
 	import flash.events.EventDispatcher;
@@ -38,6 +41,8 @@ package mesh
 		private static const ADAPTORS:HashMap = new HashMap();
 		private static const RELATIONSHIPS:HashMap = new HashMap();
 		private static const VALIDATORS:HashMap = new HashMap();
+		private static const TRANSFER_OBJECTS:HashMap = new HashMap();
+		private static const PROPERTIES:HashMap = new HashMap();
 		
 		private static const EXECUTION_DELAY:int = 50;
 		
@@ -74,10 +79,6 @@ package mesh
 			// create and cache the validators.
 			if (!VALIDATORS.containsKey(entityClass)) {
 				VALIDATORS.put(entityClass, validators());
-			}
-			
-			if (!ADAPTORS.containsKey(entityClass)) {
-				ADAPTORS.put(entityClass, adaptor());
 			}
 			
 			addEventListener(PropertyChangeEvent.PROPERTY_CHANGE, handlePropertyChange);
@@ -239,6 +240,16 @@ package mesh
 			_properties.clear();
 		}
 		
+		public function translateFrom(object:Object):void
+		{
+			
+		}
+		
+		public function translateTo():Object
+		{
+			return null;
+		}
+		
 		/**
 		 * Returns the mapped instance of the service adaptor for the given entity.
 		 * 
@@ -250,6 +261,12 @@ package mesh
 			if (!(entity is Class)) {
 				entity = clazz(entity);
 			}
+			
+			if (!ADAPTORS.containsKey(entity)) {
+				var instance:Entity = Entity( newInstance(entity as Class) );
+				ADAPTORS.put(entity, instance.adaptor());
+			}
+			
 			return ADAPTORS.grab(entity) as ServiceAdaptor;
 		}
 		
@@ -261,7 +278,7 @@ package mesh
 		 * 
 		 * @return A service adaptor.
 		 */
-		protected function adaptor():ServiceAdaptor
+		public function adaptor():ServiceAdaptor
 		{
 			for each (var adaptorXML:XML in describeType(this)..metadata.(@name == "ServiceAdaptor")) {
 				var options:Object = {};
@@ -270,7 +287,7 @@ package mesh
 					options[argXML.@key] = argXML.@value.toString();
 				}
 				
-				return ServiceAdaptor( newInstance(getDefinitionByName(adaptorXML.arg.(@key == "type").@value) as Class, options) );
+				return ServiceAdaptor( newInstance(getDefinitionByName(adaptorXML.arg.(@key == "type").@value) as Class, clazz(this), options) );
 			}
 			return null;
 		}
@@ -296,10 +313,9 @@ package mesh
 		 */
 		protected function aggregates():Array
 		{
-			var descriptionXML:XML = describeType(this);
 			var aggregates:Array = [];
 			
-			for each (var composedOfXML:XML in descriptionXML..metadata.(@name == "ComposedOf")) {
+			for each (var composedOfXML:XML in describeType(this)..metadata.(@name == "ComposedOf")) {
 				var property:XMLList = composedOfXML.arg.(@key == "property");
 				var type:XMLList = composedOfXML.arg.(@key == "type");
 				var prefix:XMLList = composedOfXML.arg.(@key == "prefix");
@@ -316,13 +332,54 @@ package mesh
 		}
 		
 		/**
+		 * Returns the set of properties that are accessible on the given entity. Properties 
+		 * include any that are defined on the entity and its sub-classes, and any properties 
+		 * defined within metadata, such as <code>ComposedOf</code> or <code>HasOne</code>.
+		 * 
+		 * @param entity The entity to get the properties for.
+		 * @return A set of properties.
+		 */
+		public static function propertiesFor(entity:Object):Set
+		{
+			if (!(entity is Class)) {
+				entity = clazz(entity);
+			}
+			
+			if (!PROPERTIES.containsKey(entity)) {
+				var instance:Entity = Entity( newInstance(entity as Class) );
+				PROPERTIES.put(entity, instance.properties);
+			}
+			
+			return PROPERTIES.grab(entity) as Set;
+		}
+		
+		/**
+		 * A set of properties that are accessible on this entity. Properties include any that
+		 * are defined on the entity and its sub-classes, and any properties defined within 
+		 * metadata, such as <code>ComposedOf</code> or <code>HasOne</code>.
+		 */
+		public function get properties():Set
+		{
+			var properties:HashSet = new HashSet();
+			
+			for each (var accessorXML:XML in describeType(this)..accessor) {
+				properties.add(accessorXML.@name);
+			}
+			
+			properties.addAll(aggregatesForEntity(this).keys());
+			properties.addAll(relationshipsForEntity(this).keys());
+			
+			return properties;
+		}
+		
+		/**
 		 * Returns a mapping of relationships for the given entity, where the key is the relationship's
 		 * property and the value is the relationship.
 		 * 
 		 * @param entity The entity to get the relationships for.
 		 * @return A mapping of <code>Relationship</code>s.
 		 */
-		protected static function relationshipsForEntity(entity:Entity):HashMap
+		public static function relationshipsForEntity(entity:Entity):HashMap
 		{
 			return RELATIONSHIPS.grab(clazz(entity)) as HashMap;
 		}
