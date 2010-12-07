@@ -35,7 +35,6 @@ package operations
 	public class CompoundOperation extends Operation
 	{
 		private var _executingOperations:ArraySet = new ArraySet();
-		private var _finishedOperationsCount:int;
 		
 		/**
 		 * Constructor.
@@ -93,6 +92,10 @@ package operations
 		 */
 		final protected function executeOperation(operation:Operation):void
 		{
+			if (operation == null) {
+				throw new ArgumentError("Cannot execute null operation.");
+			}
+			
 			if (!_operations.contains(operation)) {
 				throw new ArgumentError(operation + " must belong to this compound operation.");
 			}
@@ -159,6 +162,15 @@ package operations
 			if (!isExecuting) {
 				_operations.remove(operation);
 			}
+		}
+		
+		private var _finishedOperationsCount:int;
+		/**
+		 * The number of operations that have finished.
+		 */
+		protected function get finishedOperationsCount():int
+		{
+			return _finishedOperationsCount;
 		}
 		
 		private var _operations:ArraySet = new ArraySet();

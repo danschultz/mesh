@@ -46,13 +46,8 @@ package operations
 			compound.addEventListener(FinishedOperationEvent.FINISHED, handleOperationFinished);
 			compound.execute();
 			
-			compound.runOperation(operation1);
 			operation1.mimicResult({}, false);
-			
-			compound.runOperation(operation2);
 			operation2.mimicResult({}, false);
-			
-			compound.runOperation(operation3);
 			operation3.mimicFault("", "");
 			
 			assertThat(canceledEvent, notNullValue());
@@ -85,13 +80,8 @@ package operations
 			compound.addEventListener(FinishedOperationEvent.FINISHED, handleOperationFinished);
 			compound.execute();
 			
-			compound.runOperation(operation1);
 			operation1.mimicResult({}, false);
-			
-			compound.runOperation(operation2);
 			operation2.mimicResult({}, false);
-			
-			compound.runOperation(operation3);
 			operation3.mimicResult({}, false);
 			
 			assertThat(canceledEvent, nullValue());
@@ -111,8 +101,17 @@ class MockCompoundOperation extends CompoundOperation
 		super(operations);
 	}
 	
-	public function runOperation(operation:Operation):void
+	override protected function executeRequest():void
 	{
-		executeOperation(operation);
+		super.executeRequest();
+		
+		if (!operationSet.isEmpty) {
+			executeOperation(nextOperation(finishedOperationsCount));
+		}
+	}
+	
+	override protected function nextOperation(finishedOperationsCount:int):Operation
+	{
+		return operationSet.toArray()[finishedOperationsCount];
 	}
 }

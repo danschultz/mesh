@@ -19,6 +19,18 @@ package operations
 		/**
 		 * @inheritDoc
 		 */
+		override protected function executeRequest():void
+		{
+			super.executeRequest();
+			
+			if (!operationSet.isEmpty) {
+				executeOperation(nextOperation(finishedOperationsCount));
+			}
+		}
+		
+		/**
+		 * @inheritDoc
+		 */
 		override protected function nextOperation(finishedOperationsCount:int):Operation
 		{
 			return operationSet.toArray()[finishedOperationsCount];
