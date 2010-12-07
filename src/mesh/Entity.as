@@ -2,9 +2,9 @@ package mesh
 {
 	import collections.HashMap;
 	import collections.HashSet;
-	import collections.ISet;
 	import collections.Set;
 	
+	import flash.errors.IllegalOperationError;
 	import flash.events.Event;
 	import flash.events.EventDispatcher;
 	import flash.events.IEventDispatcher;
@@ -14,6 +14,7 @@ package mesh
 	import flash.utils.getDefinitionByName;
 	import flash.utils.setTimeout;
 	
+	import inflections.humanize;
 	import inflections.pluralize;
 	
 	import mesh.adaptors.ServiceAdaptor;
@@ -21,8 +22,10 @@ package mesh
 	import mx.events.PropertyChangeEvent;
 	import mx.utils.StringUtil;
 	
+	import operations.EmptyOperation;
 	import operations.FinishedOperationEvent;
 	import operations.Operation;
+	import operations.ParallelOperation;
 	
 	import reflection.className;
 	import reflection.clazz;
@@ -208,22 +211,21 @@ package mesh
 		 * 	executed.
 		 * @return An executing operation, or <code>false</code> if a validation fails.
 		 */
-		public function save(validate:Boolean = true, execute:Boolean = true):Object
+		public function save(validate:Boolean = true, execute:Boolean = true):Operation
 		{
-			if (validate) {
-				var errors:Array = runValidations();
-				if (errors.length > 0) {
-					return false;
-				}
-			}
-			
-			var operation:Operation = isNew ? adaptorFor(this).create(this) : adaptorFor(this).update(this);
+			var operation:Operation = hasPropertyChanges ? (isNew ? adaptorFor(this).create(this) : adaptorFor(this).update(this)) : new EmptyOperation();
 			operation.addEventListener(FinishedOperationEvent.FINISHED, function(event:FinishedOperationEvent):void
 			{
 				if (event.successful) {
 					saved();
 				}
 			});
+			
+			var relationshipOperations:Vector.<Operation> = new Vector.<Operation>();
+			for each (var property:String in relationshipsForEntity(this).keys()) {
+				relationshipOperations.push(AssociationProxy( this[property] ).save(true, false));
+			}
+			operation = operation.then(new ParallelOperation(relationshipOperations));
 			
 			if (execute) {
 				setTimeout(operation.execute, EXECUTION_DELAY);
@@ -240,11 +242,23 @@ package mesh
 			_properties.clear();
 		}
 		
+		/**
+		 * Copies the translated values on the given object to this entity. This method is useful for
+		 * copying the values of a transfer object or XML into the entity for service calls.
+		 * 
+		 * @param object The object to translate and copy.
+		 */
 		public function translateFrom(object:Object):void
 		{
 			
 		}
 		
+		/**
+		 * Creates a new translation object, which is useful for creating transfer objects or XML for
+		 * service calls.
+		 * 
+		 * @return A new translation object.
+		 */
 		public function translateTo():Object
 		{
 			return null;
@@ -289,7 +303,7 @@ package mesh
 				
 				return ServiceAdaptor( newInstance(getDefinitionByName(adaptorXML.arg.(@key == "type").@value) as Class, clazz(this), options) );
 			}
-			return null;
+			throw new IllegalOperationError(humanize(className(ServiceAdaptor)) + " not found for " + className(this));
 		}
 		
 		/**
@@ -533,11 +547,42 @@ package mesh
 		}
 		
 		/**
-		 * <code>true</code> if this entity is dirty and needs to be persisted.
+		 * <code>true</code> if this entity is either a new record or contains any property changes.
+		 * This does not check to see if its associations are dirty.
+		 * 
+		 * @see #isDirty
+		 * @see #hasDirtyAssociations
+		 */
+		protected function get hasPropertyChanges():Boolean
+		{
+			return isNew || _properties.hasChanges;
+		}
+		
+		/**
+		 * <code>true</code> if this entity contains any associations that are dirty.
+		 * 
+		 * @see #isDirty
+		 * @see #hasPropertyChanges
+		 */
+		protected function get hasDirtyAssociations():Boolean
+		{
+			// more in depth check on the entity's relationships.
+			for each (var property:String in relationshipsForEntity(this).keys()) {
+				if (AssociationProxy( this[property] ).isDirty) {
+					return true;
+				}
+			}
+			return false;
+		}
+		
+		/**
+		 * <code>true</code> if this entity is dirty and needs to be persisted. An object is dirty
+		 * if any of its properties have changed since its last save or if its a new record. An
+		 * entity is also dirty if any of its relationships are dirty.
 		 */
 		public function get isDirty():Boolean
 		{
-			return isNew || _properties.hasChanges;
+			return hasPropertyChanges || hasDirtyAssociations;
 		}
 		
 		/**

@@ -4,6 +4,7 @@ package mesh
 	import flash.events.EventDispatcher;
 	import flash.events.IEventDispatcher;
 	import flash.utils.Proxy;
+	import flash.utils.flash_proxy;
 	import flash.utils.setTimeout;
 	
 	import operations.EmptyOperation;
@@ -18,7 +19,7 @@ package mesh
 	 * 
 	 * @author Dan Schultz
 	 */
-	public class AssociationProxy extends Proxy implements IEventDispatcher
+	public dynamic class AssociationProxy extends Proxy implements IEventDispatcher
 	{
 		private var _dispatcher:EventDispatcher;
 		
@@ -133,6 +134,46 @@ package mesh
 		public function set target(value:Object):void
 		{
 			_target = value;
+		}
+		
+		/**
+		 * @inheritDoc
+		 */
+		override flash_proxy function callProperty(name:*, ...parameters):*
+		{
+			if (isLoaded) {
+				return target[name].apply(null, parameters);
+			}
+			return undefined;
+		}
+		
+		/**
+		 * @inheritDoc
+		 */
+		override flash_proxy function getProperty(name:*):*
+		{
+			if (isLoaded) {
+				return target[name];
+			}
+			return undefined;
+		}
+		
+		/**
+		 * @inheritDoc
+		 */
+		override flash_proxy function hasProperty(name:*):Boolean
+		{
+			return flash_proxy::getProperty(name);
+		}
+		
+		/**
+		 * @inheritDoc
+		 */
+		override flash_proxy function setProperty(name:*, value:*):void
+		{
+			if (isLoaded) {
+				target[name] = value;
+			}
 		}
 		
 		/**

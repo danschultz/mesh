@@ -10,7 +10,7 @@ package mesh
 	import operations.EmptyOperation;
 	import operations.Operation;
 
-	public class AssociationCollection extends AssociationProxy implements IList
+	public dynamic class AssociationCollection extends AssociationProxy implements IList
 	{
 		private var _mirroredEntities:collections.ArrayList;
 		private var _originalEntities:collections.ArrayList;
