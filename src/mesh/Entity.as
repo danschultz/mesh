@@ -93,7 +93,7 @@ package mesh
 		public function equals(entity:Entity):Boolean
 		{
 			return entity != null && 
-				   id === entity.id && 
+				   ((isPersisted && id === entity.id) || this === entity) && 
 				   clazz(this) == clazz(entity);
 		}
 		
@@ -146,7 +146,7 @@ package mesh
 		 * @see #isValid()
 		 * @see #validate()
 		 */
-		final public function isInvalid():Boolean
+		public function isInvalid():Boolean
 		{
 			return !isValid();
 		}
@@ -160,7 +160,7 @@ package mesh
 		 * @see #isInvalid()
 		 * @see #validate()
 		 */
-		final public function isValid():Boolean
+		public function isValid():Boolean
 		{
 			return runValidations().length == 0;
 		}
