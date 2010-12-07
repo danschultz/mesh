@@ -42,5 +42,9 @@ package operations
 		{
 			return _data;
 		}
+		public function set data(value:Object):void
+		{
+			_data = value;
+		}
 	}
 }
