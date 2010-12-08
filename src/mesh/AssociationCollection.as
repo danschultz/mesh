@@ -2,6 +2,9 @@ package mesh
 {
 	import collections.ArrayList;
 	import collections.ArraySet;
+	import collections.HashSet;
+	
+	import flash.utils.flash_proxy;
 	
 	import mx.collections.IList;
 	import mx.events.CollectionEvent;
@@ -9,11 +12,15 @@ package mesh
 	
 	import operations.EmptyOperation;
 	import operations.Operation;
-
+	import operations.ParallelOperation;
+	
+	use namespace flash_proxy;
+	
 	public dynamic class AssociationCollection extends AssociationProxy implements IList
 	{
 		private var _mirroredEntities:collections.ArrayList;
 		private var _originalEntities:collections.ArrayList;
+		
 		private var _removedEntities:ArraySet = new ArraySet();
 		
 		/**
@@ -42,6 +49,18 @@ package mesh
 		}
 		
 		/**
+		 * Checks if the association has the given entity. This method will only check for entities
+		 * that have already been loaded.
+		 * 
+		 * @param item The item to check.
+		 * @return <code>true</code> if the item was found.
+		 */
+		public function contains(item:Object):Boolean
+		{
+			return getItemIndex(item) >= 0;
+		}
+		
+		/**
 		 * @inheritDoc
 		 */
 		public function getItemAt(index:int, prefetch:int = 0):Object
@@ -62,16 +81,17 @@ package mesh
 			switch (event.kind) {
 				case CollectionEventKind.ADD:
 					_removedEntities.removeAll(event.items);
-					_mirroredEntities.addAllAt(event.items, event.location);
 					break;
 				case CollectionEventKind.REMOVE:
 					_removedEntities.addAll(event.items);
-					_mirroredEntities.removeAll(event.items);
 					break;
 				case CollectionEventKind.RESET:
 					_removedEntities.addAll(_mirroredEntities.difference(new collections.ArrayList(target.toArray())));
-					_mirroredEntities = new collections.ArrayList(toArray());
 					break;
+			}
+			
+			if (event.kind != CollectionEventKind.UPDATE) {
+				_mirroredEntities = new collections.ArrayList(toArray());
 			}
 			
 			dispatchEvent(event.clone());
@@ -94,6 +114,20 @@ package mesh
 		}
 		
 		/**
+		 * Removes the given entity from this association. This method will only remove entities
+		 * that have been loaded into the association.
+		 * 
+		 * @param item The entity to remove.
+		 */
+		public function removeItem(item:Object):void
+		{
+			var index:int = getItemIndex(item);
+			if (index >= 0) {
+				removeItemAt(index);
+			}
+		}
+		
+		/**
 		 * @inheritDoc
 		 */
 		public function removeItemAt(index:int):Object
@@ -101,6 +135,9 @@ package mesh
 			return target.removeItemAt(index);
 		}
 		
+		/**
+		 * @inheritDoc
+		 */
 		override public function loaded():void
 		{
 			_originalEntities = new collections.ArrayList(toArray());
@@ -123,23 +160,23 @@ package mesh
 		/**
 		 * @inheritDoc
 		 */
-		override public function save(validate:Boolean = true, execute:Boolean = true):Operation
+		override public function save(validate:Boolean = true, execute:Boolean = false):Operation
 		{
-			var operation:Operation = new EmptyOperation();
+			var tempOperations:Vector.<Operation> = new Vector.<Operation>();
 			
 			for each (var entity:Entity in _mirroredEntities) {
 				if (entity.isDirty) {
-					operation = entity.save(validate).during(operation);
+					tempOperations.push(entity.save(validate, false));
 				}
 			}
 			
 			for each (var removedEntity:Entity in _removedEntities) {
 				if (removedEntity.isPersisted) {
-					operation = removedEntity.destroy().during(operation);
+					tempOperations.push(removedEntity.destroy());
 				}
 			}
 			
-			return operation;
+			return new ParallelOperation(tempOperations);
 		}
 		
 		/**
@@ -201,6 +238,36 @@ package mesh
 				dispatchEvent(new CollectionEvent(CollectionEvent.COLLECTION_CHANGE, false, false, CollectionEventKind.RESET));
 				target.addEventListener(CollectionEvent.COLLECTION_CHANGE, handleEntitiesCollectionChange);
 			}
+		}
+		
+		/**
+		 *  @inheritDoc
+		 */
+		override flash_proxy function nextName(index:int):String
+		{
+			return (index-1).toString();
+		}
+		
+		private var _iteratingItems:Array;
+		private var _len:int;
+		/**
+		 * @inheritDoc
+		 */
+		override flash_proxy function nextNameIndex(index:int):int
+		{
+			if (index == 0) {
+				_iteratingItems = toArray();
+				_len = _iteratingItems.length;
+			}
+			return index < _len ? index+1 : 0;
+		}
+		
+		/**
+		 * @inheritDoc
+		 */
+		override flash_proxy function nextValue(index:int):*
+		{
+			return _iteratingItems[index-1];
 		}
 	}
 }

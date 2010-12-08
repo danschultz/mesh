@@ -88,6 +88,23 @@ package operations
 			assertThat(finishedEvent.successful, equalTo(true));
 			assertThat(compound.isExecuting, equalTo(false));
 		}
+		
+		[Test]
+		public function testExecutingWithoutOperations():void
+		{
+			var finishedEvent:FinishedOperationEvent;
+			function handleOperationFinished(event:FinishedOperationEvent):void
+			{
+				finishedEvent = event;
+			};
+			
+			var compound:MockCompoundOperation = new MockCompoundOperation();
+			compound.addEventListener(FinishedOperationEvent.FINISHED, handleOperationFinished);
+			compound.execute();
+			
+			assertThat(finishedEvent.successful, equalTo(true));
+			assertThat(compound.isExecuting, equalTo(false));
+		}
 	}
 }
 
@@ -101,13 +118,9 @@ class MockCompoundOperation extends CompoundOperation
 		super(operations);
 	}
 	
-	override protected function executeRequest():void
+	override protected function startExecution():void
 	{
-		super.executeRequest();
-		
-		if (!operationSet.isEmpty) {
-			executeOperation(nextOperation(finishedOperationsCount));
-		}
+		executeOperation(nextOperation(finishedOperationsCount));
 	}
 	
 	override protected function nextOperation(finishedOperationsCount:int):Operation

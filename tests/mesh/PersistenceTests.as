@@ -3,6 +3,7 @@ package mesh
 	import mesh.models.Address;
 	import mesh.models.Customer;
 	import mesh.models.Name;
+	import mesh.models.Order;
 	
 	import operations.FaultOperationEvent;
 	import operations.FinishedOperationEvent;
@@ -15,10 +16,15 @@ package mesh
 
 	public class PersistenceTests
 	{
+		private var _customer:Customer;
+		
 		[Before]
 		public function setup():void
 		{
-			
+			_customer = new Customer();
+			_customer.fullName = new Name("John", "Doe");
+			_customer.address = new Address("2306 Zanker Rd", "San Jose");
+			_customer.age = 21;
 		}
 		
 		[Test(async)]
@@ -26,16 +32,11 @@ package mesh
 		{
 			var assertion:Function = function(event:FinishedOperationEvent, data:Object):void
 			{
-				assertThat(customer.isPersisted, equalTo(true));
-				assertThat(customer.isDirty, equalTo(false));
+				assertThat(_customer.isPersisted, equalTo(true));
+				assertThat(_customer.isDirty, equalTo(false));
 			};
 			
-			var customer:Customer = new Customer();
-			customer.fullName = new Name("John", "Doe");
-			customer.address = new Address("2306 Zanker Rd", "San Jose");
-			customer.age = 21;
-			
-			var operation:Operation = customer.save();
+			var operation:Operation = _customer.save();
 			operation.addEventListener(FinishedOperationEvent.FINISHED, Async.asyncHandler(this, assertion, 100));
 			operation.addEventListener(FaultOperationEvent.FAULT, function(event:FaultOperationEvent):void
 			{
@@ -48,23 +49,17 @@ package mesh
 		{
 			var assertion:Function = function(event:FinishedOperationEvent, data:Object):void
 			{
-				assertThat(customer.isDirty, equalTo(false));
+				assertThat(_customer.isDirty, equalTo(false));
 			};
-			
-			var customer:Customer = new Customer();
-			customer.fullName = new Name("John", "Doe");
-			customer.address = new Address("2306 Zanker Rd", "San Jose");
-			customer.age = 21;
-			
 			assertion = Async.asyncHandler(this, assertion, 250);
 			
-			var operation:Operation = customer.save();
+			var operation:Operation = _customer.save();
 			operation.addEventListener(FinishedOperationEvent.FINISHED, function(event:FinishedOperationEvent):void
 			{
-				customer.fullName = new Name("Jane", "Doe");
-				customer.age = 18;
+				_customer.fullName = new Name("Jane", "Doe");
+				_customer.age = 18;
 				
-				var operation:Operation = customer.save() as Operation;
+				var operation:Operation = _customer.save() as Operation;
 				operation.addEventListener(FinishedOperationEvent.FINISHED, assertion);
 			});
 			operation.addEventListener(FaultOperationEvent.FAULT, function(event:FaultOperationEvent):void
@@ -74,9 +69,88 @@ package mesh
 		}
 		
 		[Test(async)]
-		public function testSaveRelationships():void
+		public function testSaveNewAssociations():void
 		{
+			var order1:Order = new Order();
+			_customer.orders.addItem(order1);
 			
+			var order2:Order = new Order();
+			_customer.orders.addItem(order2);
+			
+			var assertion:Function = function(event:FinishedOperationEvent, data:Object):void
+			{
+				assertThat(order1.isPersisted, equalTo(true));
+				assertThat(order1.isDirty, equalTo(false));
+				assertThat(order2.isPersisted, equalTo(true));
+				assertThat(order2.isDirty, equalTo(false));
+			};
+			
+			var operation:Operation = _customer.save();
+			operation.addEventListener(FinishedOperationEvent.FINISHED, Async.asyncHandler(this, assertion, 100));
+			operation.addEventListener(FaultOperationEvent.FAULT, function(event:FaultOperationEvent):void
+			{
+				fail(event.summary);
+			});
+		}
+		
+		[Test(async)]
+		public function testSaveUpdatedAssociations():void
+		{
+			var order1:Order = new Order();
+			_customer.orders.addItem(order1);
+			
+			var order2:Order = new Order();
+			_customer.orders.addItem(order2);
+			
+			var assertion:Function = function(event:FinishedOperationEvent, data:Object):void
+			{
+				assertThat(order1.isDirty, equalTo(false));
+				assertThat(order2.isDirty, equalTo(false));
+			};
+			assertion = Async.asyncHandler(this, assertion, 250);
+			
+			var operation:Operation = _customer.save();
+			operation.addEventListener(FinishedOperationEvent.FINISHED, function(event:FinishedOperationEvent):void
+			{
+				order2.total = 10;
+				
+				var operation:Operation = _customer.save() as Operation;
+				operation.addEventListener(FinishedOperationEvent.FINISHED, assertion);
+			});
+			operation.addEventListener(FaultOperationEvent.FAULT, function(event:FaultOperationEvent):void
+			{
+				fail(event.summary);
+			});
+		}
+		
+		[Test(async)]
+		public function testSaveDestroyedAssociations():void
+		{
+			var order1:Order = new Order();
+			_customer.orders.addItem(order1);
+			
+			var order2:Order = new Order();
+			_customer.orders.addItem(order2);
+			
+			var assertion:Function = function(event:FinishedOperationEvent, data:Object):void
+			{
+				assertThat(order1.isDestroyed, equalTo(true));
+				assertThat(order2.isPersisted, equalTo(true));
+			};
+			assertion = Async.asyncHandler(this, assertion, 250);
+			
+			var operation:Operation = _customer.save();
+			operation.addEventListener(FinishedOperationEvent.FINISHED, function(event:FinishedOperationEvent):void
+			{
+				_customer.orders.removeItem(order1);
+				
+				var operation:Operation = _customer.save() as Operation;
+				operation.addEventListener(FinishedOperationEvent.FINISHED, assertion);
+			});
+			operation.addEventListener(FaultOperationEvent.FAULT, function(event:FaultOperationEvent):void
+			{
+				fail(event.summary);
+			});
 		}
 	}
 }

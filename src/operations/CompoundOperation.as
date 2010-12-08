@@ -1,6 +1,8 @@
 package operations
 {
 	import collections.ArraySet;
+	
+	import flash.errors.IllegalOperationError;
 
 	/**
 	 * A base class for an operation that contains a set of other operations to
@@ -77,10 +79,16 @@ package operations
 		/**
 		 * @inheritDoc
 		 */
-		override protected function executeRequest():void
+		final override protected function executeRequest():void
 		{
 			super.executeRequest();
 			_finishedOperationsCount = 0;
+			
+			if (operationSet.isEmpty) {
+				finish(true);
+			} else {
+				startExecution();
+			}
 		}
 		
 		/**
@@ -162,6 +170,15 @@ package operations
 			if (!isExecuting) {
 				_operations.remove(operation);
 			}
+		}
+		
+		/**
+		 * Called when the client requests that the compound operation be executed, and the
+		 * operation contains other operations to execute.
+		 */
+		protected function startExecution():void
+		{
+			throw new IllegalOperationError("CompoundOperation.startExecution() must be implemented.");
 		}
 		
 		private var _finishedOperationsCount:int;

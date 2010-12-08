@@ -27,10 +27,8 @@ package operations
 		/**
 		 * @inheritDoc
 		 */
-		override protected function executeRequest():void
+		override protected function startExecution():void
 		{
-			super.executeRequest();
-			
 			for each (var operation:Operation in operationSet) {
 				executeOperation(operation);
 			}

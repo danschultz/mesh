@@ -19,13 +19,9 @@ package operations
 		/**
 		 * @inheritDoc
 		 */
-		override protected function executeRequest():void
+		override protected function startExecution():void
 		{
-			super.executeRequest();
-			
-			if (!operationSet.isEmpty) {
-				executeOperation(nextOperation(finishedOperationsCount));
-			}
+			executeOperation(nextOperation(finishedOperationsCount));
 		}
 		
 		/**
