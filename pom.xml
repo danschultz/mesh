@@ -6,7 +6,7 @@
 
 	<name>mesh</name>
 
-	<groupId>mesh</groupId>
+	<groupId>com.github.danschultz</groupId>
 	<artifactId>mesh</artifactId>
 	<version>1.0-SNAPSHOT</version>
 
@@ -18,7 +18,7 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>as3-collections</groupId>
+			<groupId>com.github.danschultz</groupId>
 			<artifactId>as3-collections</artifactId>
 			<version>1.0-SNAPSHOT</version>
 			<type>swc</type>
