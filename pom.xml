@@ -71,6 +71,10 @@
 							</excludes>
 						</sources>
 					</includeAsClasses>
+					<includeTestFiles>
+						<include>*Test.as</include>
+						<include>*Tests.as</include>
+					</includeTestFiles>
 				</configuration>
 			</plugin>
 			<plugin>
