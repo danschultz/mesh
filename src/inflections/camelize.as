@@ -15,6 +15,6 @@ package inflections
 		{
 			return arguments[1].toUpperCase();
 		});
-		return uppercaseFirstLetter ? str.substr(0, 1).toUpperCase() + str.substr(1) : str;
+		return (uppercaseFirstLetter ? str.substr(0, 1).toUpperCase() : str.substr(0, 1).toLowerCase()) + str.substr(1);
 	}
 }
