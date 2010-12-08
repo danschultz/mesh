@@ -537,6 +537,9 @@ package mesh
 		}
 		public function set id(value:*):void
 		{
+			if (value == 0) {
+				value = undefined;
+			}
 			_id = value;
 		}
 		

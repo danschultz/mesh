@@ -34,15 +34,15 @@ package operations
 			return new ResultOperationEvent(data);
 		}
 		
-		private var _data:Object;
+		private var _data:*;
 		/**
 		 * The parsed result's data.
 		 */
-		public function get data():Object
+		public function get data():*
 		{
 			return _data;
 		}
-		public function set data(value:Object):void
+		public function set data(value:*):void
 		{
 			_data = value;
 		}
