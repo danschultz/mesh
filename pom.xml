@@ -71,6 +71,9 @@
 							</excludes>
 						</sources>
 					</includeAsClasses>
+					<includeFiles>
+						<file>src/metadata.xml</file>
+					</includeFiles>
 					<includeTestFiles>
 						<include>*Test.as</include>
 						<include>*Tests.as</include>
