@@ -2,7 +2,8 @@ package mesh
 {
 	import collections.ArrayList;
 	import collections.ArraySet;
-	import collections.HashSet;
+	
+	import events.handle;
 	
 	import flash.utils.flash_proxy;
 	
@@ -10,7 +11,7 @@ package mesh
 	import mx.events.CollectionEvent;
 	import mx.events.CollectionEventKind;
 	
-	import operations.EmptyOperation;
+	import operations.FinishedOperationEvent;
 	import operations.Operation;
 	import operations.ParallelOperation;
 	
@@ -172,7 +173,9 @@ package mesh
 			
 			for each (var removedEntity:Entity in _removedEntities) {
 				if (removedEntity.isPersisted) {
-					tempOperations.push(removedEntity.destroy());
+					var operation:Operation = removedEntity.destroy(false);
+					operation.addEventListener(FinishedOperationEvent.FINISHED, handle(_removedEntities.remove, removedEntity));
+					tempOperations.push(operation);
 				}
 			}
 			
@@ -208,10 +211,19 @@ package mesh
 		 */
 		override public function get isDirty():Boolean
 		{
-			return toArray().some(function(entity:Entity, index:int, array:Array):Boolean
+			return hasUnsavedRemovedEntities || toArray().some(function(entity:Entity, index:int, array:Array):Boolean
 			{
 				return entity.isDirty;
 			});
+		}
+		
+		/**
+		 * <code>true</code> if this collection contains entities that have been removed, but not
+		 * yet persisted.
+		 */
+		public function get hasUnsavedRemovedEntities():Boolean
+		{
+			return !_removedEntities.isEmpty;
 		}
 		
 		/**

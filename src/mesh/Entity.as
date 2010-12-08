@@ -595,7 +595,7 @@ package mesh
 		 */
 		public function get isNew():Boolean
 		{
-			return id == 0;
+			return id === undefined;
 		}
 		
 		/**

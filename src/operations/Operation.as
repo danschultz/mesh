@@ -39,7 +39,7 @@ package operations
 	 * 
 	 * @author Dan Schultz
 	 */
-	public class Operation extends EventDispatcher
+	public dynamic class Operation extends EventDispatcher
 	{
 		/**
 		 * Constructor.

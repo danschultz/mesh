@@ -132,10 +132,19 @@ package mesh
 			var order2:Order = new Order();
 			_customer.orders.addItem(order2);
 			
+			var order3:Order = new Order();
+			_customer.orders.addItem(order3);
+			
+			var order4:Order = new Order();
+			_customer.orders.addItem(order4);
+			
 			var assertion:Function = function(event:FinishedOperationEvent, data:Object):void
 			{
 				assertThat(order1.isDestroyed, equalTo(true));
+				assertThat(order3.isDestroyed, equalTo(true));
+				assertThat(order4.isDestroyed, equalTo(true));
 				assertThat(order2.isPersisted, equalTo(true));
+				assertThat(_customer.orders.hasUnsavedRemovedEntities, equalTo(false));
 			};
 			assertion = Async.asyncHandler(this, assertion, 250);
 			
@@ -143,6 +152,8 @@ package mesh
 			operation.addEventListener(FinishedOperationEvent.FINISHED, function(event:FinishedOperationEvent):void
 			{
 				_customer.orders.removeItem(order1);
+				_customer.orders.removeItem(order3);
+				_customer.orders.removeItem(order4);
 				
 				var operation:Operation = _customer.save() as Operation;
 				operation.addEventListener(FinishedOperationEvent.FINISHED, assertion);
