@@ -1,7 +1,8 @@
 package mesh.models
 {
-	import mesh.associations.AssociationProxy;
 	import mesh.Entity;
+	import mesh.EntityDescription;
+	import mesh.associations.AssociationProxy;
 	
 	[Validate(properties="addressStreet,addressCity", validator="validations.LengthValidator", minimum="1")]
 	[ComposedOf(property="address", type="mesh.models.Address", prefix="address", mapping="street,city")]
@@ -58,12 +59,12 @@ package mesh.models
 		
 		public function get associations():Array
 		{
-			return relationshipsForEntity(this).values();
+			return EntityDescription.describe(this).relationships.toArray();
 		}
 		
 		public function get validations():Array
 		{
-			return validators();
+			return EntityDescription.describe(this).validators.toArray();
 		}
 	}
 }

@@ -1,48 +1,33 @@
 package mesh
 {
-	import collections.HashMap;
-	import collections.HashSet;
-	import collections.Set;
+	import collections.ISet;
 	
-	import flash.errors.IllegalOperationError;
 	import flash.events.Event;
 	import flash.events.EventDispatcher;
 	import flash.events.IEventDispatcher;
 	import flash.utils.Proxy;
-	import flash.utils.describeType;
 	import flash.utils.flash_proxy;
-	import flash.utils.getDefinitionByName;
-	import flash.utils.getQualifiedSuperclassName;
 	import flash.utils.setTimeout;
 	
-	import inflections.humanize;
-	import inflections.pluralize;
-	
 	import mesh.adaptors.ServiceAdaptor;
+	import mesh.associations.AssociationProxy;
+	import mesh.associations.BelongsToRelationship;
+	import mesh.associations.Relationship;
 	import mesh.callbacks.AfterCallbackOperation;
 	import mesh.callbacks.BeforeCallbackOperation;
 	
 	import mx.events.PropertyChangeEvent;
-	import mx.utils.StringUtil;
 	
 	import operations.EmptyOperation;
 	import operations.FinishedOperationEvent;
-	import operations.MethodOperation;
 	import operations.Operation;
-	import operations.OperationEvent;
 	import operations.ParallelOperation;
 	import operations.SequentialOperation;
 	
-	import reflection.className;
 	import reflection.clazz;
 	import reflection.newInstance;
 	
 	import validations.Validator;
-	import mesh.associations.AssociationProxy;
-	import mesh.associations.BelongsToRelationship;
-	import mesh.associations.HasManyRelationship;
-	import mesh.associations.HasOneRelationship;
-	import mesh.associations.Relationship;
 	
 	/**
 	 * An entity.
@@ -51,15 +36,9 @@ package mesh
 	 */
 	public dynamic class Entity extends Proxy implements IEventDispatcher
 	{
-		private static const AGGREGATES:HashMap = new HashMap();
-		private static const ADAPTORS:HashMap = new HashMap();
-		private static const RELATIONSHIPS:HashMap = new HashMap();
-		private static const VALIDATORS:HashMap = new HashMap();
-		private static const TRANSFER_OBJECTS:HashMap = new HashMap();
-		private static const PROPERTIES:HashMap = new HashMap();
-		
 		private static const EXECUTION_DELAY:int = 50;
 		
+		private var _description:EntityDescription;
 		private var _dispatcher:EventDispatcher;
 		private var _callbacks:Array = [];
 		
@@ -71,37 +50,14 @@ package mesh
 			super();
 			
 			_dispatcher = new EventDispatcher(this);
+			_description = EntityDescription.describe(this);
 			
-			var entityClass:Class = clazz(this);
-			
-			// create and cache the aggregates.
-			if (!AGGREGATES.containsKey(entityClass)) {
-				var entityAggregates:HashMap = new HashMap();
-				for each (var aggregate:Aggregate in aggregates()) {
-					for each (var mapping:String in aggregate.mappings) {
-						entityAggregates.put(mapping, aggregate);
-					}
-				}
-				AGGREGATES.put(entityClass, entityAggregates);
-			}
-			
-			// create and cache the relationships.
-			if (!RELATIONSHIPS.containsKey(entityClass)) {
-				RELATIONSHIPS.put(entityClass, new HashMap());
-				relationships();
-			}
-			
-			// create and cache the validators.
-			if (!VALIDATORS.containsKey(entityClass)) {
-				VALIDATORS.put(entityClass, validators());
-			}
-			
-			addEventListener(PropertyChangeEvent.PROPERTY_CHANGE, handlePropertyChange);
-			
-			// callbacks
+			// add necessary callbacks
 			beforeSave(isValid);
 			beforeSave(populateForeignKeys);
 			afterSave(SaveEntityRelationshipsOperation, this);
+			
+			addEventListener(PropertyChangeEvent.PROPERTY_CHANGE, handlePropertyChange);
 		}
 		
 		private function addCallback(type:String, args:Array):void
@@ -239,7 +195,7 @@ package mesh
 		
 		private function populateForeignKeys():void
 		{
-			for each (var relationship:Relationship in relationshipsForEntity(this).values()) {
+			for each (var relationship:Relationship in _description.relationships) {
 				if (relationship is BelongsToRelationship) {
 					this[(relationship as BelongsToRelationship).foreignKey] = this[relationship.property].id;
 				}
@@ -266,9 +222,9 @@ package mesh
 		{
 			_properties.revert();
 			
-			for each (var property:String in relationshipsForEntity(this).keys()) {
-				if (hasOwnProperty(property) && this[property] != null) {
-					this[property].revert();
+			for each (var relationship:Relationship in _description.relationships) {
+				if (hasOwnProperty(relationship.property) && this[relationship.property] != null) {
+					this[relationship.property].revert();
 				}
 			}
 		}
@@ -369,196 +325,7 @@ package mesh
 		 */
 		public static function adaptorFor(entity:Object):ServiceAdaptor
 		{
-			if (!(entity is Class)) {
-				entity = clazz(entity);
-			}
-			
-			if (!ADAPTORS.containsKey(entity)) {
-				var instance:Entity = Entity( newInstance(entity as Class) );
-				ADAPTORS.put(entity, instance.adaptor());
-			}
-			
-			return ADAPTORS.grab(entity) as ServiceAdaptor;
-		}
-		
-		/**
-		 * Called when the entity is initialized for the first time to generate the service adaptor 
-		 * for the these types of entities. By default, this method will return a service adaptor 
-		 * that was defined in the entity's metadata. If a service adaptor is difficult to express
-		 * in metadata, sub-classes may choose to override this method and construct their own.
-		 * 
-		 * @return A service adaptor.
-		 */
-		public function adaptor():ServiceAdaptor
-		{
-			for each (var adaptorXML:XML in describeType(this)..metadata.(@name == "ServiceAdaptor")) {
-				var options:Object = {};
-				
-				for each (var argXML:XML in adaptorXML..arg) {
-					options[argXML.@key] = argXML.@value.toString();
-				}
-				
-				return ServiceAdaptor( newInstance(getDefinitionByName(adaptorXML.arg.(@key == "type").@value) as Class, clazz(this), options) );
-			}
-			
-			// service adaptor hasn't been found. check the super class
-			var parent:Object = newInstance(getDefinitionByName(getQualifiedSuperclassName(this)) as Class);
-			if (parent is Entity) {
-				return adaptorFor(parent);
-			} else {
-				return null;
-			}
-			throw new IllegalOperationError("Service adaptor not found for " + className(this));
-		}
-		
-		/**
-		 * Returns a mapping of aggregates for the given entity, where the key is the aggregate's
-		 * property and the value is the aggregate.
-		 * 
-		 * @param entity The entity to get the aggregates for.
-		 * @return A mapping of <code>Aggregate</code>s.
-		 */
-		protected static function aggregatesForEntity(entity:Entity):HashMap
-		{
-			return AGGREGATES.grab(clazz(entity)) as HashMap;
-		}
-		
-		/**
-		 * Returns a set of aggregates defined for this entity. This method allows sub-classes
-		 * to override and supply their own aggregates without using metadata. The default
-		 * implementation of this method will return any aggregates that were defined in metadata.
-		 * 
-		 * @return A set of <code>Aggregate</code>s.
-		 */
-		protected function aggregates():Array
-		{
-			var aggregates:Array = [];
-			
-			for each (var composedOfXML:XML in describeType(this)..metadata.(@name == "ComposedOf")) {
-				var property:XMLList = composedOfXML.arg.(@key == "property");
-				var type:XMLList = composedOfXML.arg.(@key == "type");
-				var prefix:XMLList = composedOfXML.arg.(@key == "prefix");
-				var mapping:XMLList = composedOfXML.arg.(@key == "mapping");
-				
-				var options:Object = {};
-				options.prefix = prefix.@value.toString();
-				options.mapping = StringUtil.trimArrayElements(mapping.@value.toString(), ",").split(",");
-				
-				aggregates.push( new Aggregate(clazz(this), property.length() > 0 ? property.@value : composedOfXML.parent().@name, getDefinitionByName(type.length() > 0 ? type.@value : composedOfXML.parent().@type) as Class, options) );
-			}
-			
-			return aggregates;
-		}
-		
-		/**
-		 * Returns the set of properties that are accessible on the given entity. Properties 
-		 * include any that are defined on the entity and its sub-classes, and any properties 
-		 * defined within metadata, such as <code>ComposedOf</code> or <code>HasOne</code>.
-		 * 
-		 * @param entity The entity to get the properties for.
-		 * @return A set of properties.
-		 */
-		public static function propertiesFor(entity:Object):Set
-		{
-			if (!(entity is Class)) {
-				entity = clazz(entity);
-			}
-			
-			if (!PROPERTIES.containsKey(entity)) {
-				var instance:Entity = Entity( newInstance(entity as Class) );
-				PROPERTIES.put(entity, instance.properties);
-			}
-			
-			return PROPERTIES.grab(entity) as Set;
-		}
-		
-		/**
-		 * A set of properties that are accessible on this entity. Properties include any that
-		 * are defined on the entity and its sub-classes, and any properties defined within 
-		 * metadata, such as <code>ComposedOf</code> or <code>HasOne</code>.
-		 */
-		public function get properties():Set
-		{
-			var properties:HashSet = new HashSet();
-			
-			for each (var accessorXML:XML in describeType(this)..accessor) {
-				properties.add(accessorXML.@name);
-			}
-			
-			properties.addAll(aggregatesForEntity(this).keys());
-			properties.addAll(relationshipsForEntity(this).keys());
-			
-			return properties;
-		}
-		
-		/**
-		 * Returns a mapping of relationships for the given entity, where the key is the relationship's
-		 * property and the value is the relationship.
-		 * 
-		 * @param entity The entity to get the relationships for.
-		 * @return A mapping of <code>Relationship</code>s.
-		 */
-		public static function relationshipsForEntity(entity:Entity):HashMap
-		{
-			return RELATIONSHIPS.grab(clazz(entity)) as HashMap;
-		}
-		
-		/**
-		 * Invoked when the relationships are requested for an entity, but have not been cached
-		 * yet. By default, this method will parse any relationship metadata defined in the 
-		 * entity. Sub-classes can override this method and call the <code>hasMany()</code>
-		 * and <code>hasOne()</code> methods.
-		 * 
-		 * @see #hasOne()
-		 * @see #hasMany()
-		 */
-		protected function relationships():void
-		{
-			
-		}
-		
-		/**
-		 * Adds a belongs-to relationship for this entity.
-		 * 
-		 * @param target The target entity class.
-		 * @param property The property mapping the relationship.
-		 * @param options Any options for the relationship.
-		 * 
-		 * @see #relationships()
-		 */
-		protected function belongsTo(target:Class, property:String, options:Object = null):void
-		{
-			relationshipsForEntity(this).put(property, new BelongsToRelationship(clazz(this), property, target, options));
-		}
-		
-		/**
-		 * Adds a one-to-one relationship for this entity.
-		 * 
-		 * @param target The target entity class.
-		 * @param property The property mapping the relationship.
-		 * @param options Any options for the relationship.
-		 * 
-		 * @see #relationships()
-		 * @see #hasMany()
-		 */
-		protected function hasOne(target:Class, property:String, options:Object = null):void
-		{
-			relationshipsForEntity(this).put(property, new HasOneRelationship(clazz(this), property, target, options));
-		}
-		
-		/**
-		 * Adds a one-to-many relationship for this entity.
-		 * 
-		 * @param target The target entity class.
-		 * @param property The property mapping the relationship.
-		 * @param options Any options for the relationship.
-		 * 
-		 * @see #relationships()
-		 * @see #hasOne()
-		 */
-		protected function hasMany(target:Class, property:String, options:Object = null):void
-		{
-			relationshipsForEntity(this).put(property, new HasManyRelationship(clazz(this), property, target, options));
+			return EntityDescription.describe(entity).adaptor;
 		}
 		
 		/**
@@ -580,46 +347,11 @@ package mesh
 		public function validate():Array
 		{
 			var results:Array = [];
-			for each (var validator:Validator in VALIDATORS.grab(clazz(this))) {
+			for each (var validator:Validator in _description.validators) {
 				results = results.concat(validator.validate(this));
 			}
 			_errors = results;
 			return results;
-		}
-		
-		/**
-		 * Returns a set of validators defined for this entity. This method allows sub-classes
-		 * to override and supply their own validators without using metadata. The default
-		 * implementation of this method will return any validators that were defined in metadata.
-		 * 
-		 * @return A set of <code>Validator</code>s.
-		 */
-		protected function validators():Array
-		{
-			var descriptionXML:XML = describeType(this);
-			var validators:Array = [];
-			
-			for each (var validateXML:XML in descriptionXML..metadata.(@name == "Validate")) {
-				var options:Object = {};
-				
-				for each (var argXML:XML in validateXML..arg) {
-					if (argXML.@key != "validator") {
-						options[argXML.@key] = argXML.@value.toString();
-					}
-				}
-				
-				if (validateXML.parent().name() == "accessor") {
-					options["property"] = validateXML.parent().@name.toString();
-				}
-				
-				if (options.hasOwnProperty("properties")) {
-					options.properties = StringUtil.trimArrayElements(options.properties, ",").split(",");
-				}
-				
-				validators.push(newInstance(getDefinitionByName(validateXML.arg.(@key == "validator").@value) as Class, options));
-			}
-			
-			return validators;
 		}
 		
 		private var _errors:Array = [];
@@ -686,8 +418,8 @@ package mesh
 		public function get hasDirtyAssociations():Boolean
 		{
 			// more in depth check on the entity's relationships.
-			for each (var property:String in relationshipsForEntity(this).keys()) {
-				if (this[property] != null && AssociationProxy( this[property] ).isDirty) {
+			for each (var relationship:Relationship in _description.relationships) {
+				if (this[relationship.property] != null && AssociationProxy( this[relationship.property] ).isDirty) {
 					return true;
 				}
 			}
@@ -723,6 +455,16 @@ package mesh
 			return !isNew && !isDestroyed;
 		}
 		
+		/**
+		 * A set of properties that are accessible on this entity. Properties include any that
+		 * are defined on the entity and its sub-classes, and any properties defined within 
+		 * metadata, such as <code>ComposedOf</code> or <code>HasOne</code>.
+		 */
+		public function get properties():ISet
+		{
+			return _description.properties;
+		}
+		
 		private var _properties:Properties = new Properties(this);
 		private var _relationships:Properties = new Properties(this);
 		/**
@@ -730,7 +472,7 @@ package mesh
 		 */
 		override flash_proxy function getProperty(name:*):*
 		{
-			var relationship:Relationship = relationshipsForEntity(this).grab(name.toString()) as Relationship;
+			var relationship:Relationship = _description.getRelationshipForProperty(name);
 			if (relationship != null) {
 				if (!_relationships.hasOwnProperty(relationship.property)) {
 					_relationships.changed(relationship.property, undefined, relationship.createProxy(this));
@@ -749,8 +491,8 @@ package mesh
 				return _properties.oldValueOf(name.toString().substr(0, name.toString().length-3));
 			}
 			
-			var aggregate:Aggregate = aggregatesForEntity(this).grab(name.toString()) as Aggregate;
-			if (aggregate != null) {
+			var aggregate:Aggregate = _description.getAggregateForProperty(name);
+			if (aggregate != null && aggregate.property != name.toString()) {
 				return aggregate.getValue(this, name);
 			}
 			
@@ -770,15 +512,15 @@ package mesh
 		 */
 		override flash_proxy function setProperty(name:*, value:*):void
 		{
-			var relationship:Relationship = relationshipsForEntity(this).grab(name.toString()) as Relationship;
+			var relationship:Relationship = _description.getRelationshipForProperty(name);
 			if (relationship != null) {
 				return;
 			}
 			
 			_properties[name] = value;
 			
-			var aggregate:Aggregate = aggregatesForEntity(this).grab(name.toString()) as Aggregate;
-			if (aggregate != null) {
+			var aggregate:Aggregate = _description.getAggregateForProperty(name);
+			if (aggregate != null && aggregate.property != name.toString()) {
 				aggregate.setValue(this, name, value);
 				return;
 			}
@@ -826,8 +568,10 @@ package mesh
 	}
 }
 
-import mesh.associations.AssociationProxy;
 import mesh.Entity;
+import mesh.EntityDescription;
+import mesh.associations.AssociationProxy;
+import mesh.associations.Relationship;
 
 import operations.ParallelOperation;
 
@@ -841,8 +585,8 @@ class SaveEntityRelationshipsOperation extends ParallelOperation
 	private function generateOperations(entity:Entity):Array
 	{
 		var tempOperations:Array = [];
-		for each (var property:String in Entity.relationshipsForEntity(entity).keys()) {
-			var association:AssociationProxy = entity[property];
+		for each (var relationship:Relationship in EntityDescription.describe(entity).relationships) {
+			var association:AssociationProxy = entity[relationship.property];
 			if (association != null) {
 				tempOperations.push(association.save(true, false));
 			}
