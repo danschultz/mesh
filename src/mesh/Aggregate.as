@@ -1,11 +1,5 @@
 package mesh
 {
-	import collections.ArraySet;
-	import collections.HashMap;
-	
-	import flash.utils.describeType;
-	import flash.utils.getDefinitionByName;
-	
 	import reflection.newInstance;
 
 	/**
