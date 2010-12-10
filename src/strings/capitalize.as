@@ -9,9 +9,9 @@ package strings
 	 */
 	public function capitalize(str:String):String
 	{
-		return str.replace(/(?:^|\s+)(.)/g, function():String
+		return str.replace(/(^|\s+)(.)/g, function():String
 		{
-			return arguments[1].toUpperCase();
+			return arguments[1] + arguments[2].toUpperCase();
 		});
 	}
 }
