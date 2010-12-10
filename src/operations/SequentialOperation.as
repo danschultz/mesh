@@ -11,7 +11,7 @@ package operations
 		/**
 		 * @copy operations.CompoundOperation#CompoundOperation()
 		 */
-		public function SequentialOperation(operations:Vector.<Operation> = null)
+		public function SequentialOperation(operations:Array = null)
 		{
 			super(operations);
 		}

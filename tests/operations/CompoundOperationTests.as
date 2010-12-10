@@ -40,7 +40,7 @@ package operations
 				finishedEvent = event;
 			};
 			
-			var compound:MockCompoundOperation = new MockCompoundOperation(new <Operation>[operation1, operation2, operation3]);
+			var compound:MockCompoundOperation = new MockCompoundOperation([operation1, operation2, operation3]);
 			compound.addEventListener(OperationEvent.CANCELED, handleOperationCanceled);
 			compound.addEventListener(FaultOperationEvent.FAULT, handleOperationFault);
 			compound.addEventListener(FinishedOperationEvent.FINISHED, handleOperationFinished);
@@ -75,7 +75,7 @@ package operations
 				finishedEvent = event;
 			};
 			
-			var compound:MockCompoundOperation = new MockCompoundOperation(new <Operation>[operation1, operation2, operation3]);
+			var compound:MockCompoundOperation = new MockCompoundOperation([operation1, operation2, operation3]);
 			compound.addEventListener(OperationEvent.CANCELED, handleOperationCanceled);
 			compound.addEventListener(FinishedOperationEvent.FINISHED, handleOperationFinished);
 			compound.execute();
@@ -113,7 +113,7 @@ import operations.Operation;
 
 class MockCompoundOperation extends CompoundOperation
 {
-	public function MockCompoundOperation(operations:Vector.<Operation> = null)
+	public function MockCompoundOperation(operations:Array = null)
 	{
 		super(operations);
 	}

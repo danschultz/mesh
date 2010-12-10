@@ -21,7 +21,12 @@ package mesh.adaptors
 		public function RPCServiceAdaptor(service:AbstractService, entity:Class, options:Object)
 		{
 			super(entity, options);
+			
 			_service = service;
+			
+			if (_service.hasOwnProperty("showBusyCursor")) {
+				_service.showBusyCursor = options.hasOwnProperty("showBusyCursor") ? Boolean( options.showBusyCursor ) : false;
+			}
 		}
 		
 		private var _service:AbstractService;

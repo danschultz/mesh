@@ -18,14 +18,19 @@ package mesh
 	import inflections.pluralize;
 	
 	import mesh.adaptors.ServiceAdaptor;
+	import mesh.callbacks.AfterCallbackOperation;
+	import mesh.callbacks.BeforeCallbackOperation;
 	
 	import mx.events.PropertyChangeEvent;
 	import mx.utils.StringUtil;
 	
 	import operations.EmptyOperation;
 	import operations.FinishedOperationEvent;
+	import operations.MethodOperation;
 	import operations.Operation;
+	import operations.OperationEvent;
 	import operations.ParallelOperation;
+	import operations.SequentialOperation;
 	
 	import reflection.className;
 	import reflection.clazz;
@@ -50,6 +55,7 @@ package mesh
 		private static const EXECUTION_DELAY:int = 50;
 		
 		private var _dispatcher:EventDispatcher;
+		private var _callbacks:Array = [];
 		
 		/**
 		 * Constructor.
@@ -85,6 +91,47 @@ package mesh
 			}
 			
 			addEventListener(PropertyChangeEvent.PROPERTY_CHANGE, handlePropertyChange);
+			
+			// callbacks
+			beforeSave(isValid);
+			afterSave(SaveEntityRelationshipsOperation, this);
+		}
+		
+		private function addCallback(type:String, args:Array):void
+		{
+			var obj:Object = {};
+			
+			if (args[0] is Function) {
+				if (type.indexOf("before") == 0) {
+					obj.operationType = BeforeCallbackOperation;
+				} else if (type.indexOf("after") == 0) {
+					obj.operationType = AfterCallbackOperation;
+				} else {
+					throw new ArgumentError("Unsupported callback '" + type + "'");
+				}
+			} else if (args[0] is Class) {
+				obj.operationType = args.shift();
+			} else {
+				throw new ArgumentError("Exepcted first argument to be a Function or Class.");
+			}
+			
+			obj.type = type;
+			obj.args = args;
+			_callbacks.push(obj);
+		}
+		
+		private function operationsForCallback(callback:String):Array
+		{
+			var filterFunc:Function = function(obj:Object, index:int, array:Array):Boolean
+			{
+				return obj.type == callback;
+			};
+			var mapFunc:Function = function(obj:Object, index:int, array:Array):Operation
+			{
+				return newInstance.apply(null, [obj.operationType].concat(obj.args));
+			};
+			
+			return _callbacks.filter(filterFunc).map(mapFunc);
 		}
 		
 		/**
@@ -110,7 +157,11 @@ package mesh
 		 */
 		public function destroy(execute:Boolean = true):Operation
 		{
-			var operation:Operation = adaptorFor(this).destroy(this);
+			var beforeDestroy:SequentialOperation = new SequentialOperation(operationsForCallback("beforeDestroy"));
+			var destroy:Operation = adaptorFor(this).destroy(this);
+			var afterDestroy:SequentialOperation = new SequentialOperation(operationsForCallback("afterDestroy"));
+			
+			var operation:Operation = beforeDestroy.then(destroy).then(afterDestroy);
 			operation.addEventListener(FinishedOperationEvent.FINISHED, function(event:FinishedOperationEvent):void
 			{
 				if (event.successful) {
@@ -123,6 +174,16 @@ package mesh
 			}
 			
 			return operation;
+		}
+		
+		protected function beforeDestroy(... args):void
+		{
+			addCallback("beforeDestroy", args);
+		}
+		
+		protected function afterDestroy(... args):void
+		{
+			addCallback("afterDestroy", args);
 		}
 		
 		private function handlePropertyChange(event:PropertyChangeEvent):void
@@ -166,7 +227,7 @@ package mesh
 		 */
 		public function isValid():Boolean
 		{
-			return runValidations().length == 0;
+			return validate().length == 0;
 		}
 		
 		/**
@@ -213,7 +274,11 @@ package mesh
 		 */
 		public function save(validate:Boolean = true, execute:Boolean = true):Operation
 		{
-			var operation:Operation = hasPropertyChanges ? (isNew ? adaptorFor(this).create(this) : adaptorFor(this).update(this)) : new EmptyOperation();
+			var beforeSave:SequentialOperation = new SequentialOperation(operationsForCallback("beforeSave"));
+			var save:Operation = hasPropertyChanges ? (isNew ? adaptorFor(this).create(this) : adaptorFor(this).update(this)) : new EmptyOperation();
+			var afterSave:SequentialOperation = new SequentialOperation(operationsForCallback("afterSave"));
+			
+			var operation:Operation = beforeSave.then(save).then(afterSave);
 			operation.addEventListener(FinishedOperationEvent.FINISHED, function(event:FinishedOperationEvent):void
 			{
 				if (event.successful) {
@@ -221,20 +286,33 @@ package mesh
 				}
 			});
 			
-			var relationshipOperations:Vector.<Operation> = new Vector.<Operation>();
-			for each (var property:String in relationshipsForEntity(this).keys()) {
-				var association:AssociationProxy = this[property];
-				if (association != null) {
-					relationshipOperations.push(association.save(true, false));
-				}
-			}
-			operation = operation.then(new ParallelOperation(relationshipOperations));
-			
 			if (execute) {
 				setTimeout(operation.execute, EXECUTION_DELAY);
 			}
 			
 			return operation;
+		}
+		
+		/**
+		 * Adds a callback function that will be executed before a save operation. If this 
+		 * function returns <code>false</code> or throws an error, the save will halt.
+		 * 
+		 * @param callback The callback function.
+		 */
+		protected function beforeSave(...args):void
+		{
+			addCallback("beforeSave", args);
+		}
+		
+		/**
+		 * Adds a callback function that will be executed after a save operation has finished.
+		 * 
+		 * @param callback
+		 * 
+		 */
+		protected function afterSave(...args):void
+		{
+			addCallback("afterSave", args);
 		}
 		
 		/**
@@ -477,19 +555,26 @@ package mesh
 		 * Runs the validations defined on this entity and returns the set of errors for
 		 * any validations that failed. If all validations passed, this method returns an
 		 * empty array.
+		 * 
+		 * <p>
+		 * Calling this method will also populate the <code>Entity.errors</code> property with
+		 * the validation results.
+		 * </p>
 		 *
 		 * @return A set of <code>ValidationError</code>s.
 		 * 
 		 * @see #isInvalid()
 		 * @see #isValid()
+		 * @see #errors
 		 */
-		public function runValidations():Array
+		public function validate():Array
 		{
-			var errors:Array = [];
+			var results:Array = [];
 			for each (var validator:Validator in VALIDATORS.grab(clazz(this))) {
-				errors = errors.concat(validator.validate(this));
+				results = results.concat(validator.validate(this));
 			}
-			return errors;
+			_errors = results;
+			return results;
 		}
 		
 		/**
@@ -527,6 +612,18 @@ package mesh
 			return validators;
 		}
 		
+		private var _errors:Array = [];
+		/**
+		 * A set of <code>ValidationResult</code>s that failed during the last call to 
+		 * <code>validate()</code>.
+		 * 
+		 * @see #validate()
+		 */
+		public function get errors():Array
+		{
+			return _errors.concat();
+		}
+		
 		private var _id:*;
 		/**
 		 * An object that represents the ID for this entity.
@@ -538,6 +635,12 @@ package mesh
 		public function set id(value:*):void
 		{
 			if (value == 0) {
+				value = undefined;
+			}
+			if (value == "") {
+				value = undefined;
+			}
+			if (value == null) {
 				value = undefined;
 			}
 			_id = value;
@@ -710,5 +813,30 @@ package mesh
 		{
 			return _dispatcher.willTrigger(type);
 		}
+	}
+}
+
+import mesh.AssociationProxy;
+import mesh.Entity;
+
+import operations.ParallelOperation;
+
+class SaveEntityRelationshipsOperation extends ParallelOperation
+{
+	public function SaveEntityRelationshipsOperation(entity:Entity)
+	{
+		super(generateOperations(entity));
+	}
+	
+	private function generateOperations(entity:Entity):Array
+	{
+		var tempOperations:Array = [];
+		for each (var property:String in Entity.relationshipsForEntity(entity).keys()) {
+			var association:AssociationProxy = entity[property];
+			if (association != null) {
+				tempOperations.push(association.save(true, false));
+			}
+		}
+		return tempOperations;
 	}
 }

@@ -10,7 +10,7 @@ package operations
 		/**
 		 * @copy operations.CompoundOperation#CompoundOperation()
 		 */
-		public function ParallelOperation(operations:Vector.<Operation> = null)
+		public function ParallelOperation(operations:Array = null)
 		{
 			super(operations);
 		}
