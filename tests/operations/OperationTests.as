@@ -66,17 +66,39 @@ package operations
 		[Test]
 		public function testExecuteWhenIdle():void
 		{
-			var executeFired:Boolean;
+			var afterExecuteFired:Boolean;
 			function handleOperationExecuted(event:OperationEvent):void
 			{
-				executeFired = true;
+				afterExecuteFired = true;
 			}
 			
-			_operation.addEventListener(OperationEvent.EXECUTED, handleOperationExecuted);
+			_operation.addEventListener(OperationEvent.AFTER_EXECUTE, handleOperationExecuted);
 			_operation.execute();
 			
-			assertThat(executeFired, equalTo(true));
+			assertThat(afterExecuteFired, equalTo(true));
 			assertThat(_operation.isExecuting, equalTo(true));
+		}
+		
+		[Test]
+		public function testExecuteThenCancelDuringBeforeExecute():void
+		{
+			var beforeExecuteFired:Boolean;
+			var afterExecuteFired:Boolean;
+			
+			_operation.addEventListener(OperationEvent.BEFORE_EXECUTE, function(event:OperationEvent):void
+			{
+				beforeExecuteFired = true;
+				event.operation.cancel();
+			});
+			_operation.addEventListener(OperationEvent.AFTER_EXECUTE, function(event:OperationEvent):void
+			{
+				afterExecuteFired = true;
+			});
+			_operation.execute();
+			
+			assertThat(beforeExecuteFired, equalTo(true));
+			assertThat(afterExecuteFired, equalTo(false));
+			assertThat(_operation.isExecuting, equalTo(false));
 		}
 		
 		[Test]
@@ -84,16 +106,16 @@ package operations
 		{
 			_operation.execute();
 			
-			var executeFired:Boolean;
+			var afterExecuteFired:Boolean;
 			function handleOperationExecuted(event:OperationEvent):void
 			{
-				executeFired = true;
+				afterExecuteFired = true;
 			}
 			
-			_operation.addEventListener(OperationEvent.EXECUTED, handleOperationExecuted);
+			_operation.addEventListener(OperationEvent.AFTER_EXECUTE, handleOperationExecuted);
 			_operation.execute();
 			
-			assertThat(executeFired, equalTo(false));
+			assertThat(afterExecuteFired, equalTo(false));
 			assertThat(_operation.isExecuting, equalTo(true));
 		}
 		

@@ -44,7 +44,7 @@ package operations
 		 * @param operations A set of <code>Operation</code>s that this operation will 
 		 * 	execute.
 		 */
-		public function CompoundOperation(operations:Vector.<Operation> = null)
+		public function CompoundOperation(operations:Array = null)
 		{
 			super();
 			_operations.addAll(operations);
@@ -56,7 +56,7 @@ package operations
 		 * 
 		 * @param operation The operation to add.
 		 */
-		final public function add(operation:Operation):void
+		public function add(operation:Operation):void
 		{
 			if (!isExecuting) {
 				_operations.add(operation);
@@ -66,7 +66,7 @@ package operations
 		/**
 		 * @inheritDoc
 		 */
-		final override protected function cancelRequest():void
+		override protected function cancelRequest():void
 		{
 			super.cancelRequest();
 			
@@ -79,7 +79,7 @@ package operations
 		/**
 		 * @inheritDoc
 		 */
-		final override protected function executeRequest():void
+		override protected function executeRequest():void
 		{
 			super.executeRequest();
 			_finishedOperationsCount = 0;
@@ -165,7 +165,7 @@ package operations
 		 * 
 		 * @param operation The operation to remove.
 		 */
-		final public function remove(operation:Operation):void
+		public function remove(operation:Operation):void
 		{
 			if (!isExecuting) {
 				_operations.remove(operation);

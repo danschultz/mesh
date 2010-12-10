@@ -23,7 +23,8 @@ package mesh
 			mockEntity.address = new Address("1 Infinite Loop", "Cupertino");
 			mockEntity.age = 10;
 			
-			assertThat(mockEntity.runValidations(), emptyArray());
+			assertThat(mockEntity.validate(), emptyArray());
+			assertThat(mockEntity.errors, emptyArray());
 			assertThat(mockEntity.isValid(), equalTo(true));
 			assertThat(mockEntity.isInvalid(), equalTo(false));
 		}
@@ -36,7 +37,8 @@ package mesh
 			mockEntity.address = new Address("", "");
 			mockEntity.age = 0;
 			
-			assertThat(mockEntity.runValidations(), arrayWithSize(5));
+			assertThat(mockEntity.validate(), arrayWithSize(5));
+			assertThat(mockEntity.errors, arrayWithSize(5));
 			assertThat(mockEntity.isValid(), equalTo(false));
 			assertThat(mockEntity.isInvalid(), equalTo(true));
 		}

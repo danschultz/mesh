@@ -163,7 +163,7 @@ package mesh
 		 */
 		override public function save(validate:Boolean = true, execute:Boolean = false):Operation
 		{
-			var tempOperations:Vector.<Operation> = new Vector.<Operation>();
+			var tempOperations:Array = [];
 			
 			for each (var entity:Entity in _mirroredEntities) {
 				if (entity.isDirty) {

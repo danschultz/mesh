@@ -13,6 +13,7 @@ package inflections
 			_tests.push({input:["the quick brown fox", false], expected:"theQuickBrownFox"});
 			_tests.push({input:["the quick brown fox", true], expected:"TheQuickBrownFox"});
 			_tests.push({input:["the quIck broWn foX", true], expected:"TheQuIckBroWnFoX"});
+			_tests.push({input:["The quIck broWn foX", false], expected:"theQuIckBroWnFoX"});
 			_tests.push({input:["the_quick_brown_fox", true], expected:"TheQuickBrownFox"});
 			_tests.push({input:["the_ quick_ brown_ fox", true], expected:"TheQuickBrownFox"});
 			_tests.push({input:["the _ quick _ brown _ fox", true], expected:"TheQuickBrownFox"});

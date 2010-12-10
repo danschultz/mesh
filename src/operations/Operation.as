@@ -9,9 +9,14 @@ package operations
 	[Event(name="canceled", type="operations.OperationEvent")]
 	
 	/**
-	 * Dispatched when the execution of an operation has started
+	 * Dispatched after the execution of an operation has started.
 	 */
-	[Event(name="executed", type="operations.OperationEvent")]
+	[Event(name="afterExecute", type="operations.OperationEvent")]
+	
+	/**
+	 * Dispatched before the execution of an operation is about to start.
+	 */
+	[Event(name="beforeExecute", type="operations.OperationEvent")]
 	
 	/**
 	 * Dispatched when either an error or fault has occurred during the execution
@@ -77,8 +82,12 @@ package operations
 		{
 			if (!isExecuting) {
 				_isExecuting = true;
-				fireExecuted();
-				executeRequest();
+				fireBeforeExecute();
+				
+				if (isExecuting) {
+					executeRequest();
+					fireAfterExecute();
+				}
 			}
 		}
 		
@@ -126,7 +135,7 @@ package operations
 		 */
 		public function during(operation:Operation):Operation
 		{
-			return new ParallelOperation(new <Operation>[this, operation]);
+			return new ParallelOperation([this, operation]);
 		}
 		
 		/**
@@ -167,9 +176,14 @@ package operations
 			dispatchEvent( new OperationEvent(OperationEvent.CANCELED) );
 		}
 		
-		private function fireExecuted():void
+		private function fireAfterExecute():void
 		{
-			dispatchEvent( new OperationEvent(OperationEvent.EXECUTED) );
+			dispatchEvent( new OperationEvent(OperationEvent.AFTER_EXECUTE) );
+		}
+		
+		private function fireBeforeExecute():void
+		{
+			dispatchEvent( new OperationEvent(OperationEvent.BEFORE_EXECUTE) );
 		}
 		
 		private function fireFault(summary:String, detail:String = ""):void
@@ -263,7 +277,7 @@ package operations
 		 */
 		public function then(operation:Operation):Operation
 		{
-			return new SequentialOperation(new <Operation>[this, operation]);
+			return new SequentialOperation([this, operation]);
 		}
 		
 		/**

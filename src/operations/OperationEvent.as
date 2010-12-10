@@ -17,9 +17,14 @@ package operations
 		public static const CANCELED:String = "canceled";
 		
 		/**
-		 * The event type for when an operation is executed.
+		 * The event type before an operation is executed.
 		 */
-		public static const EXECUTED:String = "executed";
+		public static const BEFORE_EXECUTE:String = "preExecute";
+		
+		/**
+		 * The event type after an operation is executed.
+		 */
+		public static const AFTER_EXECUTE:String = "postExecute";
 		
 		/**
 		 * Constructor.
