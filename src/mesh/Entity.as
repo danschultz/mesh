@@ -514,34 +514,6 @@ package mesh
 		 */
 		protected function relationships():void
 		{
-			for each (var relationshipXML:XML in describeType(this)..metadata.(@name == "HasOne" || @name == "HasMany" || @name == "BelongsTo")) {
-				var kind:String = relationshipXML.@name;
-				var options:Object = {};
-				
-				for each (var argXML:XML in relationshipXML..arg) {
-					options[argXML.@key] = argXML.@value.toString();
-				}
-				
-				if (!options.hasOwnProperty("type")) {
-					options.type = relationshipXML.parent().@type;
-				}
-				options.type = getDefinitionByName(options.type) as Class;
-				
-				// try to grab the property auto-magically.
-				if (!options.hasOwnProperty("property")) {
-					// first try to see if there's an accessor we can use.
-					if (relationshipXML.parent().name() == "accessor") {
-						options.property = relationshipXML.parent().@name;
-					}
-					// pluralize the entity type if we're a has many.
-					else if (kind == "HasMany") {
-						var pluralizedClassName:String = pluralize(className(options.type));
-						options.property = pluralizedClassName.substr(0, 1).toLowerCase() + pluralizedClassName.substr(1);
-					}
-				}
-				
-				this[kind.substr(0, 1).toLowerCase() + kind.substr(1)](options.type, options.property, options);
-			}
 			
 		}
 		
