@@ -12,6 +12,7 @@ package mesh
 	import flash.utils.describeType;
 	import flash.utils.flash_proxy;
 	import flash.utils.getDefinitionByName;
+	import flash.utils.getQualifiedSuperclassName;
 	import flash.utils.setTimeout;
 	
 	import inflections.humanize;
@@ -94,6 +95,7 @@ package mesh
 			
 			// callbacks
 			beforeSave(isValid);
+			beforeSave(populateForeignKeys);
 			afterSave(SaveEntityRelationshipsOperation, this);
 		}
 		
@@ -228,6 +230,15 @@ package mesh
 		public function isValid():Boolean
 		{
 			return validate().length == 0;
+		}
+		
+		private function populateForeignKeys():void
+		{
+			for each (var relationship:Relationship in relationshipsForEntity(this).values()) {
+				if (relationship is BelongsToRelationship) {
+					this[(relationship as BelongsToRelationship).foreignKey] = this[relationship.property].id;
+				}
+			}
 		}
 		
 		/**
@@ -384,7 +395,15 @@ package mesh
 				
 				return ServiceAdaptor( newInstance(getDefinitionByName(adaptorXML.arg.(@key == "type").@value) as Class, clazz(this), options) );
 			}
-			throw new IllegalOperationError(humanize(className(ServiceAdaptor)) + " not found for " + className(this));
+			
+			// service adaptor hasn't been found. check the super class
+			var parent:Object = newInstance(getDefinitionByName(getQualifiedSuperclassName(this)) as Class);
+			if (parent is Entity) {
+				return adaptorFor(parent);
+			} else {
+				return null;
+			}
+			throw new IllegalOperationError("Service adaptor not found for " + className(this));
 		}
 		
 		/**
@@ -490,7 +509,7 @@ package mesh
 		 */
 		protected function relationships():void
 		{
-			for each (var relationshipXML:XML in describeType(this)..metadata.(@name == "HasOne" || @name == "HasMany")) {
+			for each (var relationshipXML:XML in describeType(this)..metadata.(@name == "HasOne" || @name == "HasMany" || @name == "BelongsTo")) {
 				var kind:String = relationshipXML.@name;
 				var options:Object = {};
 				
@@ -519,6 +538,20 @@ package mesh
 				this[kind.substr(0, 1).toLowerCase() + kind.substr(1)](options.type, options.property, options);
 			}
 			
+		}
+		
+		/**
+		 * Adds a belongs-to relationship for this entity.
+		 * 
+		 * @param target The target entity class.
+		 * @param property The property mapping the relationship.
+		 * @param options Any options for the relationship.
+		 * 
+		 * @see #relationships()
+		 */
+		protected function belongsTo(target:Class, property:String, options:Object = null):void
+		{
+			relationshipsForEntity(this).put(property, new BelongsToRelationship(clazz(this), property, target, options));
 		}
 		
 		/**
