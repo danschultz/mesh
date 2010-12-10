@@ -4,6 +4,7 @@ package mesh
 	
 	import org.flexunit.assertThat;
 	import org.hamcrest.core.isA;
+	import mesh.associations.AssociationCollection;
 
 	public class AssociationTests
 	{

@@ -3,7 +3,7 @@ package mesh.adaptors
 	import flash.errors.IllegalOperationError;
 	
 	import mesh.Entity;
-	import mesh.Relationship;
+	import mesh.associations.Relationship;
 	
 	import operations.Operation;
 	

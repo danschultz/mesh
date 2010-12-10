@@ -1,4 +1,4 @@
-package mesh
+package mesh.associations
 {
 	import collections.ArrayList;
 	import collections.ArraySet;
@@ -14,6 +14,7 @@ package mesh
 	import operations.FinishedOperationEvent;
 	import operations.Operation;
 	import operations.ParallelOperation;
+	import mesh.Entity;
 	
 	use namespace flash_proxy;
 	

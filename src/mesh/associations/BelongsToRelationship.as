@@ -1,8 +1,9 @@
-package mesh
+package mesh.associations
 {
 	import inflections.camelize;
 	
 	import reflection.className;
+	import mesh.Entity;
 
 	/**
 	 * An association that defines that an entity belongs to an instance of another entity.

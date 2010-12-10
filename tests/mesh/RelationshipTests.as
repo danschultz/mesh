@@ -8,6 +8,8 @@ package mesh
 	import org.hamcrest.object.equalTo;
 	import org.hamcrest.object.hasProperty;
 	import org.hamcrest.object.instanceOf;
+	import mesh.associations.HasManyRelationship;
+	import mesh.associations.HasOneRelationship;
 
 	public class RelationshipTests
 	{

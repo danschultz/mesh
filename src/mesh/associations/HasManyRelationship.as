@@ -1,5 +1,7 @@
-package mesh
+package mesh.associations
 {
+	import mesh.Entity;
+
 	/**
 	 * An association that defines a one-to-many relationship with another model. This
 	 * relationship indicates that each instance of a model contains zero or many 

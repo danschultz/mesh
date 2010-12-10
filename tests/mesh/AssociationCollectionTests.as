@@ -7,6 +7,7 @@ package mesh
 	import org.flexunit.assertThat;
 	import org.hamcrest.collection.array;
 	import org.hamcrest.object.equalTo;
+	import mesh.associations.AssociationCollection;
 
 	public class AssociationCollectionTests
 	{

@@ -1,6 +1,7 @@
-package mesh
+package mesh.associations
 {
 	import flash.errors.IllegalOperationError;
+	import mesh.Entity;
 
 	/**
 	 * A relationship represents an association between two entities, where the <code>owner</code>

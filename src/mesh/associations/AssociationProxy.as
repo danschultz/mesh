@@ -1,4 +1,4 @@
-package mesh
+package mesh.associations
 {
 	import flash.events.Event;
 	import flash.events.EventDispatcher;
@@ -11,6 +11,7 @@ package mesh
 	import operations.FinishedOperationEvent;
 	import operations.Operation;
 	import operations.ResultOperationEvent;
+	import mesh.Entity;
 
 	/**
 	 * An association proxy is a class that contains the references to the objects in

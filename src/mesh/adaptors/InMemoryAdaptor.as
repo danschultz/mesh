@@ -3,7 +3,7 @@ package mesh.adaptors
 	import collections.HashMap;
 	
 	import mesh.Entity;
-	import mesh.Relationship;
+	import mesh.associations.Relationship;
 	
 	import operations.FinishedOperationEvent;
 	import operations.MethodOperation;

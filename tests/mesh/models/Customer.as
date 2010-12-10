@@ -1,6 +1,6 @@
 package mesh.models
 {
-	import mesh.AssociationProxy;
+	import mesh.associations.AssociationProxy;
 	import mesh.Entity;
 	
 	[Validate(properties="addressStreet,addressCity", validator="validations.LengthValidator", minimum="1")]

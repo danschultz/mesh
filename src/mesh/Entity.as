@@ -38,6 +38,11 @@ package mesh
 	import reflection.newInstance;
 	
 	import validations.Validator;
+	import mesh.associations.AssociationProxy;
+	import mesh.associations.BelongsToRelationship;
+	import mesh.associations.HasManyRelationship;
+	import mesh.associations.HasOneRelationship;
+	import mesh.associations.Relationship;
 	
 	/**
 	 * An entity.
@@ -849,7 +854,7 @@ package mesh
 	}
 }
 
-import mesh.AssociationProxy;
+import mesh.associations.AssociationProxy;
 import mesh.Entity;
 
 import operations.ParallelOperation;
