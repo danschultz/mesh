@@ -62,6 +62,11 @@ package mesh
 				   property == aggregate.property;
 		}
 		
+		public function getMappedProperty(entityProperty:String):String
+		{
+			return _mapping[entityProperty];
+		}
+		
 		public function getValue(entity:Entity, entityProperty:String):*
 		{
 			var typeProperty:String = _mapping[entityProperty];

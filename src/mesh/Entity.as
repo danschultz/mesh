@@ -10,8 +10,10 @@ package mesh
 	import flash.utils.setTimeout;
 	
 	import mesh.adaptors.ServiceAdaptor;
+	import mesh.associations.AssociationCollection;
 	import mesh.associations.AssociationProxy;
 	import mesh.associations.BelongsToRelationship;
+	import mesh.associations.HasManyRelationship;
 	import mesh.associations.Relationship;
 	import mesh.callbacks.AfterCallbackOperation;
 	import mesh.callbacks.BeforeCallbackOperation;
@@ -38,7 +40,6 @@ package mesh
 	{
 		private static const EXECUTION_DELAY:int = 50;
 		
-		private var _description:EntityDescription;
 		private var _dispatcher:EventDispatcher;
 		private var _callbacks:Array = [];
 		
@@ -55,7 +56,7 @@ package mesh
 			// add necessary callbacks
 			beforeSave(isValid);
 			beforeSave(populateForeignKeys);
-			afterSave(SaveEntityRelationshipsOperation, this);
+			afterSave(SaveEntityRelationshipsOperation, _associations);
 			
 			addEventListener(PropertyChangeEvent.PROPERTY_CHANGE, handlePropertyChange);
 		}
@@ -354,6 +355,16 @@ package mesh
 			return results;
 		}
 		
+		private var _description:EntityDescription;
+		/**
+		 * The description that contains the aggregates, relationships, validators and service
+		 * adaptor for this entity.
+		 */
+		public function get description():EntityDescription
+		{
+			return _description;
+		}
+		
 		private var _errors:Array = [];
 		/**
 		 * A set of <code>ValidationResult</code>s that failed during the last call to 
@@ -419,8 +430,11 @@ package mesh
 		{
 			// more in depth check on the entity's relationships.
 			for each (var relationship:Relationship in _description.relationships) {
-				if (this[relationship.property] != null && AssociationProxy( this[relationship.property] ).isDirty) {
-					return true;
+				if (!(relationship is BelongsToRelationship)) {
+					var association:AssociationProxy = this[relationship.property];
+					if (association != null && association.isDirty) {
+						return true;
+					}
 				}
 			}
 			return false;
@@ -466,7 +480,7 @@ package mesh
 		}
 		
 		private var _properties:Properties = new Properties(this);
-		private var _relationships:Properties = new Properties(this);
+		private var _associations:Properties = new Properties(this);
 		/**
 		 * @private
 		 */
@@ -474,26 +488,39 @@ package mesh
 		{
 			var relationship:Relationship = _description.getRelationshipForProperty(name);
 			if (relationship != null) {
-				if (!_relationships.hasOwnProperty(relationship.property)) {
-					_relationships.changed(relationship.property, undefined, relationship.createProxy(this));
+				if (!_associations.hasOwnProperty(relationship.property)) {
+					_associations[relationship.property] = relationship.createProxy(this);
 				}
 			}
 			
-			if (_relationships.hasOwnProperty(name)) {
-				return _relationships[name];
+			if (_associations.hasOwnProperty(name)) {
+				var association:AssociationProxy = _associations[name];
+				if (association is AssociationCollection) {
+					return association;
+				}
+				return association.target;
 			}
 			
 			if (_properties.hasOwnProperty(name)) {
 				return _properties[name];
 			}
 			
-			if (name.toString().lastIndexOf("Was") == name.toString().length-3) {
-				return _properties.oldValueOf(name.toString().substr(0, name.toString().length-3));
-			}
-			
 			var aggregate:Aggregate = _description.getAggregateForProperty(name);
 			if (aggregate != null && aggregate.property != name.toString()) {
 				return aggregate.getValue(this, name);
+			}
+			
+			if (name.toString().lastIndexOf("Was") == name.toString().length-3) {
+				var property:String = name.toString().substr(0, name.toString().length-3);
+				
+				aggregate = _description.getAggregateForProperty(property);
+				if (aggregate != null) {
+					var aggregateValue:Object = _properties.oldValueOf(aggregate.property);
+					if (aggregateValue != null) {
+						return aggregateValue[aggregate.getMappedProperty(property)];
+					}
+				}
+				return _properties.oldValueOf(property);
 			}
 			
 			return undefined;
@@ -514,6 +541,10 @@ package mesh
 		{
 			var relationship:Relationship = _description.getRelationshipForProperty(name);
 			if (relationship != null) {
+				if (!_associations.hasOwnProperty(relationship.property)) {
+					_associations[relationship.property] = relationship.createProxy(this);
+				}
+				_associations[name].target = value;
 				return;
 			}
 			
@@ -570,6 +601,7 @@ package mesh
 
 import mesh.Entity;
 import mesh.EntityDescription;
+import mesh.Properties;
 import mesh.associations.AssociationProxy;
 import mesh.associations.Relationship;
 
@@ -577,19 +609,16 @@ import operations.ParallelOperation;
 
 class SaveEntityRelationshipsOperation extends ParallelOperation
 {
-	public function SaveEntityRelationshipsOperation(entity:Entity)
+	public function SaveEntityRelationshipsOperation(associations:Object)
 	{
-		super(generateOperations(entity));
+		super(generateOperations(associations));
 	}
 	
-	private function generateOperations(entity:Entity):Array
+	private function generateOperations(associations:Object):Array
 	{
 		var tempOperations:Array = [];
-		for each (var relationship:Relationship in EntityDescription.describe(entity).relationships) {
-			var association:AssociationProxy = entity[relationship.property];
-			if (association != null) {
-				tempOperations.push(association.save(true, false));
-			}
+		for (var property:String in associations) {
+			tempOperations.push(associations[property].save(true, false));
 		}
 		return tempOperations;
 	}

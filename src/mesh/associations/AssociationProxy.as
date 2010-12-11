@@ -7,11 +7,13 @@ package mesh.associations
 	import flash.utils.flash_proxy;
 	import flash.utils.setTimeout;
 	
+	import mesh.Entity;
+	import mesh.EntityDescription;
+	
 	import operations.EmptyOperation;
 	import operations.FinishedOperationEvent;
 	import operations.Operation;
 	import operations.ResultOperationEvent;
-	import mesh.Entity;
 
 	/**
 	 * An association proxy is a class that contains the references to the objects in

@@ -22,7 +22,7 @@ package mesh.associations
 		/**
 		 * @inheritDoc
 		 */
-		override public function createProxy(entity:Entity):AssociationProxy
+		override public function createProxy(entity:Entity):*
 		{
 			return new AssociationProxy(entity, this);
 		}

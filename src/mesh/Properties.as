@@ -153,7 +153,40 @@ package mesh
 		 */
 		override flash_proxy function setProperty(name:*, value:*):void
 		{
-			changed(name, _host[name], value);
+			changed(name, _currentValues[name], value);
+		}
+		
+		/**
+		 *  @private
+		 */
+		override flash_proxy function nextName(index:int):String
+		{
+			return _iteratingItems[index-1];
+		}
+		
+		private var _iteratingItems:Array;
+		private var _len:int;
+		/**
+		 * @private
+		 */
+		override flash_proxy function nextNameIndex(index:int):int
+		{
+			if (index == 0) {
+				_iteratingItems = [];
+				for (var property:String in _currentValues) {
+					_iteratingItems.push(property);
+				}
+				_len = _iteratingItems.length;
+			}
+			return index < _len ? index+1 : 0;
+		}
+		
+		/**
+		 * @private
+		 */
+		override flash_proxy function nextValue(index:int):*
+		{
+			return _currentValues[_iteratingItems[index-1]];
 		}
 	}
 }

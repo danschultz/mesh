@@ -7,6 +7,8 @@ package mesh.associations
 	
 	import flash.utils.flash_proxy;
 	
+	import mesh.Entity;
+	
 	import mx.collections.IList;
 	import mx.events.CollectionEvent;
 	import mx.events.CollectionEventKind;
@@ -14,7 +16,6 @@ package mesh.associations
 	import operations.FinishedOperationEvent;
 	import operations.Operation;
 	import operations.ParallelOperation;
-	import mesh.Entity;
 	
 	use namespace flash_proxy;
 	
@@ -82,6 +83,7 @@ package mesh.associations
 		{
 			switch (event.kind) {
 				case CollectionEventKind.ADD:
+					populateBelongsToRelationships(event.items);
 					_removedEntities.removeAll(event.items);
 					break;
 				case CollectionEventKind.REMOVE:
@@ -89,6 +91,7 @@ package mesh.associations
 					break;
 				case CollectionEventKind.RESET:
 					_removedEntities.addAll(_mirroredEntities.difference(new collections.ArrayList(target.toArray())));
+					populateBelongsToRelationships(target.toArray());
 					break;
 			}
 			
@@ -105,6 +108,17 @@ package mesh.associations
 		public function itemUpdated(item:Object, property:Object = null, oldValue:Object = null, newValue:Object = null):void
 		{
 			target.itemUpdated(item, property, oldValue, newValue);
+		}
+		
+		private function populateBelongsToRelationships(entities:Array):void
+		{
+			for each (var entity:Entity in entities) {
+				for each (var relationship:Relationship in entity.description.relationships) {
+					if (relationship is BelongsToRelationship) {
+						entity[relationship.property] = owner;
+					}
+				}
+			}
 		}
 		
 		/**
@@ -236,6 +250,10 @@ package mesh.associations
 		}
 		override public function set target(value:Object):void
 		{
+			if (value != null && (!(value is Array) && !value.hasOwnProperty("toArray"))) {
+				throw new ArgumentError("AssociationCollection.target must be an Array, have a toArray method, or be null.");
+			}
+			
 			if (value != target) {
 				if (target != null) {
 					target.removeEventListener(CollectionEvent.COLLECTION_CHANGE, handleEntitiesCollectionChange);

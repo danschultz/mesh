@@ -2,8 +2,9 @@ package mesh.associations
 {
 	import inflections.camelize;
 	
-	import reflection.className;
 	import mesh.Entity;
+	
+	import reflection.className;
 
 	/**
 	 * An association that defines that an entity belongs to an instance of another entity.
@@ -23,7 +24,7 @@ package mesh.associations
 		/**
 		 * @inheritDoc
 		 */
-		override public function createProxy(entity:Entity):AssociationProxy
+		override public function createProxy(entity:Entity):*
 		{
 			return new AssociationProxy(entity, this);
 		}

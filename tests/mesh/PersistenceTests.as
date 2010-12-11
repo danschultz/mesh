@@ -124,6 +124,39 @@ package mesh
 		}
 		
 		[Test(async)]
+		public function testSavingBelongsToAssociationPopulatesForeignKey():void
+		{
+			var order1:Order = new Order();
+			_customer.orders.addItem(order1);
+			
+			var order2:Order = new Order();
+			_customer.orders.addItem(order2);
+			
+			var assertion:Function = function(event:FinishedOperationEvent, data:Object):void
+			{
+				var customer:Customer = order1.customer;
+				assertThat(order1.customer, equalTo(_customer));
+				assertThat(order1.customerId, equalTo(_customer.id));
+				assertThat(order2.customer, equalTo(_customer));
+				assertThat(order2.customerId, equalTo(_customer.id));
+			};
+			assertion = Async.asyncHandler(this, assertion, 250);
+			
+			var operation:Operation = _customer.save();
+			operation.addEventListener(FinishedOperationEvent.FINISHED, function(event:FinishedOperationEvent):void
+			{
+				order2.total = 10;
+				
+				var operation:Operation = _customer.save() as Operation;
+				operation.addEventListener(FinishedOperationEvent.FINISHED, assertion);
+			});
+			operation.addEventListener(FaultOperationEvent.FAULT, function(event:FaultOperationEvent):void
+			{
+				fail(event.summary);
+			});
+		}
+		
+		[Test(async)]
 		public function testSaveDestroyedAssociations():void
 		{
 			var order1:Order = new Order();

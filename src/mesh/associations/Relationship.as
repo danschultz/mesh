@@ -34,7 +34,7 @@ package mesh.associations
 		 * 
 		 * @return A new association proxy.
 		 */
-		public function createProxy(entity:Entity):AssociationProxy
+		public function createProxy(entity:Entity):*
 		{
 			throw new IllegalOperationError("Relationship.createProxy() must be overridden.");
 		}
