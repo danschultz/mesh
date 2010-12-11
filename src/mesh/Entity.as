@@ -51,12 +51,12 @@ package mesh
 			super();
 			
 			_dispatcher = new EventDispatcher(this);
-			_description = EntityDescription.describe(this);
+			_descriptor = EntityDescription.describe(this);
 			
 			// add necessary callbacks
 			beforeSave(isValid);
 			beforeSave(populateForeignKeys);
-			afterSave(SaveEntityRelationshipsOperation, _associations);
+			afterSave(SaveEntityRelationshipsOperation, this);
 			
 			addEventListener(PropertyChangeEvent.PROPERTY_CHANGE, handlePropertyChange);
 		}
@@ -194,9 +194,12 @@ package mesh
 			return validate().length == 0;
 		}
 		
-		private function populateForeignKeys():void
+		/**
+		 * Executed as a callback when the entity is saved to populate its foreign keys.
+		 */
+		protected function populateForeignKeys():void
 		{
-			for each (var relationship:Relationship in _description.relationships) {
+			for each (var relationship:Relationship in descriptor.relationships) {
 				if (relationship is BelongsToRelationship) {
 					this[(relationship as BelongsToRelationship).foreignKey] = this[relationship.property].id;
 				}
@@ -223,7 +226,7 @@ package mesh
 		{
 			_properties.revert();
 			
-			for each (var relationship:Relationship in _description.relationships) {
+			for each (var relationship:Relationship in descriptor.relationships) {
 				if (hasOwnProperty(relationship.property) && this[relationship.property] != null) {
 					this[relationship.property].revert();
 				}
@@ -348,21 +351,21 @@ package mesh
 		public function validate():Array
 		{
 			var results:Array = [];
-			for each (var validator:Validator in _description.validators) {
+			for each (var validator:Validator in descriptor.validators) {
 				results = results.concat(validator.validate(this));
 			}
 			_errors = results;
 			return results;
 		}
 		
-		private var _description:EntityDescription;
+		private var _descriptor:EntityDescription;
 		/**
 		 * The description that contains the aggregates, relationships, validators and service
 		 * adaptor for this entity.
 		 */
-		public function get description():EntityDescription
+		public function get descriptor():EntityDescription
 		{
-			return _description;
+			return _descriptor;
 		}
 		
 		private var _errors:Array = [];
@@ -429,7 +432,7 @@ package mesh
 		public function get hasDirtyAssociations():Boolean
 		{
 			// more in depth check on the entity's relationships.
-			for each (var relationship:Relationship in _description.relationships) {
+			for each (var relationship:Relationship in descriptor.relationships) {
 				if (!(relationship is BelongsToRelationship)) {
 					var association:AssociationProxy = this[relationship.property];
 					if (association != null && association.isDirty) {
@@ -476,7 +479,7 @@ package mesh
 		 */
 		public function get properties():ISet
 		{
-			return _description.properties;
+			return descriptor.properties;
 		}
 		
 		private var _properties:Properties = new Properties(this);
@@ -486,7 +489,7 @@ package mesh
 		 */
 		override flash_proxy function getProperty(name:*):*
 		{
-			var relationship:Relationship = _description.getRelationshipForProperty(name);
+			var relationship:Relationship = descriptor.getRelationshipForProperty(name);
 			if (relationship != null) {
 				if (!_associations.hasOwnProperty(relationship.property)) {
 					_associations[relationship.property] = relationship.createProxy(this);
@@ -505,7 +508,7 @@ package mesh
 				return _properties[name];
 			}
 			
-			var aggregate:Aggregate = _description.getAggregateForProperty(name);
+			var aggregate:Aggregate = descriptor.getAggregateForProperty(name);
 			if (aggregate != null && aggregate.property != name.toString()) {
 				return aggregate.getValue(this, name);
 			}
@@ -513,7 +516,7 @@ package mesh
 			if (name.toString().lastIndexOf("Was") == name.toString().length-3) {
 				var property:String = name.toString().substr(0, name.toString().length-3);
 				
-				aggregate = _description.getAggregateForProperty(property);
+				aggregate = descriptor.getAggregateForProperty(property);
 				if (aggregate != null) {
 					var aggregateValue:Object = _properties.oldValueOf(aggregate.property);
 					if (aggregateValue != null) {
@@ -539,7 +542,7 @@ package mesh
 		 */
 		override flash_proxy function setProperty(name:*, value:*):void
 		{
-			var relationship:Relationship = _description.getRelationshipForProperty(name);
+			var relationship:Relationship = descriptor.getRelationshipForProperty(name);
 			if (relationship != null) {
 				if (!_associations.hasOwnProperty(relationship.property)) {
 					_associations[relationship.property] = relationship.createProxy(this);
@@ -550,7 +553,7 @@ package mesh
 			
 			_properties[name] = value;
 			
-			var aggregate:Aggregate = _description.getAggregateForProperty(name);
+			var aggregate:Aggregate = descriptor.getAggregateForProperty(name);
 			if (aggregate != null && aggregate.property != name.toString()) {
 				aggregate.setValue(this, name, value);
 				return;
@@ -603,22 +606,28 @@ import mesh.Entity;
 import mesh.EntityDescription;
 import mesh.Properties;
 import mesh.associations.AssociationProxy;
+import mesh.associations.BelongsToRelationship;
 import mesh.associations.Relationship;
 
 import operations.ParallelOperation;
 
 class SaveEntityRelationshipsOperation extends ParallelOperation
 {
-	public function SaveEntityRelationshipsOperation(associations:Object)
+	public function SaveEntityRelationshipsOperation(entity:Entity)
 	{
-		super(generateOperations(associations));
+		super(generateOperations(entity));
 	}
 	
-	private function generateOperations(associations:Object):Array
+	private function generateOperations(entity:Entity):Array
 	{
 		var tempOperations:Array = [];
-		for (var property:String in associations) {
-			tempOperations.push(associations[property].save(true, false));
+		for each (var relationship:Relationship in entity.descriptor.relationships) {
+			if (!(relationship is BelongsToRelationship)) { 
+				var association:* = entity[relationship.property];
+				if (association != null) {
+					tempOperations.push(association.save(true, false));
+				}
+			}
 		}
 		return tempOperations;
 	}

@@ -113,7 +113,7 @@ package mesh.associations
 		private function populateBelongsToRelationships(entities:Array):void
 		{
 			for each (var entity:Entity in entities) {
-				for each (var relationship:Relationship in entity.description.relationships) {
+				for each (var relationship:Relationship in entity.descriptor.relationships) {
 					if (relationship is BelongsToRelationship) {
 						entity[relationship.property] = owner;
 					}
