@@ -23,10 +23,10 @@ package mesh.adaptors
 		 * @param entity The entity for this service adaptor.
 		 * @param options A set of options to configure this service adaptor.
 		 */
-		public function ServiceAdaptor(entity:Class, options:Object)
+		public function ServiceAdaptor(entity:Class, options:Object = null)
 		{
 			_entity = entity;
-			_options = options;
+			_options = options == null ? {} : options;
 		}
 		
 		/**

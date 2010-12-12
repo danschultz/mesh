@@ -84,8 +84,9 @@
 	<metadata name="ServiceAdaptor" description="Add a one-to-many relationship to an entity.">
 		
 		<context name="class"/>
+		<context name="variable"/>
 		
-		<attribute name="type" type="Class" hint="classes" hintType="mesh.adaptors.ServiceAdaptor" required="true"/>
+		<attribute name="type" type="Class" hint="classes" hintType="mesh.adaptors.ServiceAdaptor"/>
 	</metadata>
 	
 	<!-- 

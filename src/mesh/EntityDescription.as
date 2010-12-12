@@ -149,7 +149,10 @@ package mesh
 					options[argXML.@key] = argXML.@value.toString();
 				}
 				
-				_adaptor = ServiceAdaptor( newInstance(getDefinitionByName(adaptorXML.arg.(@key == "type").@value) as Class, entityType, options) );
+				_adaptor = entityType[adaptorXML.parent().@name];
+				if (_adaptor == null) {
+					_adaptor = ServiceAdaptor( newInstance(getDefinitionByName(adaptorXML.parent().@type) as Class, entityType, options) );
+				}
 				break;
 			}
 			

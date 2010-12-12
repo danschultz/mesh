@@ -13,7 +13,6 @@ package mesh
 	import mesh.associations.AssociationCollection;
 	import mesh.associations.AssociationProxy;
 	import mesh.associations.BelongsToRelationship;
-	import mesh.associations.HasManyRelationship;
 	import mesh.associations.Relationship;
 	import mesh.callbacks.AfterCallbackOperation;
 	import mesh.callbacks.BeforeCallbackOperation;
@@ -21,7 +20,7 @@ package mesh
 	import mx.events.PropertyChangeEvent;
 	
 	import operations.EmptyOperation;
-	import operations.FinishedOperationEvent;
+	import operations.FactoryOperation;
 	import operations.Operation;
 	import operations.ParallelOperation;
 	import operations.SequentialOperation;
@@ -53,10 +52,14 @@ package mesh
 			_dispatcher = new EventDispatcher(this);
 			_descriptor = EntityDescription.describe(this);
 			
-			// add necessary callbacks
+			// add necessary callbacks for save
 			beforeSave(isValid);
 			beforeSave(populateForeignKeys);
+			afterSave(saved);
 			afterSave(SaveEntityRelationshipsOperation, this);
+			
+			// add necessary callback for destory
+			afterDestroy(destroyed);
 			
 			addEventListener(PropertyChangeEvent.PROPERTY_CHANGE, handlePropertyChange);
 		}
@@ -122,21 +125,13 @@ package mesh
 		public function destroy(execute:Boolean = true):Operation
 		{
 			var beforeDestroy:SequentialOperation = new SequentialOperation(operationsForCallback("beforeDestroy"));
-			var destroy:Operation = adaptorFor(this).destroy(this);
+			var destroy:Operation = new FactoryOperation(adaptorFor(this).destroy, this);
 			var afterDestroy:SequentialOperation = new SequentialOperation(operationsForCallback("afterDestroy"));
 			
 			var operation:Operation = beforeDestroy.then(destroy).then(afterDestroy);
-			operation.addEventListener(FinishedOperationEvent.FINISHED, function(event:FinishedOperationEvent):void
-			{
-				if (event.successful) {
-					_isDestroyed = true;
-				}
-			});
-			
 			if (execute) {
 				setTimeout(operation.execute, EXECUTION_DELAY);
 			}
-			
 			return operation;
 		}
 		
@@ -148,6 +143,14 @@ package mesh
 		protected function afterDestroy(... args):void
 		{
 			addCallback("afterDestroy", args);
+		}
+		
+		/**
+		 * Called when the entity has been successfully destroyed from its backend service
+		 */
+		protected function destroyed():void
+		{
+			_isDestroyed = true;
 		}
 		
 		private function handlePropertyChange(event:PropertyChangeEvent):void
@@ -251,21 +254,13 @@ package mesh
 		public function save(validate:Boolean = true, execute:Boolean = true):Operation
 		{
 			var beforeSave:SequentialOperation = new SequentialOperation(operationsForCallback("beforeSave"));
-			var save:Operation = hasPropertyChanges ? (isNew ? adaptorFor(this).create(this) : adaptorFor(this).update(this)) : new EmptyOperation();
+			var save:Operation = hasPropertyChanges ? (new FactoryOperation(isNew ? adaptorFor(this).create : adaptorFor(this).update, this)) : new EmptyOperation();
 			var afterSave:SequentialOperation = new SequentialOperation(operationsForCallback("afterSave"));
 			
 			var operation:Operation = beforeSave.then(save).then(afterSave);
-			operation.addEventListener(FinishedOperationEvent.FINISHED, function(event:FinishedOperationEvent):void
-			{
-				if (event.successful) {
-					saved();
-				}
-			});
-			
 			if (execute) {
 				setTimeout(operation.execute, EXECUTION_DELAY);
 			}
-			
 			return operation;
 		}
 		

@@ -18,7 +18,7 @@ package mesh.adaptors
 		/**
 		 * @copy ServiceAdaptor#ServiceAdaptor()
 		 */
-		public function InMemoryAdaptor(entity:Class, options:Object)
+		public function InMemoryAdaptor(entity:Class, options:Object = null)
 		{
 			super(entity, options);
 		}

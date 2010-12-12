@@ -2,6 +2,7 @@ package mesh.models
 {
 	import mesh.Entity;
 	import mesh.EntityDescription;
+	import mesh.adaptors.InMemoryAdaptor;
 	import mesh.associations.AssociationProxy;
 	
 	[Validate(properties="addressStreet,addressCity", validator="validations.LengthValidator", minimum="1")]
@@ -10,9 +11,11 @@ package mesh.models
 	[HasMany(type="mesh.models.Order", property="orders")]
 	[HasMany(type="mesh.models.Car")]
 	
-	[ServiceAdaptor(type="mesh.adaptors.InMemoryAdaptor")]
 	public dynamic class Customer extends Entity
 	{
+		[ServiceAdaptor]
+		public static var adaptor:InMemoryAdaptor = new InMemoryAdaptor(Customer);
+		
 		public function Customer()
 		{
 			super();
