@@ -110,6 +110,20 @@ package mesh.associations
 			target.itemUpdated(item, property, oldValue, newValue);
 		}
 		
+		/**
+		 * @inheritDoc
+		 */
+		override public function loaded():void
+		{
+			super.loaded();
+			
+			_originalEntities = new collections.ArrayList(toArray());
+			
+			for each (var entity:Entity in target) {
+				entity.loaded();
+			}
+		}
+		
 		private function populateBelongsToRelationships(entities:Array):void
 		{
 			for each (var entity:Entity in entities) {
@@ -149,14 +163,6 @@ package mesh.associations
 		public function removeItemAt(index:int):Object
 		{
 			return target.removeItemAt(index);
-		}
-		
-		/**
-		 * @inheritDoc
-		 */
-		override public function loaded():void
-		{
-			_originalEntities = new collections.ArrayList(toArray());
 		}
 		
 		/**

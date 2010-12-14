@@ -37,8 +37,6 @@ package mesh
 	 */
 	public dynamic class Entity extends Proxy implements IEventDispatcher
 	{
-		private static const EXECUTION_DELAY:int = 50;
-		
 		private var _dispatcher:EventDispatcher;
 		private var _callbacks:Array = [];
 		
@@ -52,16 +50,25 @@ package mesh
 			_dispatcher = new EventDispatcher(this);
 			_descriptor = EntityDescription.describe(this);
 			
+			// add necessary callbacks for find
+			afterFind(_properties.clear);
+			afterFind(markNonLazyAssociationsAsLoaded);
+			
 			// add necessary callbacks for save
 			beforeSave(isValid);
 			beforeSave(populateForeignKeys);
-			afterSave(saved);
+			afterSave(persisted);
 			afterSave(SaveEntityRelationshipsOperation, this);
 			
 			// add necessary callback for destory
 			afterDestroy(destroyed);
 			
 			addEventListener(PropertyChangeEvent.PROPERTY_CHANGE, handlePropertyChange);
+		}
+		
+		protected function afterFind(...args):void
+		{
+			addCallback("afterFind", args);
 		}
 		
 		private function addCallback(type:String, args:Array):void
@@ -89,16 +96,27 @@ package mesh
 		
 		private function operationsForCallback(callback:String):Array
 		{
-			var filterFunc:Function = function(obj:Object, index:int, array:Array):Boolean
-			{
-				return obj.type == callback;
-			};
 			var mapFunc:Function = function(obj:Object, index:int, array:Array):Operation
 			{
 				return newInstance.apply(null, [obj.operationType].concat(obj.args));
 			};
 			
-			return _callbacks.filter(filterFunc).map(mapFunc);
+			return callbacksForType(callback).map(mapFunc);
+		}
+		
+		private function executeCallbacks(type:String):void
+		{
+			for each (var operation:Operation in operationsForCallback(type)) {
+				operation.execute();
+			}
+		}
+		
+		private function callbacksForType(type:String):Array
+		{
+			return _callbacks.filter(function(obj:Object, index:int, array:Array):Boolean
+			{
+				return obj.type == type;
+			});
 		}
 		
 		/**
@@ -130,7 +148,7 @@ package mesh
 			
 			var operation:Operation = beforeDestroy.then(destroy).then(afterDestroy);
 			if (execute) {
-				setTimeout(operation.execute, EXECUTION_DELAY);
+				setTimeout(operation.execute, Mesh.DELAY);
 			}
 			return operation;
 		}
@@ -146,7 +164,7 @@ package mesh
 		}
 		
 		/**
-		 * Called when the entity has been successfully destroyed from its backend service
+		 * Called when the entity has been successfully destroyed from its backend service.
 		 */
 		protected function destroyed():void
 		{
@@ -259,7 +277,7 @@ package mesh
 			
 			var operation:Operation = beforeSave.then(save).then(afterSave);
 			if (execute) {
-				setTimeout(operation.execute, EXECUTION_DELAY);
+				setTimeout(operation.execute, Mesh.DELAY);
 			}
 			return operation;
 		}
@@ -289,9 +307,26 @@ package mesh
 		/**
 		 * Marks this entity as being persisted.
 		 */
-		public function saved():void
+		public function persisted():void
 		{
 			_properties.clear();
+		}
+		
+		/**
+		 * Marks this entity as being loaded from its backend service.
+		 */
+		public function loaded():void
+		{
+			executeCallbacks("afterFind");
+		}
+		
+		private function markNonLazyAssociationsAsLoaded():void
+		{
+			for each (var relationship:Relationship in descriptor.relationships) {
+				if (!(relationship is BelongsToRelationship) && !relationship.isLazy) {
+					this[relationship.property].loaded();
+				}
+			}
 		}
 		
 		/**
@@ -429,7 +464,7 @@ package mesh
 			// more in depth check on the entity's relationships.
 			for each (var relationship:Relationship in descriptor.relationships) {
 				if (!(relationship is BelongsToRelationship)) {
-					var association:AssociationProxy = this[relationship.property];
+					var association:* = this[relationship.property];
 					if (association != null && association.isDirty) {
 						return true;
 					}

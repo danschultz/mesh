@@ -1,6 +1,7 @@
 package mesh.associations
 {
 	import flash.errors.IllegalOperationError;
+	
 	import mesh.Entity;
 
 	/**
@@ -23,6 +24,10 @@ package mesh.associations
 		 */
 		public function Relationship(owner:Class, property:String, target:Class, options:Object)
 		{
+			if (options.hasOwnProperty("isLazy")) {
+				options.lazy = options.isLazy;
+			}
+			
 			_owner = owner;
 			_property = property;
 			_target = target;
@@ -68,10 +73,10 @@ package mesh.associations
 		public function get isLazy():Boolean
 		{
 			if (options.hasOwnProperty("lazy")) {
+				if (options.lazy is String) {
+					options.lazy = (options.lazy.toLowerCase() != "false");
+				}
 				return options.lazy;
-			}
-			if (options.hasOwnProperty("isLazy")) {
-				return options.isLazy;
 			}
 			return false;
 		}

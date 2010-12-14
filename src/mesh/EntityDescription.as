@@ -54,6 +54,7 @@ package mesh
 			
 			parseAdaptor();
 			parseAggregates();
+			parseFactory();
 			parseRelationships();
 			parseValidators();
 		}
@@ -164,6 +165,21 @@ package mesh
 			}
 		}
 		
+		private function parseFactory():void
+		{
+			for each (var factoryXML:XML in _metadata.(@name == "Factory")) {
+				_factoryMethod = factoryXML.parent().@name;
+				break;
+			}
+			
+			var parent:Class = parentEntityType;
+			while (_factoryMethod == null && parent != null) {
+				var description:EntityDescription = describe(parent);
+				_factoryMethod = description.factoryMethod;
+				parent = description.parentEntityType;
+			}
+		}
+		
 		private function parseRelationships():void
 		{
 			for each (var relationshipXML:XML in _metadata.(@name == "HasOne" || @name == "HasMany" || @name == "BelongsTo")) {
@@ -226,6 +242,13 @@ package mesh
 			}
 		}
 		
+		public function newEntity(data:Object):Entity
+		{
+			var entity:Entity = factoryMethod == null ? newInstance(entityType) as Entity : entityType[factoryMethod](data);
+			entity.translateFrom(data);
+			return entity;
+		}
+		
 		public function get aggregates():ISet
 		{
 			return new ImmutableSet(_aggregates);
@@ -239,6 +262,12 @@ package mesh
 		public function get adaptor():ServiceAdaptor
 		{
 			return _adaptor;
+		}
+		
+		private var _factoryMethod:String;
+		public function get factoryMethod():String
+		{
+			return _factoryMethod;
 		}
 		
 		public function get validators():ISet

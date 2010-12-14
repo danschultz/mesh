@@ -36,7 +36,7 @@
 	</metadata>
 	
 	<!-- 
-	[HasOne(type="mesh.models.Order", property="orders")]
+	[BelongsTo(type="mesh.models.Order", property="orders")]
 	-->
 	<metadata name="BelongsTo" description="Add a belongs-to relationship to an entity.">
 		
@@ -69,16 +69,6 @@
 	</metadata>
 	
 	<!-- 
-	[HasMany(type="mesh.models.Order", property="orders")]
-	-->
-	<metadata name="ServiceAdaptor" description="Add a service adaptor to an entity.">
-		
-		<context name="class"/>
-		
-		<attribute name="type" type="Class" hint="classes" hintType="mesh.adaptors.ServiceAdaptor" required="true"/>
-	</metadata>
-	
-	<!-- 
 	[ServiceAdaptor(type="mesh.adaptors.ServiceAdaptor")]
 	-->
 	<metadata name="ServiceAdaptor" description="Add a one-to-many relationship to an entity.">
@@ -87,6 +77,14 @@
 		<context name="variable"/>
 		
 		<attribute name="type" type="Class" hint="classes" hintType="mesh.adaptors.ServiceAdaptor"/>
+	</metadata>
+	
+	<!-- 
+	[Factory]
+	-->
+	<metadata name="Factory" description="Add a one-to-many relationship to an entity.">
+		
+		<context name="method"/>
 	</metadata>
 	
 	<!-- 

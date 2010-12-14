@@ -27,14 +27,14 @@ package mesh
 			order.id = 1;
 			_customer.orders.addItem(order);
 			
-			_customer.saved();
+			_customer.persisted();
 		}
 		
 		[Test]
 		public function testPropertyWasReturnsUndefinedAfterSave():void
 		{
 			_customer.firstName = "Jane";
-			_customer.saved();
+			_customer.persisted();
 			assertThat(_customer.firstNameWas === undefined, equalTo(true));
 		}
 		
@@ -107,7 +107,7 @@ package mesh
 		{
 			var order:Order = _customer.orders.getItemAt(0);
 			order.total = 10;
-			order.saved();
+			order.persisted();
 			assertThat(_customer.hasDirtyAssociations, equalTo(false));
 		}
 		

@@ -76,6 +76,10 @@ package mesh.associations
 		public function loaded():void
 		{
 			_isLoaded = true;
+			
+			if (target.hasOwnProperty("loaded")) {
+				target.loaded();
+			}
 		}
 		
 		/**

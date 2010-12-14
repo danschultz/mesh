@@ -63,7 +63,18 @@ package mesh.adaptors
 		}
 		
 		/**
-		 * Generates an operation to retrieve with a given set of options, from the backend.
+		 * Generates an operation that retrieves a list of entities with the given IDs.
+		 * 
+		 * @param ids The IDs of the objects to retrieve.
+		 * @return An unexecuted operation.
+		 */
+		public function find(ids:Array):Operation
+		{
+			throw new IllegalOperationError(className(this) + " does not support retrieval of entities using find()");
+		}
+		
+		/**
+		 * Generates an operation to retrieve with a given set of options from the backend.
 		 * 
 		 * @param options The options used to query and retrieve the entity.
 		 * @return An unexecuted operation.
@@ -82,6 +93,17 @@ package mesh.adaptors
 		public function update(entity:Entity):Operation
 		{
 			throw new IllegalOperationError(className(this) + " does not support updating of entities");
+		}
+		
+		/**
+		 * Generates an operation that retrieves a list of entities using an options hash.
+		 * 
+		 * @param options The options to limit the retrieval.
+		 * @return An unexecuted operation.
+		 */
+		public function where(options:Object):Operation
+		{
+			throw new IllegalOperationError(className(this) + " does not support retrieval of entities using where()");
 		}
 		
 		private var _entity:Class;
