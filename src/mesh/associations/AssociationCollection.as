@@ -119,7 +119,7 @@ package mesh.associations
 			
 			_originalEntities = new collections.ArrayList(toArray());
 			
-			for each (var entity:Entity in target) {
+			for each (var entity:Entity in this) {
 				entity.loaded();
 			}
 		}
@@ -244,7 +244,12 @@ package mesh.associations
 		 */
 		public function get hasUnsavedRemovedEntities():Boolean
 		{
-			return !_removedEntities.isEmpty;
+			for each (var entity:Entity in _removedEntities) {
+				if (entity.isPersisted) {
+					return true;
+				}
+			}
+			return false;
 		}
 		
 		/**

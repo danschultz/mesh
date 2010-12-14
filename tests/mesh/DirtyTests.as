@@ -112,6 +112,18 @@ package mesh
 		}
 		
 		[Test]
+		public function testIsNotDirtyWhenRemovedAssociationIsNotPersisted():void
+		{
+			var order:Order = new Order();
+			order.total = 20;
+			_customer.orders.addItem(order);
+			
+			_customer.orders.removeItem(order);
+			assertThat(_customer.orders.isDirty, equalTo(false));
+			assertThat(_customer.hasDirtyAssociations, equalTo(false));
+		}
+		
+		[Test]
 		public function testIsDirtyWhenAssociationIsDirty():void
 		{
 			_customer.orders.getItemAt(0).total = 10;
