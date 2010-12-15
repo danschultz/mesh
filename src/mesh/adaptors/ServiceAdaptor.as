@@ -43,10 +43,10 @@ package mesh.adaptors
 		/**
 		 * Generates an operation to create an entity in the backend.
 		 * 
-		 * @param entity The entity to create.
+		 * @param entities The list of entities to create.
 		 * @return An unexecuted operation.
 		 */
-		public function create(entity:Entity):Operation
+		public function create(entities:Array):Operation
 		{
 			throw new IllegalOperationError(className(this) + " does not support creation of entities");
 		}
@@ -87,10 +87,10 @@ package mesh.adaptors
 		/**
 		 * Generates an operation to update an entity and its properties in the backend.
 		 * 
-		 * @param entity The entity to update.
+		 * @param entities The list of entities to update.
 		 * @return An unexecuted operation.
 		 */
-		public function update(entity:Entity):Operation
+		public function update(entities:Array):Operation
 		{
 			throw new IllegalOperationError(className(this) + " does not support updating of entities");
 		}

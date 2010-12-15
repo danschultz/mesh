@@ -58,7 +58,7 @@ package mesh
 			beforeSave(isValid);
 			beforeSave(populateForeignKeys);
 			afterSave(persisted);
-			afterSave(SaveEntityRelationshipsOperation, this);
+			afterSave(saveAssociations);
 			
 			// add necessary callback for destory
 			afterDestroy(destroyed);
@@ -94,7 +94,7 @@ package mesh
 			_callbacks.push(obj);
 		}
 		
-		private function operationsForCallback(callback:String):Array
+		public function operationsForCallback(callback:String):Array
 		{
 			var mapFunc:Function = function(obj:Object, index:int, array:Array):Operation
 			{
@@ -276,6 +276,24 @@ package mesh
 			var afterSave:SequentialOperation = new SequentialOperation(operationsForCallback("afterSave"));
 			
 			var operation:Operation = beforeSave.then(save).then(afterSave);
+			if (execute) {
+				setTimeout(operation.execute, Mesh.DELAY);
+			}
+			return operation;
+		}
+		
+		public function saveAssociations(validate:Boolean = true, execute:Boolean = true):Operation
+		{
+			var operation:ParallelOperation = new ParallelOperation();
+			for each (var relationship:Relationship in descriptor.relationships) {
+				if (!(relationship is BelongsToRelationship)) { 
+					var association:* = this[relationship.property];
+					if (association != null) {
+						operation.add(association.save(validate, false));
+					}
+				}
+			}
+			
 			if (execute) {
 				setTimeout(operation.execute, Mesh.DELAY);
 			}
@@ -629,36 +647,5 @@ package mesh
 		{
 			return _dispatcher.willTrigger(type);
 		}
-	}
-}
-
-import mesh.Entity;
-import mesh.EntityDescription;
-import mesh.Properties;
-import mesh.associations.AssociationProxy;
-import mesh.associations.BelongsToRelationship;
-import mesh.associations.Relationship;
-
-import operations.ParallelOperation;
-
-class SaveEntityRelationshipsOperation extends ParallelOperation
-{
-	public function SaveEntityRelationshipsOperation(entity:Entity)
-	{
-		super(generateOperations(entity));
-	}
-	
-	private function generateOperations(entity:Entity):Array
-	{
-		var tempOperations:Array = [];
-		for each (var relationship:Relationship in entity.descriptor.relationships) {
-			if (!(relationship is BelongsToRelationship)) { 
-				var association:* = entity[relationship.property];
-				if (association != null) {
-					tempOperations.push(association.save(true, false));
-				}
-			}
-		}
-		return tempOperations;
 	}
 }
