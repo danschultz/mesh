@@ -106,7 +106,7 @@ package operations
 		/**
 		 * @inheritDoc
 		 */
-		final override protected function fault(summary:String, detail:String = ""):void
+		final override public function fault(summary:String, detail:String = ""):void
 		{
 			stopTimeoutTimer();
 			super.fault(summary, detail);

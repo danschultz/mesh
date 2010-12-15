@@ -9,6 +9,8 @@ package mesh
 	import flash.utils.flash_proxy;
 	import flash.utils.setTimeout;
 	
+	import functions.closure;
+	
 	import mesh.adaptors.ServiceAdaptor;
 	import mesh.associations.AssociationCollection;
 	import mesh.associations.AssociationProxy;
@@ -58,7 +60,7 @@ package mesh
 			beforeSave(isValid);
 			beforeSave(populateForeignKeys);
 			afterSave(persisted);
-			afterSave(saveAssociations);
+			afterSave(SaveAssociationsCallbackOperation, this);
 			
 			// add necessary callback for destory
 			afterDestroy(destroyed);
@@ -94,28 +96,26 @@ package mesh
 			_callbacks.push(obj);
 		}
 		
-		public function operationsForCallback(callback:String):Array
+		public function callbacksAsOperation(method:String):Operation
 		{
-			var mapFunc:Function = function(obj:Object, index:int, array:Array):Operation
+			var sequence:SequentialOperation = new SequentialOperation();
+			callbacksFor(method).forEach(closure(function(callback:Object):void
 			{
-				return newInstance.apply(null, [obj.operationType].concat(obj.args));
-			};
-			
-			return callbacksForType(callback).map(mapFunc);
+				sequence.add(newInstance.apply(null, [callback.operationType].concat(callback.args)));
+			}));
+			return sequence;
 		}
 		
-		private function executeCallbacks(type:String):void
+		private function callback(method:String):void
 		{
-			for each (var operation:Operation in operationsForCallback(type)) {
-				operation.execute();
-			}
+			callbacksAsOperation(method).execute();
 		}
 		
-		private function callbacksForType(type:String):Array
+		private function callbacksFor(method:String):Array
 		{
 			return _callbacks.filter(function(obj:Object, index:int, array:Array):Boolean
 			{
-				return obj.type == type;
+				return obj.type == method;
 			});
 		}
 		
@@ -142,11 +142,9 @@ package mesh
 		 */
 		public function destroy(execute:Boolean = true):Operation
 		{
-			var beforeDestroy:SequentialOperation = new SequentialOperation(operationsForCallback("beforeDestroy"));
-			var destroy:Operation = new FactoryOperation(adaptorFor(this).destroy, this);
-			var afterDestroy:SequentialOperation = new SequentialOperation(operationsForCallback("afterDestroy"));
+			var destroy:Operation = new FactoryOperation(adaptorFor(this).destroy, [this]);
 			
-			var operation:Operation = beforeDestroy.then(destroy).then(afterDestroy);
+			var operation:Operation = callbacksAsOperation("beforeDestroy").then(destroy).then(callbacksAsOperation("afterDestroy"));
 			if (execute) {
 				setTimeout(operation.execute, Mesh.DELAY);
 			}
@@ -271,29 +269,9 @@ package mesh
 		 */
 		public function save(validate:Boolean = true, execute:Boolean = true):Operation
 		{
-			var beforeSave:SequentialOperation = new SequentialOperation(operationsForCallback("beforeSave"));
-			var save:Operation = hasPropertyChanges ? (new FactoryOperation(isNew ? adaptorFor(this).create : adaptorFor(this).update, this)) : new EmptyOperation();
-			var afterSave:SequentialOperation = new SequentialOperation(operationsForCallback("afterSave"));
+			var save:Operation = hasPropertyChanges ? (new FactoryOperation(isNew ? adaptorFor(this).create : adaptorFor(this).update, [this])) : new EmptyOperation();
 			
-			var operation:Operation = beforeSave.then(save).then(afterSave);
-			if (execute) {
-				setTimeout(operation.execute, Mesh.DELAY);
-			}
-			return operation;
-		}
-		
-		public function saveAssociations(validate:Boolean = true, execute:Boolean = true):Operation
-		{
-			var operation:ParallelOperation = new ParallelOperation();
-			for each (var relationship:Relationship in descriptor.relationships) {
-				if (!(relationship is BelongsToRelationship)) { 
-					var association:* = this[relationship.property];
-					if (association != null) {
-						operation.add(association.save(validate, false));
-					}
-				}
-			}
-			
+			var operation:Operation = callbacksAsOperation("beforeSave").then(save).then(callbacksAsOperation("afterSave"));
 			if (execute) {
 				setTimeout(operation.execute, Mesh.DELAY);
 			}
@@ -335,7 +313,7 @@ package mesh
 		 */
 		public function loaded():void
 		{
-			executeCallbacks("afterFind");
+			callback("afterFind");
 		}
 		
 		private function markNonLazyAssociationsAsLoaded():void
@@ -646,6 +624,29 @@ package mesh
 		public function willTrigger(type:String):Boolean
 		{
 			return _dispatcher.willTrigger(type);
+		}
+	}
+}
+
+import mesh.Entity;
+import mesh.associations.BelongsToRelationship;
+import mesh.associations.Relationship;
+
+import operations.ParallelOperation;
+
+class SaveAssociationsCallbackOperation extends ParallelOperation
+{
+	public function SaveAssociationsCallbackOperation(entity:Entity)
+	{
+		super();
+		
+		for each (var relationship:Relationship in entity.descriptor.relationships) {
+			if (!(relationship is BelongsToRelationship)) { 
+				var association:* = entity[relationship.property];
+				if (association != null) {
+					add(association.save(true, false));
+				}
+			}
 		}
 	}
 }

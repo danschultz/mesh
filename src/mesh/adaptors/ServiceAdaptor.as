@@ -54,10 +54,10 @@ package mesh.adaptors
 		/**
 		 * Generates an operation to destroy an entity in the backend.
 		 * 
-		 * @param entity The entity to destroy.
+		 * @param entities The entities to destroy.
 		 * @return An unexecuted operation.
 		 */
-		public function destroy(entity:Entity):Operation
+		public function destroy(entities:Array):Operation
 		{
 			throw new IllegalOperationError(className(this) + " does not support destruction of entities");
 		}

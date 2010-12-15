@@ -7,15 +7,19 @@ package mesh.associations
 	
 	import flash.utils.flash_proxy;
 	
+	import functions.closure;
+	
 	import mesh.Entity;
 	
 	import mx.collections.IList;
+	import mx.effects.Sequence;
 	import mx.events.CollectionEvent;
 	import mx.events.CollectionEventKind;
 	
 	import operations.FinishedOperationEvent;
 	import operations.Operation;
 	import operations.ParallelOperation;
+	import operations.SequentialOperation;
 	
 	use namespace flash_proxy;
 	
@@ -184,23 +188,40 @@ package mesh.associations
 		 */
 		override public function save(validate:Boolean = true, execute:Boolean = false):Operation
 		{
-			var tempOperations:Array = [];
+			var beforeSave:SequentialOperation = new SequentialOperation();
+			var afterSave:SequentialOperation = new SequentialOperation();
+			var newEntities:Array = [];
+			var persistedEntities:Array = [];
 			
 			for each (var entity:Entity in _mirroredEntities) {
-				if (entity.isDirty) {
-					tempOperations.push(entity.save(validate, false));
+				beforeSave.add(entity.callbacksAsOperation("beforeSave"));
+				afterSave.add(entity.callbacksAsOperation("afterSave"));
+				
+				if (entity.isNew) {
+					newEntities.push(entity);
+				} else if (entity.isDirty) {
+					persistedEntities.push(entity);
 				}
 			}
 			
+			var saveOperation:Operation = beforeSave.then(
+										  Entity.adaptorFor(relationship.target).create(newEntities).during(
+										  Entity.adaptorFor(relationship.target).update(persistedEntities))).then(
+										  afterSave);
+			
+			var beforeDestroy:SequentialOperation = new SequentialOperation();
+			var afterDestroy:SequentialOperation = new SequentialOperation();
+			var entitiesToRemove:Array = [];
 			for each (var removedEntity:Entity in _removedEntities) {
 				if (removedEntity.isPersisted) {
-					var operation:Operation = removedEntity.destroy(false);
-					operation.addEventListener(FinishedOperationEvent.FINISHED, handle(_removedEntities.remove, removedEntity));
-					tempOperations.push(operation);
+					beforeDestroy.add(removedEntity.callbacksAsOperation("beforeDestroy"));
+					afterDestroy.add(removedEntity.callbacksAsOperation("afterDestroy"));
+					entitiesToRemove.push(removedEntity);
 				}
 			}
+			var destroyOperation:Operation = beforeDestroy.then(Entity.adaptorFor(relationship.target).destroy(entitiesToRemove)).then(afterDestroy);
 			
-			return new ParallelOperation(tempOperations);
+			return destroyOperation.during(saveOperation);
 		}
 		
 		/**

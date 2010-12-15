@@ -68,12 +68,14 @@ package operations
 			_resultEvent = event;
 		}
 		
-		private function handleFinished(event:Event):void
+		private function handleFinished(event:FinishedOperationEvent):void
 		{
 			if (_faultEvent != null) {
 				fault(_faultEvent.summary, _faultEvent.detail);
 			} else if (_resultEvent != null) {
 				result(_resultEvent.data);
+			} else {
+				finish(event.successful);
 			}
 		}
 	}

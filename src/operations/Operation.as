@@ -146,7 +146,7 @@ package operations
 		 * @param summary A simple description of the fault.
 		 * @param detail A more detailed description of the fault.
 		 */
-		protected function fault(summary:String, detail:String = ""):void
+		public function fault(summary:String, detail:String = ""):void
 		{
 			if (isExecuting) {
 				fireFault(summary, detail);
@@ -173,32 +173,44 @@ package operations
 		
 		private function fireCanceled():void
 		{
-			dispatchEvent( new OperationEvent(OperationEvent.CANCELED) );
+			if (hasEventListener(OperationEvent.CANCELED)) {
+				dispatchEvent( new OperationEvent(OperationEvent.CANCELED) );
+			}
 		}
 		
 		private function fireAfterExecute():void
 		{
-			dispatchEvent( new OperationEvent(OperationEvent.AFTER_EXECUTE) );
+			if (hasEventListener(OperationEvent.AFTER_EXECUTE)) {
+				dispatchEvent( new OperationEvent(OperationEvent.AFTER_EXECUTE) );
+			}
 		}
 		
 		private function fireBeforeExecute():void
 		{
-			dispatchEvent( new OperationEvent(OperationEvent.BEFORE_EXECUTE) );
+			if (hasEventListener(OperationEvent.BEFORE_EXECUTE)) {
+				dispatchEvent( new OperationEvent(OperationEvent.BEFORE_EXECUTE) );
+			}
 		}
 		
 		private function fireFault(summary:String, detail:String = ""):void
 		{
-			dispatchEvent( new FaultOperationEvent(summary, detail) );
+			if (hasEventListener(FaultOperationEvent.FAULT)) {
+				dispatchEvent( new FaultOperationEvent(summary, detail) );
+			}
 		}
 		
 		private function fireResult(data:Object):void
 		{
-			dispatchEvent( new ResultOperationEvent(data) );
+			if (hasEventListener(ResultOperationEvent.RESULT)) {
+				dispatchEvent( new ResultOperationEvent(data) );
+			}
 		}
 		
 		private function fireFinished(successful:Boolean):void
 		{
-			dispatchEvent( new FinishedOperationEvent(successful) );
+			if (hasEventListener(FinishedOperationEvent.FINISHED)) {
+				dispatchEvent( new FinishedOperationEvent(successful) );
+			}
 		}
 		
 		/**

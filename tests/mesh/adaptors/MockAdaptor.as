@@ -2,12 +2,15 @@ package mesh.adaptors
 {
 	import collections.HashMap;
 	
+	import functions.closure;
+	
 	import mesh.Entity;
 	
 	import operations.EmptyOperation;
 	import operations.MethodOperation;
 	import operations.Operation;
 	import operations.OperationEvent;
+	import operations.SequentialOperation;
 
 	public class MockAdaptor extends ServiceAdaptor
 	{
@@ -21,14 +24,26 @@ package mesh.adaptors
 			super(entity, options);
 		}
 		
-		override public function create(entity:Entity):Operation
+		override public function create(entities:Array):Operation
 		{
-			return update(entity);
+			return update(entities);
 		}
 		
-		override public function destroy(entity:Entity):Operation
+		override public function destroy(entities:Array):Operation
 		{
-			return !entity.isDestroyed ? new MethodOperation(_objects.remove, entity.id) : new EmptyOperation();
+			var sequence:SequentialOperation = new SequentialOperation();
+			entities.forEach(closure(function(entity:Entity):void
+			{
+				var operation:Operation = new MethodOperation(_objects.remove, entity.id);
+				operation.addEventListener(OperationEvent.BEFORE_EXECUTE, function(event:OperationEvent):void
+				{
+					if (!entity.isPersisted) {
+						operation.fault("Cannot remove entity that is not persisted.");
+					}
+				});
+				sequence.add(operation);
+			}));
+			return sequence;
 		}
 		
 		override public function find(ids:Array):Operation
@@ -41,13 +56,17 @@ package mesh.adaptors
 			return new MethodOperation(items.concat);
 		}
 		
-		override public function update(entity:Entity):Operation
+		override public function update(entities:Array):Operation
 		{
-			var id:int = ++_counter;
-			if (entity.isNew) {
-				entity.id = id;
-			}
-			return new MethodOperation(_objects.put, id, entity.translateTo());
+			var sequence:SequentialOperation = new SequentialOperation();
+			entities.forEach(closure(function(entity:Entity):void
+			{
+				if (entity.isNew) {
+					entity.id = ++_counter;
+				}
+				sequence.add( new MethodOperation(_objects.put, entity.id, entity.translateTo()) );
+			}));
+			return sequence;
 		}
 		
 		override public function where(options:Object):Operation
