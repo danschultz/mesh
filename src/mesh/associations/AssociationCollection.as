@@ -16,6 +16,7 @@ package mesh.associations
 	import mx.events.CollectionEvent;
 	import mx.events.CollectionEventKind;
 	
+	import operations.FactoryOperation;
 	import operations.FinishedOperationEvent;
 	import operations.Operation;
 	import operations.ParallelOperation;
@@ -194,20 +195,28 @@ package mesh.associations
 			var persistedEntities:Array = [];
 			
 			for each (var entity:Entity in _mirroredEntities) {
-				beforeSave.add(entity.callbacksAsOperation("beforeSave"));
-				afterSave.add(entity.callbacksAsOperation("afterSave"));
+				var isDirty:Boolean = entity.isDirty;
 				
-				if (entity.isNew) {
-					newEntities.push(entity);
-				} else if (entity.isDirty) {
-					persistedEntities.push(entity);
+				if (isDirty) {
+					beforeSave.add(entity.callbacksAsOperation("beforeSave"));
+					afterSave.add(entity.callbacksAsOperation("afterSave"));
+					
+					if (entity.isNew) {
+						newEntities.push(entity);
+					} else if (isDirty) {
+						persistedEntities.push(entity);
+					}
 				}
 			}
 			
-			var saveOperation:Operation = beforeSave.then(
-										  Entity.adaptorFor(relationship.target).create(newEntities).during(
-										  Entity.adaptorFor(relationship.target).update(persistedEntities))).then(
-										  afterSave);
+			var saveOperation:Operation = beforeSave;
+			if (newEntities.length > 0) {
+				saveOperation = saveOperation.then( new FactoryOperation(Entity.adaptorFor(relationship.target).create, newEntities) );
+			}
+			if (persistedEntities.length > 0) {
+				saveOperation = saveOperation.then( new FactoryOperation(Entity.adaptorFor(relationship.target).update, persistedEntities) );
+			}
+			saveOperation = saveOperation.then(afterSave);
 			
 			var beforeDestroy:SequentialOperation = new SequentialOperation();
 			var afterDestroy:SequentialOperation = new SequentialOperation();
@@ -219,9 +228,13 @@ package mesh.associations
 					entitiesToRemove.push(removedEntity);
 				}
 			}
-			var destroyOperation:Operation = beforeDestroy.then(Entity.adaptorFor(relationship.target).destroy(entitiesToRemove)).then(afterDestroy);
+			var destroyOperation:Operation = beforeDestroy;
+			if (entitiesToRemove.length > 0) {
+				destroyOperation = destroyOperation.then( new FactoryOperation(Entity.adaptorFor(relationship.target).destroy, entitiesToRemove) );
+			}
+			destroyOperation = destroyOperation.then(afterDestroy);
 			
-			return destroyOperation.during(saveOperation);
+			return saveOperation.during(destroyOperation);
 		}
 		
 		/**

@@ -632,6 +632,7 @@ import mesh.Entity;
 import mesh.associations.BelongsToRelationship;
 import mesh.associations.Relationship;
 
+import operations.FactoryOperation;
 import operations.ParallelOperation;
 
 class SaveAssociationsCallbackOperation extends ParallelOperation
@@ -644,7 +645,7 @@ class SaveAssociationsCallbackOperation extends ParallelOperation
 			if (!(relationship is BelongsToRelationship)) { 
 				var association:* = entity[relationship.property];
 				if (association != null) {
-					add(association.save(true, false));
+					add( new FactoryOperation(association.save, true, false) );
 				}
 			}
 		}

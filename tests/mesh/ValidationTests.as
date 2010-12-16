@@ -46,7 +46,7 @@ package mesh
 		[Test]
 		public function testEntityParsesValidationMetadata():void
 		{
-			var validations:Array = new Customer().validations;
+			var validations:Array = new Customer().descriptor.validators.toArray();
 			assertThat(validations, hasItems(hasProperty("options", allOf(hasProperty("lessThanOrEqualTo"), hasProperty("greaterThanOrEqualTo"))), 
 											 hasProperty("options", hasProperty("minimum")),
 											 hasProperty("options", hasProperty("property", equalTo("age"))),

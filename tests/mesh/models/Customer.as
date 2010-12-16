@@ -1,7 +1,6 @@
 package mesh.models
 {
 	import mesh.Entity;
-	import mesh.EntityDescription;
 	import mesh.adaptors.InMemoryAdaptor;
 	import mesh.associations.AssociationProxy;
 	
@@ -58,16 +57,6 @@ package mesh.models
 		public function set primaryCar(value:AssociationProxy):void
 		{
 			_primaryCar = value;
-		}
-		
-		public function get associations():Array
-		{
-			return EntityDescription.describe(this).relationships.toArray();
-		}
-		
-		public function get validations():Array
-		{
-			return EntityDescription.describe(this).validators.toArray();
 		}
 	}
 }
