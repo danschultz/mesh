@@ -1,4 +1,4 @@
-package validations
+package mesh.validators
 {
 	/**
 	 * Validates the bounds of a numeric value. One of the following options must be defined

@@ -30,7 +30,7 @@ package mesh
 	import reflection.clazz;
 	import reflection.newInstance;
 	
-	import validations.Validator;
+	import mesh.validators.Validator;
 	
 	/**
 	 * An entity.

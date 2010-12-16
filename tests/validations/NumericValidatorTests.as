@@ -2,6 +2,7 @@ package validations
 {
 	import org.flexunit.assertThat;
 	import org.hamcrest.object.equalTo;
+	import mesh.validators.NumericValidator;
 
 	public class NumericValidatorTests
 	{

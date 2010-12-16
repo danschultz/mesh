@@ -4,7 +4,7 @@ package mesh.models
 	import mesh.adaptors.InMemoryAdaptor;
 	import mesh.associations.AssociationProxy;
 	
-	[Validate(properties="addressStreet,addressCity", validator="validations.LengthValidator", minimum="1")]
+	[Validate(properties="addressStreet,addressCity", validator="mesh.validators.LengthValidator", minimum="1")]
 	[ComposedOf(property="address", type="mesh.models.Address", prefix="address", mapping="street,city")]
 	
 	[HasMany(type="mesh.models.Order", property="orders")]
@@ -26,7 +26,7 @@ package mesh.models
 		private var _fullName:Name;
 		[Bindable]
 		[ComposedOf(mapping="firstName,lastName")]
-		[Validate(properties="firstName,lastName", validator="validations.LengthValidator", minimum="1")]
+		[Validate(properties="firstName,lastName", validator="mesh.validators.LengthValidator", minimum="1")]
 		public function get fullName():Name
 		{
 			return _fullName;
@@ -38,7 +38,7 @@ package mesh.models
 		
 		private var _age:Number;
 		[Bindable]
-		[Validate(validator="validations.NumericValidator", between="1..120")]
+		[Validate(validator="mesh.validators.NumericValidator", between="1..120")]
 		public function get age():Number
 		{
 			return _age;
