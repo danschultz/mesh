@@ -208,7 +208,12 @@ package mesh
 					}
 				}
 				
-				addRelationships( newInstance(RELATIONSHIPS[kind], entityType, options.property, options.type, options) );
+				var ownerType:Class = entityType;
+				if (relationshipXML.parent().name() == "accessor") {
+					ownerType = getDefinitionByName(relationshipXML.parent().@declaredBy) as Class;
+				}
+				
+				addRelationships( newInstance(RELATIONSHIPS[kind], ownerType, options.property, options.type, options) );
 			}
 			
 			var parent:Class = parentEntityType;

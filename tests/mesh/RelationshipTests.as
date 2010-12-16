@@ -10,6 +10,7 @@ package mesh
 	import org.hamcrest.collection.arrayWithSize;
 	import org.hamcrest.collection.hasItem;
 	import org.hamcrest.core.allOf;
+	import org.hamcrest.core.not;
 	import org.hamcrest.object.equalTo;
 	import org.hamcrest.object.hasProperty;
 	import org.hamcrest.object.instanceOf;
@@ -38,11 +39,12 @@ package mesh
 		}
 		
 		[Test]
-		public function testRelationshipMetadataDoesNotHaveDuplicatesFromSuperClass():void
+		public function testRelationshipMetadataUsesSuperClass():void
 		{
 			var airplane:Aircraft = new Airplane();
 			var relationships:Array = airplane.descriptor.relationships.toArray();
-			assertThat(relationships, arrayWithSize(1));
+			assertThat(relationships, hasItem(allOf(hasProperty("property", equalTo("manufacturers")), hasProperty("owner", equalTo(Aircraft)))));
+			assertThat(relationships, not(hasItem(allOf(hasProperty("property", equalTo("manufacturers")), hasProperty("owner", equalTo(Airplane))))));
 		}
 	}
 }
