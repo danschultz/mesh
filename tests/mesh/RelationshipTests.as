@@ -7,7 +7,6 @@ package mesh
 	import mesh.models.Customer;
 	
 	import org.flexunit.assertThat;
-	import org.hamcrest.collection.arrayWithSize;
 	import org.hamcrest.collection.hasItem;
 	import org.hamcrest.core.allOf;
 	import org.hamcrest.core.not;

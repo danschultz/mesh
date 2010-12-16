@@ -3,23 +3,16 @@ package mesh.associations
 	import collections.ArrayList;
 	import collections.ArraySet;
 	
-	import events.handle;
-	
 	import flash.utils.flash_proxy;
-	
-	import functions.closure;
 	
 	import mesh.Entity;
 	
 	import mx.collections.IList;
-	import mx.effects.Sequence;
 	import mx.events.CollectionEvent;
 	import mx.events.CollectionEventKind;
 	
 	import operations.FactoryOperation;
-	import operations.FinishedOperationEvent;
 	import operations.Operation;
-	import operations.ParallelOperation;
 	import operations.SequentialOperation;
 	
 	use namespace flash_proxy;
