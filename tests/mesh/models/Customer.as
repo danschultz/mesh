@@ -52,6 +52,9 @@ package mesh.models
 		[HasOne(type="mesh.models.Car")]
 		public function get primaryCar():AssociationProxy
 		{
+			if (_primaryCar == null) {
+				_primaryCar = new AssociationProxy(this, descriptor.getRelationshipForProperty("primaryCar"));
+			}
 			return _primaryCar;
 		}
 		public function set primaryCar(value:AssociationProxy):void

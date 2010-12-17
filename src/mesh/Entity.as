@@ -1,5 +1,6 @@
 package mesh
 {
+	import collections.HashSet;
 	import collections.ISet;
 	
 	import flash.events.Event;
@@ -18,6 +19,7 @@ package mesh
 	import mesh.associations.Relationship;
 	import mesh.callbacks.AfterCallbackOperation;
 	import mesh.callbacks.BeforeCallbackOperation;
+	import mesh.validators.Validator;
 	
 	import mx.events.PropertyChangeEvent;
 	
@@ -29,8 +31,6 @@ package mesh
 	
 	import reflection.clazz;
 	import reflection.newInstance;
-	
-	import mesh.validators.Validator;
 	
 	/**
 	 * An entity.
@@ -136,19 +136,19 @@ package mesh
 		/**
 		 * Removes the entity.
 		 * 
-		 * @param execute <code>false</code> if the operation should be returned without being
-		 * 	executed.
 		 * @return An executing operation.
 		 */
-		public function destroy(execute:Boolean = true):Operation
+		public function destroy():Operation
+		{
+			var operation:Operation = buildDestroyOperation();
+			setTimeout(operation.execute, Mesh.DELAY);
+			return operation;
+		}
+		
+		public function buildDestroyOperation():Operation
 		{
 			var destroy:Operation = new FactoryOperation(adaptorFor(this).destroy, [this]);
-			
-			var operation:Operation = callbacksAsOperation("beforeDestroy").then(destroy).then(callbacksAsOperation("afterDestroy"));
-			if (execute) {
-				setTimeout(operation.execute, Mesh.DELAY);
-			}
-			return operation;
+			return callbacksAsOperation("beforeDestroy").then(destroy).then(callbacksAsOperation("afterDestroy"));
 		}
 		
 		protected function beforeDestroy(... args):void
@@ -167,6 +167,23 @@ package mesh
 		protected function destroyed():void
 		{
 			_isDestroyed = true;
+		}
+		
+		/**
+		 * Returns an array that contains a flat list of this entity, and its associated entities 
+		 * that are dirty.
+		 * 
+		 * @return A list of <code>Entity</code>s.
+		 */
+		public function findDirtyEntities():ISet
+		{
+			var result:HashSet = new HashSet(hasPropertyChanges ? [this] : []);
+			for each (var relationship:Relationship in descriptor.relationships) {
+				if (!(relationship is BelongsToRelationship)) {
+					result.addAll(this[relationship.property].findDirtyEntities());
+				}
+			}
+			return result;
 		}
 		
 		private function handlePropertyChange(event:PropertyChangeEvent):void
@@ -267,15 +284,17 @@ package mesh
 		 * 	executed.
 		 * @return An executing operation, or <code>false</code> if a validation fails.
 		 */
-		public function save(validate:Boolean = true, execute:Boolean = true):Operation
+		public function save(validate:Boolean = true):Operation
+		{
+			var operation:Operation = buildSaveOperation(validate);
+			setTimeout(operation.execute, Mesh.DELAY);
+			return operation;
+		}
+		
+		public function buildSaveOperation(validate:Boolean = true):Operation
 		{
 			var save:Operation = hasPropertyChanges ? (new FactoryOperation(isNew ? adaptorFor(this).create : adaptorFor(this).update, [this])) : new EmptyOperation();
-			
-			var operation:Operation = callbacksAsOperation("beforeSave").then(save).then(callbacksAsOperation("afterSave"));
-			if (execute) {
-				setTimeout(operation.execute, Mesh.DELAY);
-			}
-			return operation;
+			return callbacksAsOperation("beforeSave").then(save).then(callbacksAsOperation("afterSave"));
 		}
 		
 		/**
@@ -645,7 +664,7 @@ class SaveAssociationsCallbackOperation extends ParallelOperation
 			if (!(relationship is BelongsToRelationship)) { 
 				var association:* = entity[relationship.property];
 				if (association != null) {
-					add( new FactoryOperation(association.save, true, false) );
+					add( new FactoryOperation(association.save, true) );
 				}
 			}
 		}

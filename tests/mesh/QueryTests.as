@@ -38,7 +38,7 @@ package mesh
 			_flightPlan.departing = _reidHillview;
 			_flightPlan.arriving = _sanJose;
 			
-			var operation:Operation = _reidHillview.save(true, false).during(_sanJose.save(true, false)).then(_flightPlan.save(true, false));
+			var operation:Operation = _reidHillview.buildSaveOperation(true).during(_sanJose.buildSaveOperation(true)).then(_flightPlan.buildSaveOperation(true));
 			Async.proceedOnEvent(this, operation, FinishedOperationEvent.FINISHED);
 			operation.execute();
 		}

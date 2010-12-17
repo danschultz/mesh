@@ -1,12 +1,16 @@
 package mesh
 {
 	import mesh.models.Address;
+	import mesh.models.Car;
 	import mesh.models.Customer;
 	import mesh.models.Name;
 	import mesh.models.Order;
 	
 	import org.flexunit.assertThat;
-	import org.flexunit.assumeThat;
+	import org.hamcrest.collection.array;
+	import org.hamcrest.collection.arrayWithSize;
+	import org.hamcrest.collection.emptyArray;
+	import org.hamcrest.collection.hasItems;
 	import org.hamcrest.object.equalTo;
 	import org.hamcrest.object.notNullValue;
 
@@ -26,6 +30,10 @@ package mesh
 			var order:Order = new Order();
 			order.id = 1;
 			_customer.orders.addItem(order);
+			
+			var car:Car = new Car();
+			car.id = 1;
+			_customer.primaryCar.target = car;
 			
 			_customer.persisted();
 		}
@@ -130,6 +138,33 @@ package mesh
 			assertThat(_customer.hasPropertyChanges, equalTo(false));
 			assertThat(_customer.hasDirtyAssociations, equalTo(true));
 			assertThat(_customer.isDirty, equalTo(true));
+		}
+		
+		[Test]
+		public function testFindDirtyEntitiesReturnsEmptySetWhenNotDirty():void
+		{
+			var result:Array = _customer.findDirtyEntities().toArray();
+			assertThat(result, emptyArray());
+		}
+		
+		[Test]
+		public function testFindDirtyEntitiesDoesNotReturnEntitiesFromNonDirtyAssociations():void
+		{
+			_customer.age = 25;
+			var result:Array = _customer.findDirtyEntities().toArray();
+			assertThat(result, array(_customer));
+		}
+		
+		[Test]
+		public function testFindDirtyEntitiesReturnsEntitiesFromDirtyAssociations():void
+		{
+			_customer.age = 25;
+			_customer.orders.getItemAt(0).total = 5;
+			_customer.primaryCar.msrp = 20000;
+			
+			var result:Array = _customer.findDirtyEntities().toArray();
+			assertThat(result, arrayWithSize(3));
+			assertThat(result, hasItems(_customer, _customer.orders.getItemAt(0), _customer.primaryCar.target));
 		}
 	}
 }

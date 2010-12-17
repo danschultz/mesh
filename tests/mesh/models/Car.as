@@ -8,6 +8,9 @@ package mesh.models
 		[ServiceAdaptor]
 		public static var adaptor:InMemoryAdaptor;
 		
+		[Bindable]
+		public var msrp:Number;
+		
 		public function Car()
 		{
 			super();

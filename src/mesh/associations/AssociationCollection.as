@@ -2,6 +2,8 @@ package mesh.associations
 {
 	import collections.ArrayList;
 	import collections.ArraySet;
+	import collections.HashSet;
+	import collections.ISet;
 	
 	import flash.utils.flash_proxy;
 	
@@ -59,6 +61,18 @@ package mesh.associations
 		public function contains(item:Object):Boolean
 		{
 			return getItemIndex(item) >= 0;
+		}
+		
+		/**
+		 * @copy mesh.Entity#findDirtyEntities()
+		 */
+		public function findDirtyEntities():ISet
+		{
+			var result:HashSet = new HashSet();
+			for each (var entity:Entity in this) {
+				result.addAll(entity.findDirtyEntities());
+			}
+			return result;
 		}
 		
 		/**
@@ -180,7 +194,7 @@ package mesh.associations
 		/**
 		 * @inheritDoc
 		 */
-		override public function save(validate:Boolean = true, execute:Boolean = false):Operation
+		override public function save(validate:Boolean = true):Operation
 		{
 			var beforeSave:SequentialOperation = new SequentialOperation();
 			var afterSave:SequentialOperation = new SequentialOperation();
