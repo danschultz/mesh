@@ -60,7 +60,6 @@ package mesh
 			beforeSave(isValid);
 			beforeSave(populateForeignKeys);
 			afterSave(persisted);
-			afterSave(SaveAssociationsCallbackOperation, this);
 			
 			// add necessary callback for destory
 			afterDestroy(destroyed);
@@ -170,10 +169,9 @@ package mesh
 		}
 		
 		/**
-		 * Returns an array that contains a flat list of this entity, and its associated entities 
-		 * that are dirty.
+		 * Returns a set that contains this entity, and its associated entities that are dirty.
 		 * 
-		 * @return A list of <code>Entity</code>s.
+		 * @return A set of <code>Entity</code>s.
 		 */
 		public function findDirtyEntities():ISet
 		{
@@ -181,6 +179,23 @@ package mesh
 			for each (var relationship:Relationship in descriptor.relationships) {
 				if (!(relationship is BelongsToRelationship)) {
 					result.addAll(this[relationship.property].findDirtyEntities());
+				}
+			}
+			return result;
+		}
+		
+		/**
+		 * Returns s set that contains the any entity belonging to this association that has
+		 * been marked for deletion.
+		 * 
+		 * @return A set of <code>Entity</code>s.
+		 */
+		public function findRemovedEntities():ISet
+		{
+			var result:HashSet = new HashSet();
+			for each (var relationship:Relationship in descriptor.relationships) {
+				if (!(relationship is BelongsToRelationship)) {
+					result.addAll(this[relationship.property].findRemovedEntities());
 				}
 			}
 			return result;
@@ -286,7 +301,7 @@ package mesh
 		 */
 		public function save(validate:Boolean = true):Operation
 		{
-			var operation:Operation = buildSaveOperation(validate);
+			var operation:Operation = new SaveBuilder([this]).build();
 			setTimeout(operation.execute, Mesh.DELAY);
 			return operation;
 		}

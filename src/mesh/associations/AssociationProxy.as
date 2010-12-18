@@ -8,7 +8,6 @@ package mesh.associations
 	import flash.utils.setTimeout;
 	
 	import mesh.Entity;
-	import mesh.EntityDescription;
 	
 	import operations.EmptyOperation;
 	import operations.FinishedOperationEvent;

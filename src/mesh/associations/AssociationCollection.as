@@ -76,6 +76,14 @@ package mesh.associations
 		}
 		
 		/**
+		 * @copy mesh.Entity#findRemovedEntities()
+		 */
+		public function findRemovedEntities():ISet
+		{
+			return new HashSet(_removedEntities);
+		}
+		
+		/**
 		 * @inheritDoc
 		 */
 		public function getItemAt(index:int, prefetch:int = 0):Object
