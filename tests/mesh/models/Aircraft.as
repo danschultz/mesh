@@ -12,14 +12,10 @@ package mesh.models
 			Manufacturer;
 		}
 		
-		private var _manufaturers:AssociationCollection;
 		[HasMany(type="mesh.models.Manufacturer", lazy="true")]
 		public function get manufacturers():AssociationCollection
 		{
-			if (_manufaturers == null) {
-				_manufaturers = new AssociationCollection(this, descriptor.getRelationshipForProperty("manufacturers"));
-			}
-			return _manufaturers;
+			return AssociationCollection( associationProxyFor("manufacturers") );
 		}
 	}
 }

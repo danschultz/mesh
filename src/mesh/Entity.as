@@ -16,6 +16,7 @@ package mesh
 	import mesh.associations.AssociationCollection;
 	import mesh.associations.AssociationProxy;
 	import mesh.associations.BelongsToRelationship;
+	import mesh.associations.HasOneRelationship;
 	import mesh.associations.Relationship;
 	import mesh.callbacks.AfterCallbackOperation;
 	import mesh.callbacks.BeforeCallbackOperation;
@@ -116,6 +117,26 @@ package mesh
 			{
 				return obj.type == method;
 			});
+		}
+		
+		/**
+		 * Returns an association proxy for the given the given property. The proxy that is
+		 * returned is determined by the relationship type. For instance, if the property is
+		 * a has-many relationship, an <code>AssociationCollection</code> is returned.
+		 * 
+		 * @param property The property of the relationship to get the proxy for.
+		 * @return An association proxy.
+		 */
+		protected function associationProxyFor(property:String):AssociationProxy
+		{
+			if (!_associations.hasOwnProperty(property)) {
+				var relationship:Relationship = descriptor.getRelationshipForProperty(property);
+				if (relationship == null) {
+					throw new ArgumentError("Relationship not defined for '" + property + "'");
+				}
+				_associations[property] = relationship.createProxy(this);
+			}
+			return _associations[property];
 		}
 		
 		/**
@@ -551,13 +572,7 @@ package mesh
 		{
 			var relationship:Relationship = descriptor.getRelationshipForProperty(name);
 			if (relationship != null) {
-				if (!_associations.hasOwnProperty(relationship.property)) {
-					_associations[relationship.property] = relationship.createProxy(this);
-				}
-			}
-			
-			if (_associations.hasOwnProperty(name)) {
-				var association:AssociationProxy = _associations[name];
+				var association:AssociationProxy = associationProxyFor(relationship.property);
 				if (association is AssociationCollection) {
 					return association;
 				}
@@ -604,10 +619,7 @@ package mesh
 		{
 			var relationship:Relationship = descriptor.getRelationshipForProperty(name);
 			if (relationship != null) {
-				if (!_associations.hasOwnProperty(relationship.property)) {
-					_associations[relationship.property] = relationship.createProxy(this);
-				}
-				_associations[name].target = value;
+				associationProxyFor(name).target = value;
 				return;
 			}
 			

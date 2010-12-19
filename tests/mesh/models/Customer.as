@@ -53,7 +53,7 @@ package mesh.models
 		public function get primaryCar():AssociationProxy
 		{
 			if (_primaryCar == null) {
-				_primaryCar = new AssociationProxy(this, descriptor.getRelationshipForProperty("primaryCar"));
+				_primaryCar = associationProxyFor("primaryCar");
 			}
 			return _primaryCar;
 		}
