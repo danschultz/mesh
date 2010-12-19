@@ -16,7 +16,6 @@ package mesh
 	import mesh.associations.AssociationCollection;
 	import mesh.associations.AssociationProxy;
 	import mesh.associations.BelongsToRelationship;
-	import mesh.associations.HasOneRelationship;
 	import mesh.associations.Relationship;
 	import mesh.callbacks.AfterCallbackOperation;
 	import mesh.callbacks.BeforeCallbackOperation;
@@ -403,6 +402,17 @@ package mesh
 		}
 		
 		/**
+		 * Returns the value for a given property before the entity's last save.
+		 * 
+		 * @param property The property to retrieve.
+		 * @return The property's previous value.
+		 */
+		public function was(property:String):*
+		{
+			return _properties.oldValueOf(property);
+		}
+		
+		/**
 		 * Returns the mapped instance of the service adaptor for the given entity.
 		 * 
 		 * @param entity The entity to get the service adaptor for.
@@ -598,7 +608,7 @@ package mesh
 						return aggregateValue[aggregate.getMappedProperty(property)];
 					}
 				}
-				return _properties.oldValueOf(property);
+				return was(property);
 			}
 			
 			return undefined;
