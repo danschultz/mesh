@@ -1,5 +1,7 @@
 package mesh.validators
 {
+	import inflections.humanize;
+
 	/**
 	 * Validates the bounds of a numeric value. One of the following options must be defined
 	 * for this validation:
@@ -58,7 +60,7 @@ package mesh.validators
 			for (var check:String in CHECKS) {
 				if (options.hasOwnProperty(check)) {
 					if (!CHECKS[check](value, options[check])) {
-						return failWithMessage("{0} must be {1} {2}", property, check, options[check]);
+						return failWithMessage("{0} must be {1} {2}", humanize(property), check, options[check]);
 					}
 				}
 			}

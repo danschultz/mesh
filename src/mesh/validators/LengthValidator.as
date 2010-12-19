@@ -1,5 +1,7 @@
 package mesh.validators
 {
+	import inflections.humanize;
+
 	/**
 	 * Validates the length of an object, such as the length of string or number of
 	 * elements in an array.
@@ -54,7 +56,7 @@ package mesh.validators
 			for (var check:String in CHECKS) {
 				if (options.hasOwnProperty(check)) {
 					if (!CHECKS[check](value, options[check])) {
-						return failWithMessage(MESSAGES[check], property, options[check]);
+						return failWithMessage(MESSAGES[check], humanize(property), options[check]);
 					}
 				}
 			}
