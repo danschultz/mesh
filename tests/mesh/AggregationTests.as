@@ -4,6 +4,8 @@ package mesh
 	import mesh.models.Customer;
 	import mesh.models.Name;
 	
+	import mx.events.PropertyChangeEvent;
+	
 	import org.flexunit.assertThat;
 	import org.hamcrest.object.equalTo;
 	import org.hamcrest.object.nullValue;
@@ -67,6 +69,18 @@ package mesh
 		public function testGetAggregatePropertyNull():void
 		{
 			assertThat(_entity.addressStreet, nullValue());
+		}
+		
+		[Test]
+		public function testAggregateDispatchesPropertyChange():void
+		{
+			var changeEvent:PropertyChangeEvent;
+			_entity.addEventListener(PropertyChangeEvent.PROPERTY_CHANGE, function(event:PropertyChangeEvent):void
+			{
+				changeEvent = event;
+			});
+			_entity.addressStreet = "1 Infinite Loop";
+			assertThat(changeEvent.property, equalTo("address"));
 		}
 	}
 }

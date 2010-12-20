@@ -633,12 +633,16 @@ package mesh
 				return;
 			}
 			
+			var oldValue:* = _properties[name];
 			_properties[name] = value;
 			
 			var aggregate:Aggregate = descriptor.getAggregateForProperty(name);
 			if (aggregate != null && aggregate.property != name.toString()) {
 				aggregate.setValue(this, name, value);
 				return;
+			}
+			if (aggregate != null && aggregate.isBindable && aggregate.property == name.toString()) {
+				dispatchEvent(PropertyChangeEvent.createUpdateEvent(this, name.toString(), oldValue, value));
 			}
 		}
 		

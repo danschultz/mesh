@@ -107,6 +107,20 @@ package mesh
 		}
 		
 		/**
+		 * <code>true</code> if this aggregate has set the <em>bindable</em>.
+		 */
+		public function get isBindable():Boolean
+		{
+			if (_options.hasOwnProperty("bindable")) {
+				if (_options.bindable is String) {
+					_options.bindable = (_options.bindable.toLowerCase() == "true")
+				}
+				return _options.bindable;
+			}
+			return true;
+		}
+		
+		/**
 		 * The mappings defined on this aggregate.
 		 */
 		public function get mappings():Array

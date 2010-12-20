@@ -17,6 +17,7 @@
 		<attribute name="properties" type="Array" hint="properties"/>
 		<attribute name="prefix" type="String"/>
 		<attribute name="mapping" type="Array" required="true"/>
+		<attribute name="bindable" type="Boolean" defaultValue="true" hint="boolean"/>
 	</metadata>
 	
 	<!-- 
