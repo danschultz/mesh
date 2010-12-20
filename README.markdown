@@ -1,5 +1,5 @@
-Mesh is an open-source persistence framework for [[Adobe Flex|http://www.adobe.com/products/flex/]].  
-It is designed to make the persistence of your application's model easier.
+# Mesh
+Mesh is an open-source persistence framework for [[Adobe Flex|http://www.adobe.com/products/flex/]]. It is designed to make the persistence of your application's model easier.
 
 ## Getting Started
 
@@ -7,9 +7,7 @@ It is designed to make the persistence of your application's model easier.
 How to install and setup Mesh in your application.
 
 ## Entities
-An entity is the base for your models in a Mesh application. Entities define the relationships with 
-other entities, provide basic CRUD functionality, define validations, and tracks the changes that your 
-application makes to them.
+An entity is the base for your models in a Mesh application. Entities define the relationships with other entities, provide basic CRUD functionality, define validations, and tracks the changes that your application makes to them.
 
 ### [[Associations]]
 How associations define the relationships between your entities.
@@ -28,13 +26,10 @@ How Mesh knows which entities need to be persisted.
 How dynamic entities reduce the amount of code you need to write.
 
 ## Service Adaptors
-Service adaptors define how entities are persisted to your backend.  Mesh provides base classes for 
-your service adaptors, but it is ultimately up to you to write the adaptors that will work with your 
-application.
+Service adaptors define how entities are persisted to your backend.  Mesh provides base classes for your service adaptors, but it is ultimately up to you to write the adaptors that will work with your application.
 
 ### [[Writing Service Adaptors]]
-How service adaptors are used to map the creation, updating, destruction and retrieval of entities 
-from your backend.
+How service adaptors are used to map the creation, updating, destruction and retrieval of entities from your backend.
 
 ## Contributing
 
