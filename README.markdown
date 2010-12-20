@@ -1,15 +1,15 @@
 # Mesh
-Mesh is an open-source persistence framework for [[Adobe Flex|http://www.adobe.com/products/flex/]]. It is designed to make the persistence of your application's model easier.
+Mesh is an open-source persistence framework for [Adobe Flex](http://www.adobe.com/products/flex/). It is designed to make the persistence of your application's model easier.
 
 ## Getting Started
 
-### [[Installation|https://github.com/danschultz/mesh/wiki/installation]]
+### [Installation](https://github.com/danschultz/mesh/wiki/installation)
 How to install and setup Mesh in your application.
 
 ## Entities
 An entity is the base for your models in a Mesh application. Entities define the relationships with other entities, provide basic CRUD functionality, define validations, and tracks the changes that your application makes to them.
 
-### [[Associations|https://github.com/danschultz/mesh/wiki/associations]]
+### [Associations](https://github.com/danschultz/mesh/wiki/associations)
 How associations define the relationships between your entities.
 
 ### [[Aggregates]]
