@@ -9,6 +9,8 @@ package mesh.associations
 	
 	import mesh.Entity;
 	
+	import mx.events.PropertyChangeEvent;
+	
 	import operations.EmptyOperation;
 	import operations.FinishedOperationEvent;
 	import operations.Operation;
@@ -74,7 +76,9 @@ package mesh.associations
 		
 		public function loaded():void
 		{
+			var oldValue:Boolean = isLoaded;
 			_isLoaded = true;
+			dispatchEvent(PropertyChangeEvent.createUpdateEvent(this, "isLoaded", oldValue, isLoaded));
 			
 			if (target.hasOwnProperty("loaded")) {
 				target.loaded();
@@ -110,6 +114,7 @@ package mesh.associations
 		}
 		
 		private var _isLoaded:Boolean;
+		[Bindable(event="propertyChange")]
 		/**
 		 * <code>true</code> if the association objects for this relationship have been
 		 * loaded.
