@@ -82,5 +82,17 @@ package mesh
 			_entity.addressStreet = "1 Infinite Loop";
 			assertThat(changeEvent.property, equalTo("address"));
 		}
+		
+		[Test]
+		public function testAggregateDoesNotDispatchPropertyChangesWhenBindableIsFalse():void
+		{
+			var changeEvent:PropertyChangeEvent;
+			_entity.addEventListener(PropertyChangeEvent.PROPERTY_CHANGE, function(event:PropertyChangeEvent):void
+			{
+				changeEvent = event;
+			});
+			_entity.latitude = 10;
+			assertThat(changeEvent, nullValue());
+		}
 	}
 }

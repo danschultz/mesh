@@ -7,6 +7,8 @@ package mesh.models
 	[Validate(properties="addressStreet,addressCity", validator="mesh.validators.LengthValidator", minimum="1")]
 	[ComposedOf(property="address", type="mesh.models.Address", prefix="address", mapping="street,city")]
 	
+	[ComposedOf(property="location", type="mesh.models.Coordinate", mapping="latitude, longitude", bindable="false")]
+	
 	[HasMany(type="mesh.models.Order", property="orders")]
 	[HasMany(type="mesh.models.Car")]
 	

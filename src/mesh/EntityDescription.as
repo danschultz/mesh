@@ -121,16 +121,13 @@ package mesh
 		{
 			var aggregates:Array = [];
 			for each (var composedOfXML:XML in _metadata.(@name == "ComposedOf")) {
-				var property:XMLList = composedOfXML.arg.(@key == "property");
-				var type:XMLList = composedOfXML.arg.(@key == "type");
-				var prefix:XMLList = composedOfXML.arg.(@key == "prefix");
-				var mapping:XMLList = composedOfXML.arg.(@key == "mapping");
-				
 				var options:Object = {};
-				options.prefix = prefix.@value.toString();
-				options.mapping = StringUtil.trimArrayElements(mapping.@value.toString(), ",").split(",");
+				for each (var argXML:XML in composedOfXML..arg) {
+					options[argXML.@key] = argXML.@value.toString();
+				}
+				options.mapping = StringUtil.trimArrayElements(options.mapping, ",").split(",");
 				
-				addAggregates(new Aggregate(entityType, property.length() > 0 ? property.@value : composedOfXML.parent().@name, getDefinitionByName(type.length() > 0 ? type.@value : composedOfXML.parent().@type) as Class, options));
+				addAggregates(new Aggregate(entityType, options.hasOwnProperty("property") ? options.property : composedOfXML.parent().@name, getDefinitionByName(options.hasOwnProperty("type") ? options.type : composedOfXML.parent().@type) as Class, options));
 			}
 			
 			var parent:Class = parentEntityType;
