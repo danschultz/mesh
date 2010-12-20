@@ -138,6 +138,7 @@ package mesh.associations
 		}
 		
 		private var _target:Object;
+		[Bindable]
 		/**
 		 * The instance of the the child for the association.
 		 */

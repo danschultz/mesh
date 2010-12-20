@@ -41,7 +41,7 @@ package operations
 			_attemptTimer.addEventListener(TimerEvent.TIMER_COMPLETE, handleAttemptTimerComplete);
 			
 			// sets the attempt count back to 0
-			addEventListener(OperationEvent.AFTER_EXECUTE, handleOperationExecuted);
+			addEventListener(OperationEvent.BEFORE_EXECUTE, handleOperationExecuted);
 		}
 		
 		private function attemptExecution(attempt:int):void

@@ -15,7 +15,7 @@ package mesh.models
 		[HasMany(type="mesh.models.Manufacturer", lazy="true")]
 		public function get manufacturers():AssociationCollection
 		{
-			return AssociationCollection( associationProxyFor("manufacturers") );
+			return AssociationCollection( findAssociation("manufacturers") );
 		}
 	}
 }
