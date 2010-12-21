@@ -7,7 +7,7 @@ package reflection
 	 * @param args The set of arguments to pass to the class's constructor.
 	 * @return An initialized instance of the class.
 	 */
-	public function newInstance(clazz:Class, ... args):Object
+	public function newInstance(clazz:Class, ... args):*
 	{
 		switch (args.length)
 		{

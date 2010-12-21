@@ -1,8 +1,14 @@
 package mesh.associations
 {
 	import flash.errors.IllegalOperationError;
+	import flash.utils.getDefinitionByName;
+	import flash.utils.getQualifiedClassName;
 	
 	import mesh.Entity;
+	
+	import reflection.className;
+	import reflection.newInstance;
+	import reflection.path;
 
 	/**
 	 * A relationship represents an association between two entities, where the <code>owner</code>
@@ -41,7 +47,12 @@ package mesh.associations
 		 */
 		public function createProxy(entity:Entity):*
 		{
-			throw new IllegalOperationError("Relationship.createProxy() must be overridden.");
+			var associationClassName:String = getQualifiedClassName(this).replace("Relationship", "Association");
+			var proxy:AssociationProxy = newInstance(getDefinitionByName(associationClassName) as Class, entity, this);
+			if (proxy == null) {
+				throw new IllegalOperationError("Could not find proxy for " + className(this));
+			}
+			return proxy;
 		}
 		
 		/**

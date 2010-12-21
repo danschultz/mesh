@@ -18,13 +18,5 @@ package mesh.associations
 		{
 			super(owner, property, target, options);
 		}
-		
-		/**
-		 * @inheritDoc
-		 */
-		override public function createProxy(entity:Entity):*
-		{
-			return new AssociationCollection(entity, this);
-		}
 	}
 }
