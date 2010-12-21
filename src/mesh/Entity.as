@@ -12,6 +12,8 @@ package mesh
 	
 	import functions.closure;
 	
+	import inflections.humanize;
+	
 	import mesh.adaptors.ServiceAdaptor;
 	import mesh.associations.AssociationCollection;
 	import mesh.associations.AssociationProxy;
@@ -29,6 +31,7 @@ package mesh
 	import operations.ParallelOperation;
 	import operations.SequentialOperation;
 	
+	import reflection.className;
 	import reflection.clazz;
 	import reflection.newInstance;
 	
@@ -380,6 +383,14 @@ package mesh
 		}
 		
 		/**
+		 * @private
+		 */
+		public function toString():String
+		{
+			return humanize(className(this));
+		}
+		
+		/**
 		 * Copies the translated values on the given object to this entity. This method is useful for
 		 * copying the values of a transfer object or XML into the entity for service calls.
 		 * 
@@ -582,11 +593,7 @@ package mesh
 		{
 			var relationship:Relationship = descriptor.getRelationshipForProperty(name);
 			if (relationship != null) {
-				var association:AssociationProxy = association(relationship.property);
-				if (association is AssociationCollection) {
-					return association;
-				}
-				return association.target;
+				return association(relationship.property);
 			}
 			
 			if (_properties.hasOwnProperty(name)) {
@@ -629,7 +636,7 @@ package mesh
 		{
 			var relationship:Relationship = descriptor.getRelationshipForProperty(name);
 			if (relationship != null) {
-				association(name).target = value;
+				association(name).target = value is AssociationProxy ? value.target : value;
 				return;
 			}
 			

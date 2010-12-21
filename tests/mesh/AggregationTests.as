@@ -7,7 +7,11 @@ package mesh
 	import mx.events.PropertyChangeEvent;
 	
 	import org.flexunit.assertThat;
+	import org.hamcrest.collection.everyItem;
+	import org.hamcrest.collection.hasItems;
+	import org.hamcrest.core.isA;
 	import org.hamcrest.object.equalTo;
+	import org.hamcrest.object.hasProperty;
 	import org.hamcrest.object.nullValue;
 
 	public class AggregationTests
@@ -93,6 +97,18 @@ package mesh
 			});
 			_entity.latitude = 10;
 			assertThat(changeEvent, nullValue());
+		}
+		
+		[Test]
+		public function testEntityContainsAggregateProperties():void
+		{
+			var tests:Array = [{instance:new Customer(), expects:["address", "addressStreet", "addressCity", "fullName", "firstName", "lastName", "location", "latitude", "longitude"]}];
+			
+			for each (var test:Object in tests) {
+				var properties:Array = test.instance.properties.toArray();
+				assertThat("test failed for " + test.expects, properties, everyItem(isA(String)));
+				assertThat("test failed for " + test.expects, properties, hasItems.apply(null, test.expects));
+			}
 		}
 	}
 }

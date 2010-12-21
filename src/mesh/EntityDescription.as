@@ -305,7 +305,7 @@ package mesh
 				_properties.addAll(_propertyToRelationship.keys());
 				
 				for each (var accessorXML:XML in _description..accessor) {
-					_properties.add(accessorXML.@name);
+					_properties.add(accessorXML.@name.toString());
 				}
 			}
 			return _properties;

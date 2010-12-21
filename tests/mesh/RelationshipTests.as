@@ -7,8 +7,11 @@ package mesh
 	import mesh.models.Customer;
 	
 	import org.flexunit.assertThat;
+	import org.hamcrest.collection.everyItem;
 	import org.hamcrest.collection.hasItem;
+	import org.hamcrest.collection.hasItems;
 	import org.hamcrest.core.allOf;
+	import org.hamcrest.core.isA;
 	import org.hamcrest.core.not;
 	import org.hamcrest.object.equalTo;
 	import org.hamcrest.object.hasProperty;
@@ -44,6 +47,19 @@ package mesh
 			var relationships:Array = airplane.descriptor.relationships.toArray();
 			assertThat(relationships, hasItem(allOf(hasProperty("property", equalTo("manufacturers")), hasProperty("owner", equalTo(Aircraft)))));
 			assertThat(relationships, not(hasItem(allOf(hasProperty("property", equalTo("manufacturers")), hasProperty("owner", equalTo(Airplane))))));
+		}
+		
+		[Test]
+		public function testEntityContainsRelationshipProperties():void
+		{
+			var tests:Array = [{instance:new Customer(), expects:["orders", "cars", "primaryCar"]},
+							   {instance:new Airplane(), expects:["manufacturers"]}];
+			
+			for each (var test:Object in tests) {
+				var properties:Array = test.instance.properties.toArray();
+				assertThat("test failed for " + test.expects, properties, everyItem(isA(String)));
+				assertThat("test failed for " + test.expects, properties, hasItems.apply(null, test.expects));
+			}
 		}
 	}
 }

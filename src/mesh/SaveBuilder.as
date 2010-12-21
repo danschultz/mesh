@@ -57,12 +57,12 @@ package mesh
 			return result;
 		}
 		
-		private function countLongestParentPath(entity:Entity):int
+		private function countLongestParentPath(entity:Object):int
 		{
 			var count:int = 0;
 			for each (var relationship:Relationship in entity.descriptor.relationships) {
 				if (relationship is BelongsToRelationship) {
-					var parent:Entity = entity[relationship.property];
+					var parent:Object = entity[relationship.property];
 					if (parent != null && _entitiesToSave.contains(parent)) {
 						count = Math.max(count, countLongestParentPath(parent) + 1);
 					}
