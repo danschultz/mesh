@@ -3,6 +3,7 @@ package mesh.models
 	import mesh.Entity;
 	import mesh.associations.AssociationCollection;
 	
+	[TranslateTo(type="mesh.models.AircraftVO")]
 	public class Aircraft extends Entity
 	{
 		public function Aircraft()
@@ -13,9 +14,9 @@ package mesh.models
 		}
 		
 		[HasMany(type="mesh.models.Manufacturer", lazy="true")]
-		public function get manufacturers():AssociationCollection
+		public function get manufacturers():Object
 		{
-			return AssociationCollection( findAssociation("manufacturers") );
+			return association("manufacturers");
 		}
 	}
 }

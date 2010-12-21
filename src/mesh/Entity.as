@@ -126,7 +126,7 @@ package mesh
 		 * @param property The property of the relationship to get the proxy for.
 		 * @return An association proxy.
 		 */
-		protected function findAssociation(property:String):AssociationProxy
+		protected function association(property:String):AssociationProxy
 		{
 			if (!_associations.hasOwnProperty(property)) {
 				var relationship:Relationship = descriptor.getRelationshipForProperty(property);
@@ -582,7 +582,7 @@ package mesh
 		{
 			var relationship:Relationship = descriptor.getRelationshipForProperty(name);
 			if (relationship != null) {
-				var association:AssociationProxy = findAssociation(relationship.property);
+				var association:AssociationProxy = association(relationship.property);
 				if (association is AssociationCollection) {
 					return association;
 				}
@@ -629,7 +629,7 @@ package mesh
 		{
 			var relationship:Relationship = descriptor.getRelationshipForProperty(name);
 			if (relationship != null) {
-				findAssociation(name).target = value;
+				association(name).target = value;
 				return;
 			}
 			

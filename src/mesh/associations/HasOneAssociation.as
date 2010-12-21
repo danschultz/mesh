@@ -8,5 +8,15 @@ package mesh.associations
 		{
 			super(owner, relationship);
 		}
+		
+		/**
+		 * @inheritDoc
+		 */
+		override public function revert():void
+		{
+			if (target != null) {
+				target.revert();
+			}
+		}
 	}
 }

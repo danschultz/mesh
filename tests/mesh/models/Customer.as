@@ -55,7 +55,7 @@ package mesh.models
 		public function get primaryCar():AssociationProxy
 		{
 			if (_primaryCar == null) {
-				_primaryCar = findAssociation("primaryCar");
+				_primaryCar = association("primaryCar");
 			}
 			return _primaryCar;
 		}
