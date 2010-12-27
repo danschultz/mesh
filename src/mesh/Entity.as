@@ -21,6 +21,7 @@ package mesh
 	import mesh.associations.Relationship;
 	import mesh.callbacks.AfterCallbackOperation;
 	import mesh.callbacks.BeforeCallbackOperation;
+	import mesh.serializers.vo.VO;
 	import mesh.validators.Validator;
 	
 	import mx.events.PropertyChangeEvent;
@@ -388,6 +389,48 @@ package mesh
 		public function toString():String
 		{
 			return humanize(className(this));
+		}
+		
+		public function toJSON(options:Object = null):Object
+		{
+			return null;
+		}
+		
+		public function toXML(options:Object = null):XML
+		{
+			return null;
+		}
+		
+		public function toVO(options:Object = null):Object
+		{
+			var vo:Object = new descriptor.voType();
+			for each (var property:String in properties) {
+				if (options == null || !options.hasOwnProperty("including") || options.including.indexOf(property) != -1) {
+					if (options == null || (!options.hasOwnProperty("excluding") || options.excluding.indexOf(property) == -1)) {
+						var value:Object = this[property];
+						
+						if (value is AssociationCollection) {
+							
+						} else {
+							if (value != null && value.hasOwnProperty("toVO")) {
+								value = value.toVO();
+							}
+							vo[property] = value;
+						}
+					}
+				}
+			}
+			return vo;
+		}
+		
+		public function fromVO(vo:Object, options:Object = null):void
+		{
+			for (var property:String in vo) {
+				var value:Object = this[property];
+				if (value != null && value.hasOwnProperty("fromVO")) {
+					value.fromVO(vo[property]);
+				}
+			}
 		}
 		
 		/**

@@ -17,6 +17,8 @@ package mesh.associations
 	import operations.Operation;
 	import operations.SequentialOperation;
 	
+	import reflection.className;
+	
 	use namespace flash_proxy;
 	
 	public dynamic class AssociationCollection extends AssociationProxy implements IList
@@ -33,6 +35,22 @@ package mesh.associations
 		{
 			super(source, relationship);
 			target = [];
+		}
+		
+		/**
+		 * @copy #addItem()
+		 */
+		public function add(item:Object):void
+		{
+			addItem(item);
+		}
+		
+		/**
+		 * @copy #addItemAt()
+		 */
+		public function addAt(item:Object, index:int):void
+		{
+			addItemAt(item, index);
 		}
 		
 		/**
@@ -81,6 +99,22 @@ package mesh.associations
 		public function findRemovedEntities():ISet
 		{
 			return new HashSet(_removedEntities);
+		}
+		
+		/**
+		 * @inheritDoc
+		 */
+		override public function fromVO(vo:Object, options:Object = null):void
+		{
+			if (!(vo is Array) && !(vo is IList)) {
+				throw new ArgumentError("Expected an Array or IList, but got a " + className(vo));
+			}
+			
+			var items:Array = [];
+			for each (var item:Object in vo) {
+				items.push(createEntityFromVOMapping(item, options));
+			}
+			target = items;
 		}
 		
 		/**
@@ -156,11 +190,27 @@ package mesh.associations
 		}
 		
 		/**
+		 * @copy #removeItem()
+		 */
+		public function remove(item:Object):void
+		{
+			removeItem(item);
+		}
+		
+		/**
 		 * @inheritDoc
 		 */
 		public function removeAll():void
 		{
 			target.removeAll();
+		}
+		
+		/**
+		 * @copy #removeItemAt()
+		 */
+		public function removeAt(index:int):void
+		{
+			removeItemAt(index);
 		}
 		
 		/**

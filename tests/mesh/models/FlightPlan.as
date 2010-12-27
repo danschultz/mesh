@@ -8,11 +8,13 @@ package mesh.models
 	[HasOne(type="mesh.models.Airport", property="arriving", lazy="false")]
 	[HasMany(type="mesh.models.NavigationAid", property="legs", lazy="false")]
 	[HasMany(type="mesh.models.Airport", property="alternates", lazy="true")]
-	
 	public dynamic class FlightPlan extends Entity
 	{
 		[ServiceAdaptor]
 		public static var adaptor:MockAdaptor;
+		
+		[VO]
+		public static var vo:FlightPlanVO;
 		
 		public function FlightPlan()
 		{

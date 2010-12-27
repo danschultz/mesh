@@ -8,11 +8,20 @@ package mesh.models
 		[ServiceAdaptor]
 		public static var adaptor:MockAdaptor;
 		
+		[VO]
+		public static var vo:NavigationAidVO;
+		
 		[Bindable]
 		public var name:String;
 		
 		[Bindable]
 		public var identifier:String;
+		
+		public function NavigationAid()
+		{
+			super();
+			NavigationAidVO;
+		}
 		
 		public static function from(data:NavigationAidVO):NavigationAid
 		{
@@ -43,6 +52,18 @@ package mesh.models
 			data.longitude = location.longitude;
 			data.name = name;
 			return data;
+		}
+		
+		override public function toVO(options:Object = null):Object
+		{
+			if (options == null) {
+				options = {};
+			}
+			if (!options.hasOwnProperty("excluding")) {
+				options.excluding = [];
+			}
+			options.excluding.push("location");
+			return super.toVO(options);
 		}
 		
 		private var _location:Coordinate;

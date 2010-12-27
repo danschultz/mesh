@@ -1,10 +1,15 @@
 package mesh.associations
 {
+	import collections.HashMap;
+	
+	import flash.errors.IllegalOperationError;
 	import flash.events.Event;
 	import flash.events.EventDispatcher;
 	import flash.events.IEventDispatcher;
 	import flash.utils.Proxy;
+	import flash.utils.describeType;
 	import flash.utils.flash_proxy;
+	import flash.utils.getDefinitionByName;
 	import flash.utils.setTimeout;
 	
 	import mesh.Entity;
@@ -15,6 +20,9 @@ package mesh.associations
 	import operations.FinishedOperationEvent;
 	import operations.Operation;
 	import operations.ResultOperationEvent;
+	
+	import reflection.className;
+	import reflection.clazz;
 
 	/**
 	 * An association proxy is a class that contains the references to the objects in
@@ -39,6 +47,32 @@ package mesh.associations
 			_dispatcher = new EventDispatcher(this);
 			_owner = owner;
 			_relationship = relationship;
+		}
+		
+		public function fromVO(vo:Object, options:Object = null):void
+		{
+			
+		}
+		
+		private static const VO_TO_ENTITY:HashMap = new HashMap();
+		protected function createEntityFromVOMapping(vo:Object, options:Object = null):Entity
+		{
+			var voType:Class = clazz(vo);
+			if (!VO_TO_ENTITY.containsKey(voType)) {
+				for each (var metadataXML:XML in describeType(vo)..metadata.(@name == "Entity")) {
+					VO_TO_ENTITY.put(voType, metadataXML.parent().@type);
+					break;
+				}
+			}
+			
+			var entityType:Class = VO_TO_ENTITY.grab(voType);
+			if (entityType == null) {
+				throw new IllegalOperationError("Entity mapping not found for " + className(vo));
+			}
+			
+			var entity:Entity = new entityType();
+			entity.fromVO(vo, options);
+			return entity;
 		}
 		
 		/**
@@ -183,7 +217,12 @@ package mesh.associations
 		 */
 		override flash_proxy function hasProperty(name:*):Boolean
 		{
-			return flash_proxy::getProperty(name);
+			try {
+				return flash_proxy::getProperty(name) !== undefined;
+			} catch (e:Error) {
+				
+			}
+			return false;
 		}
 		
 		/**

@@ -2,6 +2,9 @@ package mesh.models
 {
 	public dynamic class Airport extends NavigationAid
 	{
+		[VO]
+		public static var vo:AirportVO;
+		
 		[Bindable]
 		public var icao:String;
 		

@@ -8,6 +8,7 @@ package mesh
 	import flash.utils.Proxy;
 	import flash.utils.describeType;
 	import flash.utils.getDefinitionByName;
+	import flash.utils.getQualifiedClassName;
 	import flash.utils.getQualifiedSuperclassName;
 	
 	import inflections.pluralize;
@@ -57,6 +58,7 @@ package mesh
 			parseFactory();
 			parseRelationships();
 			parseValidators();
+			parseVOType();
 		}
 		
 		public static function describe(entity:Object):EntityDescription
@@ -244,6 +246,21 @@ package mesh
 			}
 		}
 		
+		private function parseVOType():void
+		{
+			for each (var voXML:XML in _metadata.(@name == "VO")) {
+				_voType = getDefinitionByName(voXML.parent().@type) as Class;
+				break;
+			}
+			
+			var parent:Class = parentEntityType;
+			while (_voType == null && parent != null) {
+				var description:EntityDescription = describe(parent);
+				_voType = description.voType;
+				parent = description.parentEntityType;
+			}
+		}
+		
 		public function newEntity(data:Object):Entity
 		{
 			var entity:Entity = factoryMethod == null ? newInstance(entityType) as Entity : entityType[factoryMethod](data);
@@ -300,15 +317,22 @@ package mesh
 		public function get properties():ISet
 		{
 			if (_properties == null) {
-				_properties = new HashSet();
+				_properties = new HashSet(["id"]);
 				_properties.addAll(_propertyToAggregate.keys());
 				_properties.addAll(_propertyToRelationship.keys());
 				
-				for each (var accessorXML:XML in _description..accessor) {
+				var entityPath:String = getQualifiedClassName(Entity);
+				for each (var accessorXML:XML in _description..accessor.(@declaredBy != entityPath && @declaredBy != "Class" && @declaredBy != "Object")) {
 					_properties.add(accessorXML.@name.toString());
 				}
 			}
 			return _properties;
+		}
+		
+		private var _voType:Class;
+		public function get voType():Class
+		{
+			return _voType;
 		}
 	}
 }

@@ -103,4 +103,22 @@
 		<attribute name="properties" type="Array" hint="properties"/>
 	</metadata>
 	
+	<!-- 
+	[VO]
+	-->
+	<metadata name="VO" description="Maps a VO to an entity.">
+		
+		<context name="class"/>
+		
+	</metadata>
+	
+	<!-- 
+	[Entity]
+	-->
+	<metadata name="Entity" description="Add a VO serialization type to an entity.">
+		
+		<context name="class"/>
+		
+	</metadata>
+	
 </annotations>
