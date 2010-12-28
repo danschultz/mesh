@@ -40,7 +40,7 @@ package reflection
 		[Test]
 		public function testPropertiesDoesNotContainStaticPropertiesFromParent():void
 		{
-			assertThat(new Type(ProgressEvent).properties, not(hasItem(allOf(hasProperty("name", equalTo("ACTIVATE")), hasProperty("isStatic", equalTo(true))))));
+			assertThat(new Type(ProgressEvent).properties, not(hasItem(allOf(hasProperty("name", equalTo("ACTIVATE"))))));
 		}
 	}
 }

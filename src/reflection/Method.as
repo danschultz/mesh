@@ -13,20 +13,18 @@ package reflection
 		/**
 		 * @copy Definition#Definition()
 		 */
-		public function Method(name:String, isStatic:Boolean, belongsTo:Definition)
+		public function Method(description:XML, belongsTo:Definition)
 		{
-			super(name, belongsTo, belongsTo.description..method.(@name == name));
-			_isStatic = isStatic;
+			super(description.@name.toString(), belongsTo, description);
 		}
 		
-		private var _isStatic:Boolean;
 		/**
 		 * <code>true</code> if this is a method that has been defined with 
 		 * <code>static</code>.
 		 */
 		public function get isStatic():Boolean
 		{
-			return _isStatic;
+			return description.parent().name() == "type";
 		}
 		
 		/**

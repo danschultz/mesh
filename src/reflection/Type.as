@@ -22,7 +22,8 @@ package reflection
 		{
 			_clazz = clazz;
 			var description:XML = describeType(clazz);
-			var parent:Type = clazz != Object ? new Type(getDefinitionByName(getQualifiedSuperclassName(clazz)) as Class) : null;
+			var parentClassName:String = getQualifiedSuperclassName(clazz);
+			var parent:Type = parentClassName != null ? new Type(getDefinitionByName(parentClassName) as Class) : null;
 			super(description.@name.toString(), parent, description);
 		}
 		
@@ -71,16 +72,16 @@ package reflection
 				
 				for each (var accessorXML:XML in description..accessor) {
 					if (accessorXML.@declaredBy.toString() == name) {
-						_properties.push(new Property(accessorXML.@name.toString(), accessorXML.parent().name() == "type", Property.ACCESSOR, this));
+						_properties.push(new Property(accessorXML, this));
 					}
 				}
 				
 				for each (var constantXML:XML in description..constant) {
-					_properties.push(new Property(constantXML.@name.toString(), constantXML.parent().name() == "type", Property.CONSTANT, this));
+					_properties.push(new Property(constantXML, this));
 				}
 				
 				for each (var variableXML:XML in description..variable) {
-					_properties.push(new Property(variableXML.@name.toString(), variableXML.parent().name() == "type", Property.VARIABLE, this));
+					_properties.push(new Property(variableXML, this));
 				}
 				
 				for each (var parent:Type in parents) {
@@ -102,9 +103,9 @@ package reflection
 			if (_methods == null) {
 				_methods = [];
 				
-				for each (var methodXML:XML in description..method.(@declaredBy == name)) {
+				for each (var methodXML:XML in description..method) {
 					if (methodXML.@declaredBy.toString() == name) {
-						_properties.push(new Method(methodXML.@name.toString(), methodXML.parent().name() == "type", this));
+						_methods.push(new Method(methodXML, this));
 					}
 				}
 				
@@ -153,7 +154,7 @@ package reflection
 			if (_implementing == null) {
 				_implementing = [];
 				
-				for each (var implementsXML:XML in description..implementsInterface.(@declaredBy == name)) {
+				for each (var implementsXML:XML in description..implementsInterface) {
 					_implementing.push(new Type(getDefinitionByName(implementsXML.@type.toString()) as Class));
 				}
 				
@@ -169,7 +170,7 @@ package reflection
 		 */
 		public function get hasParent():Boolean
 		{
-			return _clazz != Object;
+			return parent != null;
 		}
 		
 		/**
