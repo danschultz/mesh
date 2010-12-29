@@ -69,5 +69,16 @@ package reflection
 			assertThat(new Type(Label).isA(IFlexDisplayObject), equalTo(true));
 			assertThat(new Type(Label).isA(IBorder), equalTo(false));
 		}
+		
+		[Test]
+		public function testReflectInstanceOfClass():void
+		{
+			var instance:Class = String;
+			assertThat(Type.reflect(instance).isA(String), equalTo(true));
+			assertThat(Type.reflect(instance).isA(Class), equalTo(false));
+			
+			instance = Class;
+			assertThat(Type.reflect(instance).isA(Class), equalTo(true));
+		}
 	}
 }

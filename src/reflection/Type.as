@@ -1,10 +1,11 @@
 package reflection
 {
+	import collections.HashMap;
+	
 	import flash.utils.describeType;
 	import flash.utils.getDefinitionByName;
+	import flash.utils.getQualifiedClassName;
 	import flash.utils.getQualifiedSuperclassName;
-	
-	import functions.closure;
 	
 	/**
 	 * A class that represents a type definition, such as an interface or class.
@@ -18,22 +19,29 @@ package reflection
 		 * 
 		 * @param clazz The class to reflect.
 		 */
-		public function Type(clazz:Class)
+		public function Type(classOrInstance:Object)
 		{
-			_clazz = clazz;
-			var description:XML = describeType(clazz);
-			var parentClassName:String = getQualifiedSuperclassName(clazz);
+			_clazz = classOrInstance is Class ? classOrInstance as Class : getDefinitionByName(getQualifiedClassName(classOrInstance)) as Class;
+			var description:XML = describeType(classOrInstance);
+			var parentClassName:String = getQualifiedSuperclassName(classOrInstance);
 			var parent:Type = parentClassName != null ? new Type(getDefinitionByName(parentClassName) as Class) : null;
-			super(description.@name.toString(), parent, description);
+			super(description, parent);
 		}
 		
+		/**
+		 * Caches a reflection object for the given class or object.
+		 * 
+		 * @param obj The object or class to reflect.
+		 * @return A reflection object.
+		 */
 		public static function reflect(obj:Object):Type
 		{
-			var clazz:Class = obj is Class ? obj as Class : clazz(obj);
-			if (clazz["__reflection"] == null) {
-				clazz["__reflection"] = new Type(clazz);
+			var c:Class = obj is Class ? obj as Class : clazz(obj);
+			var key:String = "__reflection_for_" + ((obj is Class) ? "class" : "instance");
+			if (c[key] == null) {
+				c[key] = new Type(obj);
 			}
-			return clazz["__reflection"];
+			return c[key];
 		}
 		
 		/**
@@ -60,64 +68,114 @@ package reflection
 			return false;
 		}
 		
-		private var _properties:Array;
+		/**
+		 * Returns the property belonging to this type with the given name.
+		 * 
+		 * @param name The name of the property to retrieve.
+		 * @return A property.
+		 */
+		public function property(name:String):Property
+		{
+			return cachedProperties.grab(name);
+		}
+		
+		/**
+		 * Returns the method belonging to this type with the given name.
+		 * 
+		 * @param name The name of the method to retrieve.
+		 * @return A method.
+		 */
+		public function method(name:String):Method
+		{
+			return cachedMethods.grab(name);
+		}
+		
+		private var _allMetadata:Array;
+		/**
+		 * Returns all metadata that is associated with this type, including metadata that is
+		 * defined on properties and methods of the class.
+		 */
+		public function get allMetadata():Array
+		{
+			if (_allMetadata == null) {
+				_allMetadata = metadata;
+				
+				for each (var definition:Definition in properties.concat(methods)) {
+					_allMetadata = _allMetadata.concat(definition.metadata);
+				}
+			}
+			return _allMetadata;
+		}
+		
+		private var _properties:HashMap;
+		private function get cachedProperties():HashMap
+		{
+			if (_properties == null) {
+				_properties = new HashMap();
+				
+				for each (var accessorXML:XML in description..accessor) {
+					if (accessorXML.@declaredBy.toString() == name) {
+						_properties.put(accessorXML.@name.toString(), new Property(accessorXML, this));
+					}
+				}
+				
+				for each (var constantXML:XML in description..constant) {
+					_properties.put(constantXML.@name.toString(), new Property(constantXML, this));
+				}
+				
+				for each (var variableXML:XML in description..variable) {
+					_properties.put(variableXML.@name.toString(), new Property(variableXML, this));
+				}
+				
+				for each (var parent:Type in parents) {
+					for each (var property:Property in parent.properties) {
+						if (!property.isStatic) {
+							_properties.put(property.name, property);
+						}
+					}
+				}
+			}
+			return _properties;
+		}
+		
 		/**
 		 * A list of property definitions that represent the variables, getters and setters that
 		 * are defined on the type.
 		 */
 		public function get properties():Array
 		{
-			if (_properties == null) {
-				_properties = [];
+			return cachedProperties.values();
+		}
+		
+		private var _methods:HashMap;
+		private function get cachedMethods():HashMap
+		{
+			if (_methods == null) {
+				_methods = new HashMap();
 				
-				for each (var accessorXML:XML in description..accessor) {
-					if (accessorXML.@declaredBy.toString() == name) {
-						_properties.push(new Property(accessorXML, this));
+				for each (var methodXML:XML in description..method) {
+					if (methodXML.@declaredBy.toString() == name) {
+						_methods.put(methodXML.@name.toString(), new Method(methodXML, this));
 					}
 				}
 				
-				for each (var constantXML:XML in description..constant) {
-					_properties.push(new Property(constantXML, this));
-				}
-				
-				for each (var variableXML:XML in description..variable) {
-					_properties.push(new Property(variableXML, this));
-				}
-				
 				for each (var parent:Type in parents) {
-					_properties = _properties.concat(parent.properties.filter(closure(function(p:Property):Boolean
-					{
-						return !p.isStatic;
-					})));
+					for each (var method:Method in parent.methods) {
+						if (!method.isStatic) {
+							_methods.put(method.name, method);
+						}
+					}
 				}
 			}
-			return _properties.concat();
+			return _methods;
 		}
 		
-		private var _methods:Array;
 		/**
 		 * A list of method definitions that represent the functions that are defined on the type.
 		 */
 		public function get methods():Array
 		{
-			if (_methods == null) {
-				_methods = [];
-				
-				for each (var methodXML:XML in description..method) {
-					if (methodXML.@declaredBy.toString() == name) {
-						_methods.push(new Method(methodXML, this));
-					}
-				}
-				
-				for each (var parent:Type in parents) {
-					_methods = _methods.concat(parent.methods.filter(closure(function(m:Method):Boolean
-					{
-						return !m.isStatic;
-					})));
-				}
-			}
-
-			return _methods.concat();
+			return cachedMethods.values();
 		}
 		
 		private var _clazz:Class;
@@ -216,3 +274,4 @@ package reflection
 		}
 	}
 }
+

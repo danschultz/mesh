@@ -1,14 +1,13 @@
 package reflection
 {
 	import flash.events.Event;
+	import flash.events.ProgressEvent;
 	import flash.geom.Point;
 	
 	import org.flexunit.assertThat;
-	import org.hamcrest.collection.hasItem;
-	import org.hamcrest.core.allOf;
-	import org.hamcrest.core.not;
 	import org.hamcrest.object.equalTo;
-	import org.hamcrest.object.hasProperty;
+	import org.hamcrest.object.notNullValue;
+	import org.hamcrest.object.nullValue;
 	
 	import spark.components.Label;
 
@@ -17,25 +16,39 @@ package reflection
 		[Test]
 		public function testMethodsContainsClassMethods():void
 		{
-			assertThat(new Type(Point).methods, hasItem(allOf(hasProperty("name", equalTo("interpolate")), hasProperty("isStatic", equalTo(true)))));
+			var method:Method = new Type(Point).method("interpolate");
+			assertThat(method, notNullValue());
+			assertThat(method.isStatic, equalTo(true));
 		}
 		
 		[Test]
 		public function testMethodsContainsInstanceMethods():void
 		{
-			assertThat(new Type(Point).methods, hasItem(allOf(hasProperty("name", equalTo("add")), hasProperty("isStatic", equalTo(false)))));
+			var method:Method = new Type(Point).method("add");
+			assertThat(method, notNullValue());
+			assertThat(method.isStatic, equalTo(false));
 		}
 		
 		[Test]
 		public function testMethodsContainsMethodsFromParent():void
 		{
-			assertThat(new Type(Event).methods, hasItem(allOf(hasProperty("name", equalTo("formatToString")), hasProperty("isStatic", equalTo(false)))));
+			var method:Method = new Type(ProgressEvent).method("formatToString");
+			assertThat(method, notNullValue());
+			assertThat(method.isStatic, equalTo(false));
 		}
 		
 		[Test]
 		public function testMethodsDoesNotContainPropertiesFromParent():void
 		{
-			assertThat(new Type(Label).methods, not(hasItem(allOf(hasProperty("name", equalTo("suspendBackgroundProcessing"))))));
+			var method:Method = new Type(Label).method("suspendBackgroundProcessing");
+			assertThat(method, nullValue());
+		}
+		
+		[Test]
+		public function testMethodReturnType():void
+		{
+			assertThat(new Type(ProgressEvent).method("preventDefault").returnType, nullValue());
+			assertThat(new Type(ProgressEvent).method("clone").returnType.clazz, equalTo(Event));
 		}
 	}
 }

@@ -24,6 +24,7 @@ package mesh
 	import reflection.className;
 	import reflection.clazz;
 	import reflection.newInstance;
+	import reflection.reflect;
 
 	public class EntityDescription
 	{

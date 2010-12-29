@@ -4,6 +4,8 @@ package mesh.models
 	import mesh.adaptors.MockAdaptor;
 	import mesh.adaptors.ServiceAdaptor;
 	
+	import mx.collections.ArrayCollection;
+	
 	[HasOne(type="mesh.models.Airport", property="departing", lazy="false")]
 	[HasOne(type="mesh.models.Airport", property="arriving", lazy="false")]
 	[HasMany(type="mesh.models.NavigationAid", property="legs", lazy="false")]
@@ -46,9 +48,9 @@ package mesh.models
 			data.arriving = this.arriving.translateTo() as AirportVO;
 			data.departing = this.departing.translateTo() as AirportVO;
 			
-			data.legs = [];
+			data.legs = new ArrayCollection();
 			for each (var legs:NavigationAid in this.legs) {
-				data.legs.push(legs.translateTo());
+				data.legs.addItem(legs.translateTo());
 			}
 			return data;
 		}

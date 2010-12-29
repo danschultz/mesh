@@ -11,9 +11,9 @@ package reflection
 		/**
 		 * @copy Definition#Definition()
 		 */
-		public function Metadata(name:String, belongsTo:Definition)
+		public function Metadata(description:XML, belongsTo:Definition)
 		{
-			super(name, belongsTo, belongsTo.description..metadata.(@name == name));
+			super(description, belongsTo);
 		}
 		
 		private var _arguments:Object;

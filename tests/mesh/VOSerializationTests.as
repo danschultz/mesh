@@ -4,8 +4,15 @@ package mesh
 	import mesh.models.AirportVO;
 	import mesh.models.Coordinate;
 	import mesh.models.FlightPlan;
+	import mesh.models.NavigationAidVO;
+	
+	import mx.collections.ArrayCollection;
 	
 	import org.flexunit.assertThat;
+	import org.hamcrest.collection.arrayWithSize;
+	import org.hamcrest.collection.hasItem;
+	import org.hamcrest.collection.hasItems;
+	import org.hamcrest.core.allOf;
 	import org.hamcrest.core.isA;
 	import org.hamcrest.object.equalTo;
 	import org.hamcrest.object.nullValue;
@@ -27,6 +34,8 @@ package mesh
 			var flightPlan:FlightPlan = new FlightPlan();
 			flightPlan.departing = createAirport();
 			flightPlan.arriving = createAirport();
+			flightPlan.legs = [createAirport(), createAirport()];
+			flightPlan.alternates = [createAirport()];
 			return flightPlan;
 		}
 		
@@ -76,6 +85,9 @@ package mesh
 			var vo:Object = flightPlan.toVO();
 			assertThat(vo.arriving, isA(AirportVO));
 			assertThat(vo.departing, isA(AirportVO));
+			assertThat(vo.legs, isA(ArrayCollection));
+			assertThat(vo.legs.toArray(), hasItem(isA(NavigationAidVO)));
+			assertThat(vo.alternates, allOf(arrayWithSize(1), hasItem(isA(AirportVO))));
 		}
 	}
 }

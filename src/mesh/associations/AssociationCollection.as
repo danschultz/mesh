@@ -9,7 +9,10 @@ package mesh.associations
 	
 	import mesh.Entity;
 	
+	import mx.collections.ArrayCollection;
+	import mx.collections.ICollectionView;
 	import mx.collections.IList;
+	import mx.collections.ListCollectionView;
 	import mx.events.CollectionEvent;
 	import mx.events.CollectionEventKind;
 	
@@ -17,7 +20,9 @@ package mesh.associations
 	import operations.Operation;
 	import operations.SequentialOperation;
 	
+	import reflection.Type;
 	import reflection.className;
+	import reflection.reflect;
 	
 	use namespace flash_proxy;
 	
@@ -316,6 +321,33 @@ package mesh.associations
 		public function toArray():Array
 		{
 			return target.toArray();
+		}
+		
+		/**
+		 * Returns an array that contains the VO's for the entities of this collection.
+		 * 
+		 * @param options Any options.
+		 * @return An array of VO's.
+		 */
+		public function toVO(options:Object = null):Object
+		{
+			var result:Array = [];
+			for each (var entity:Entity in this) {
+				result.push(entity.toVO(options));
+			}
+			
+			if (options.hasOwnProperty("type")) {
+				var type:Type = reflect(options.type);
+				if (type.isA(ArrayCollection)) {
+					return new ArrayCollection(result);
+				} else if (type.isA(Array)) {
+					return result;
+				} else {
+					throw new ArgumentError("Type must be an Array or ArrayCollection, but was " + type)
+				}
+			}
+			
+			return result;
 		}
 		
 		/**

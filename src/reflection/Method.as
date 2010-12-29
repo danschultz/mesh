@@ -15,7 +15,7 @@ package reflection
 		 */
 		public function Method(description:XML, belongsTo:Definition)
 		{
-			super(description.@name.toString(), belongsTo, description);
+			super(description, belongsTo);
 		}
 		
 		/**
@@ -33,7 +33,7 @@ package reflection
 		 */
 		public function get returnType():Type
 		{
-			return description.attribute("returnType").length() == 0 ? null : Type.reflect(getDefinitionByName(description.@returnType.toString()) as Class);
+			return description.@returnType.toString() == "void" ? null : Type.reflect(getDefinitionByName(description.@returnType.toString()) as Class);
 		}
 	}
 }

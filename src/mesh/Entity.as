@@ -21,7 +21,6 @@ package mesh
 	import mesh.associations.Relationship;
 	import mesh.callbacks.AfterCallbackOperation;
 	import mesh.callbacks.BeforeCallbackOperation;
-	import mesh.serializers.vo.VO;
 	import mesh.validators.Validator;
 	
 	import mx.events.PropertyChangeEvent;
@@ -32,9 +31,11 @@ package mesh
 	import operations.ParallelOperation;
 	import operations.SequentialOperation;
 	
+	import reflection.Property;
 	import reflection.className;
 	import reflection.clazz;
 	import reflection.newInstance;
+	import reflection.reflect;
 	
 	/**
 	 * An entity.
@@ -408,15 +409,17 @@ package mesh
 				if (options == null || !options.hasOwnProperty("including") || options.including.indexOf(property) != -1) {
 					if (options == null || (!options.hasOwnProperty("excluding") || options.excluding.indexOf(property) == -1)) {
 						var value:Object = this[property];
-						
-						if (value is AssociationCollection) {
+						if (value != null && value.hasOwnProperty("toVO")) {
+							// need to pass through the options provided for this property.
+							var propertyOptions:Object = {};
 							
-						} else {
-							if (value != null && value.hasOwnProperty("toVO")) {
-								value = value.toVO();
+							if (value is AssociationCollection) {
+								propertyOptions.type = reflect(vo).property(property).type.clazz;
 							}
-							vo[property] = value;
+							
+							value = value.toVO(propertyOptions);
 						}
+						vo[property] = value;
 					}
 				}
 			}
@@ -425,10 +428,12 @@ package mesh
 		
 		public function fromVO(vo:Object, options:Object = null):void
 		{
-			for (var property:String in vo) {
+			for each (var property:Property in reflect(vo).properties) {
 				var value:Object = this[property];
 				if (value != null && value.hasOwnProperty("fromVO")) {
 					value.fromVO(vo[property]);
+				} else {
+					this[property] = vo[property];
 				}
 			}
 		}

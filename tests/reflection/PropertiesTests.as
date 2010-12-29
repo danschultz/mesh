@@ -5,42 +5,56 @@ package reflection
 	import flash.geom.Point;
 	
 	import org.flexunit.assertThat;
-	import org.hamcrest.collection.hasItem;
-	import org.hamcrest.core.allOf;
-	import org.hamcrest.core.not;
 	import org.hamcrest.object.equalTo;
-	import org.hamcrest.object.hasProperty;
+	import org.hamcrest.object.notNullValue;
+	import org.hamcrest.object.nullValue;
 
 	public class PropertiesTests
 	{
 		[Test]
 		public function testPropertiesContainsClassVariables():void
 		{
-			assertThat(new Type(Event).properties, hasItem(allOf(hasProperty("name", equalTo("ACTIVATE")), hasProperty("isStatic", equalTo(true)))));
+			var property:Property = new Type(Event).property("ACTIVATE");
+			assertThat(property, notNullValue());
+			assertThat(property.isStatic, equalTo(true));
 		}
 		
 		[Test]
 		public function testPropertiesContainsInstanceVariables():void
 		{
-			assertThat(new Type(Point).properties, hasItem(allOf(hasProperty("name", equalTo("x")), hasProperty("isStatic", equalTo(false)))));
+			var property:Property = new Type(Point).property("x");
+			assertThat(property, notNullValue());
+			assertThat(property.isStatic, equalTo(false));
 		}
 		
 		[Test]
 		public function testPropertiesContainsGettersAndSetters():void
 		{
-			assertThat(new Type(Event).properties, hasItem(allOf(hasProperty("name", equalTo("type")), hasProperty("isStatic", equalTo(false)))));
+			var property:Property = new Type(Event).property("type");
+			assertThat(property, notNullValue());
+			assertThat(property.isStatic, equalTo(false));
 		}
 		
 		[Test]
 		public function testPropertiesContainsPropertiesFromParent():void
 		{
-			assertThat(new Type(ProgressEvent).properties, hasItem(allOf(hasProperty("name", equalTo("type")), hasProperty("isStatic", equalTo(false)))));
+			var property:Property = new Type(ProgressEvent).property("type");
+			assertThat(property, notNullValue());
+			assertThat(property.isStatic, equalTo(false));
 		}
 		
 		[Test]
 		public function testPropertiesDoesNotContainStaticPropertiesFromParent():void
 		{
-			assertThat(new Type(ProgressEvent).properties, not(hasItem(allOf(hasProperty("name", equalTo("ACTIVATE"))))));
+			var property:Property = new Type(ProgressEvent).property("ACTIVATE");
+			assertThat(property, nullValue());
+		}
+		
+		[Test]
+		public function testPropertyType():void
+		{
+			assertThat(new Type(Point).property("x").type.clazz, equalTo(Number));
+			assertThat(new Type(ProgressEvent).property("cancelable").type.clazz, equalTo(Boolean));
 		}
 	}
 }

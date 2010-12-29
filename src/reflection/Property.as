@@ -15,7 +15,7 @@ package reflection
 		 */
 		public function Property(description:XML, belongsTo:Definition)
 		{
-			super(description.@name.toString(), belongsTo, description);
+			super(description, belongsTo);
 		}
 		
 		/**
@@ -41,7 +41,7 @@ package reflection
 		 */
 		public function get type():Type
 		{
-			return Type.reflect(getDefinitionByName(getQualifiedClassName(description.@type.toString())));
+			return Type.reflect(getDefinitionByName(description.@type.toString()));
 		}
 	}
 }

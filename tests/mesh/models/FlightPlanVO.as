@@ -1,5 +1,7 @@
 package mesh.models
 {
+	import mx.collections.ArrayCollection;
+
 	public class FlightPlanVO
 	{
 		[Entity]
@@ -8,7 +10,7 @@ package mesh.models
 		public var id:int;
 		public var arriving:AirportVO;
 		public var departing:AirportVO;
-		public var legs:Array;
+		public var legs:ArrayCollection;
 		public var alternates:Array;
 	}
 }

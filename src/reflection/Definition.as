@@ -17,11 +17,32 @@ package reflection
 		 * @param belongsTo The definition that this belongs to.
 		 * @param description The XML that describes this definition.
 		 */
-		public function Definition(name:String, belongsTo:Definition, description:XML)
+		public function Definition(description:XML, belongsTo:Definition)
 		{
 			_belongsTo = belongsTo;
-			_name = name;
 			_description = description;
+		}
+		
+		/**
+		 * Checks that two definitions are equal. Two definitions are equal when they belong
+		 * to the same definition, and their names are equal.
+		 * 
+		 * @param definition The definition to check.
+		 * @return <code>true</code> if the definitions are equal.
+		 */
+		public function equals(definition:Definition):Boolean
+		{
+			return this == definition || (definition != null && name == definition.name && belongsTo.equals(definition.belongsTo));
+		}
+		
+		/**
+		 * Returns the name for this definition.
+		 * 
+		 * @return The name.
+		 */
+		public function hashCode():Object
+		{
+			return name;
 		}
 		
 		/**
@@ -61,8 +82,10 @@ package reflection
 			if (_metadata == null) {
 				_metadata = [];
 				
-				for each (var metadataXML:XML in description..metadata.(@name != "__go_to_definition_help")) {
-					_metadata.push(new Metadata(metadataXML.@name.toString(), this));
+				for each (var metadataXML:XML in description..metadata) {
+					if (metadataXML.@name.toString() != "__go_to_definition_help") {
+						_metadata.push(new Metadata(metadataXML, this));
+					}
 				}
 			}
 			return _metadata.concat();
@@ -74,6 +97,9 @@ package reflection
 		 */
 		public function get name():String
 		{
+			if (_name == null) {
+				_name = description.@name.toString()
+			}
 			return _name;
 		}
 	}
