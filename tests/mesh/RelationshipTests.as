@@ -5,6 +5,7 @@ package mesh
 	import mesh.models.Aircraft;
 	import mesh.models.Airplane;
 	import mesh.models.Customer;
+	import mesh.models.Order;
 	
 	import org.flexunit.assertThat;
 	import org.hamcrest.collection.everyItem;
@@ -53,7 +54,8 @@ package mesh
 		public function testEntityContainsRelationshipProperties():void
 		{
 			var tests:Array = [{instance:new Customer(), expects:["orders", "cars", "primaryCar"]},
-							   {instance:new Airplane(), expects:["manufacturers"]}];
+							   {instance:new Airplane(), expects:["manufacturers"]},
+							   {instance:new Order(), expects:["customer", "customerId"]}];
 			
 			for each (var test:Object in tests) {
 				var properties:Array = test.instance.properties.toArray();

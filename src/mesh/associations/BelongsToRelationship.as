@@ -39,5 +39,13 @@ package mesh.associations
 			}
 			return camelize(className(target), false) + "Id";
 		}
+		
+		/**
+		 * @inheritDoc
+		 */
+		override public function get properties():Array
+		{
+			return super.properties.concat(foreignKey);
+		}
 	}
 }

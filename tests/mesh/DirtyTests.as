@@ -127,7 +127,7 @@ package mesh
 			_customer.orders.addItem(order);
 			
 			_customer.orders.removeItem(order);
-			assertThat(_customer.orders.isDirty, equalTo(false));
+			assertThat(_customer.ordersAssociation.isDirty, equalTo(false));
 			assertThat(_customer.hasDirtyAssociations, equalTo(false));
 		}
 		

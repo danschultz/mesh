@@ -119,6 +119,15 @@ package mesh.associations
 			return _property;
 		}
 		
+		/**
+		 * A list of all the properties related to this relationship that will be included
+		 * on the entity.
+		 */
+		public function get properties():Array
+		{
+			return [property];
+		}
+		
 		private var _target:Class;
 		/**
 		 * The destination entity for the association.

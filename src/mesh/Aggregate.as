@@ -137,6 +137,15 @@ package mesh
 			return _property;
 		}
 		
+		/**
+		 * A list of all the properties related to this aggregate that will be included
+		 * on the entity.
+		 */
+		public function get properties():Array
+		{
+			return mappings.concat(property);
+		}
+		
 		private var _type:Class;
 		/**
 		 * The aggregate class.

@@ -6,10 +6,11 @@ package mesh.associations
 	import flash.events.Event;
 	import flash.events.EventDispatcher;
 	import flash.events.IEventDispatcher;
+	import flash.utils.IDataInput;
+	import flash.utils.IDataOutput;
 	import flash.utils.Proxy;
 	import flash.utils.describeType;
 	import flash.utils.flash_proxy;
-	import flash.utils.getDefinitionByName;
 	import flash.utils.setTimeout;
 	
 	import mesh.Entity;
@@ -140,6 +141,22 @@ package mesh.associations
 		}
 		
 		/**
+		 * @inheritDoc
+		 */
+		public function readExternal(input:IDataInput):void
+		{
+			target = input.readObject();
+		}
+		
+		/**
+		 * @inheritDoc
+		 */
+		public function writeExternal(output:IDataOutput):void
+		{
+			output.writeObject(target);
+		}
+		
+		/**
 		 * @copy Entity#isDirty
 		 */
 		public function get isDirty():Boolean
@@ -176,16 +193,16 @@ package mesh.associations
 			return _owner;
 		}
 		
-		private var _target:Object;
+		private var _target:*;
 		[Bindable]
 		/**
 		 * The instance of the the child for the association.
 		 */
-		public function get target():Object
+		public function get target():*
 		{
 			return _target;
 		}
-		public function set target(value:Object):void
+		public function set target(value:*):void
 		{
 			_target = value;
 		}

@@ -319,8 +319,14 @@ package mesh
 		{
 			if (_properties == null) {
 				_properties = new HashSet(["id"]);
-				_properties.addAll(_propertyToAggregate.keys());
-				_properties.addAll(_propertyToRelationship.keys());
+				
+				for each (var aggregate:Aggregate in aggregates) {
+					_properties.addAll(aggregate.properties);
+				}
+				
+				for each (var relationship:Relationship in relationships) {
+					_properties.addAll(relationship.properties);
+				}
 				
 				var entityPath:String = getQualifiedClassName(Entity);
 				for each (var accessorXML:XML in _description..accessor.(@declaredBy != entityPath && @declaredBy != "Class" && @declaredBy != "Object")) {

@@ -88,9 +88,9 @@ package mesh
 			operation.addEventListener(FinishedOperationEvent.FINISHED, Async.asyncHandler(this, function(event:FinishedOperationEvent, data:Object = null):void
 			{
 				assertThat(result.isDirty, equalTo(false));
-				assertThat(result.arriving.isDirty, equalTo(false));
-				assertThat(result.departing.isDirty, equalTo(false));
-				assertThat(result.legs.isDirty, equalTo(false));
+				assertThat(result.arrivingAssociation.isDirty, equalTo(false));
+				assertThat(result.arrivingAssociation.isDirty, equalTo(false));
+				assertThat(result.legsAssociation.isDirty, equalTo(false));
 			}, 250));
 		}
 	}

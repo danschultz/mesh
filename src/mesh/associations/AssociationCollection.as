@@ -10,9 +10,7 @@ package mesh.associations
 	import mesh.Entity;
 	
 	import mx.collections.ArrayCollection;
-	import mx.collections.ICollectionView;
 	import mx.collections.IList;
-	import mx.collections.ListCollectionView;
 	import mx.events.CollectionEvent;
 	import mx.events.CollectionEventKind;
 	
@@ -386,11 +384,11 @@ package mesh.associations
 		/**
 		 * @inheritDoc
 		 */
-		override public function get target():Object
+		override public function get target():*
 		{
 			return super.target;
 		}
-		override public function set target(value:Object):void
+		override public function set target(value:*):void
 		{
 			if (value != null && (!(value is Array) && !value.hasOwnProperty("toArray"))) {
 				throw new ArgumentError("AssociationCollection.target must be an Array, have a toArray method, or be null.");

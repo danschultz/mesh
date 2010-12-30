@@ -16,7 +16,7 @@ package mesh
 		[Before]
 		public function setup():void
 		{
-			_collection = new Customer().orders;
+			_collection = new Customer().ordersAssociation;
 			
 			var target:Array = [];
 			var address:Address = new Address("2306 Zanker Rd", "San Jose");

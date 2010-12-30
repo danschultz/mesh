@@ -1,8 +1,11 @@
 package mesh.associations
 {
+	import flash.utils.IExternalizable;
+	
 	import mesh.Entity;
 	
-	public dynamic class HasOneAssociation extends AssociationProxy
+	[RemoteClass(alias="mesh.associations.HasOneAssociation")]
+	public dynamic class HasOneAssociation extends AssociationProxy implements IExternalizable
 	{
 		public function HasOneAssociation(owner:Entity, relationship:Relationship)
 		{

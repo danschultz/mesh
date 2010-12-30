@@ -126,12 +126,12 @@ package mesh
 		/**
 		 * Returns an association proxy for the given the given property. The proxy that is
 		 * returned is determined by the relationship type. For instance, if the property is
-		 * a has-many relationship, an <code>AssociationCollection</code> is returned.
+		 * a has-many relationship, a <code>HasManyAssociation</code> is returned.
 		 * 
 		 * @param property The property of the relationship to get the proxy for.
 		 * @return An association proxy.
 		 */
-		protected function association(property:String):AssociationProxy
+		public function association(property:String):AssociationProxy
 		{
 			if (!_associations.hasOwnProperty(property)) {
 				var relationship:Relationship = descriptor.getRelationshipForProperty(property);
@@ -203,7 +203,7 @@ package mesh
 			var result:HashSet = new HashSet(hasPropertyChanges ? [this] : []);
 			for each (var relationship:Relationship in descriptor.relationships) {
 				if (!(relationship is BelongsToRelationship)) {
-					result.addAll(this[relationship.property].findDirtyEntities());
+					result.addAll(association(relationship.property).findDirtyEntities());
 				}
 			}
 			return result;
@@ -220,7 +220,7 @@ package mesh
 			var result:HashSet = new HashSet();
 			for each (var relationship:Relationship in descriptor.relationships) {
 				if (!(relationship is BelongsToRelationship)) {
-					result.addAll(this[relationship.property].findRemovedEntities());
+					result.addAll(association(relationship.property).findRemovedEntities());
 				}
 			}
 			return result;
@@ -277,7 +277,7 @@ package mesh
 		{
 			for each (var relationship:Relationship in descriptor.relationships) {
 				if (relationship is BelongsToRelationship) {
-					this[(relationship as BelongsToRelationship).foreignKey] = this[relationship.property].id;
+					this[(relationship as BelongsToRelationship).foreignKey] = association(relationship.property).id;
 				}
 			}
 		}
@@ -303,8 +303,8 @@ package mesh
 			_properties.revert();
 			
 			for each (var relationship:Relationship in descriptor.relationships) {
-				if (hasOwnProperty(relationship.property) && this[relationship.property] != null) {
-					this[relationship.property].revert();
+				if (hasOwnProperty(relationship.property) && association(relationship.property) != null) {
+					association(relationship.property).revert();
 				}
 			}
 		}
@@ -379,7 +379,7 @@ package mesh
 		{
 			for each (var relationship:Relationship in descriptor.relationships) {
 				if (!(relationship is BelongsToRelationship) && !relationship.isLazy) {
-					this[relationship.property].loaded();
+					association(relationship.property).loaded();
 				}
 			}
 		}
@@ -408,7 +408,7 @@ package mesh
 			for each (var property:String in properties) {
 				if (options == null || !options.hasOwnProperty("including") || options.including.indexOf(property) != -1) {
 					if (options == null || (!options.hasOwnProperty("excluding") || options.excluding.indexOf(property) == -1)) {
-						var value:Object = this[property];
+						var value:Object = descriptor.getRelationshipForProperty(property) != null ? association(property) : this[property];
 						if (value != null && value.hasOwnProperty("toVO")) {
 							// need to pass through the options provided for this property.
 							var propertyOptions:Object = {};
@@ -584,7 +584,7 @@ package mesh
 			// more in depth check on the entity's relationships.
 			for each (var relationship:Relationship in descriptor.relationships) {
 				if (!(relationship is BelongsToRelationship)) {
-					var association:* = this[relationship.property];
+					var association:* = association(relationship.property);
 					if (association != null && association.isDirty) {
 						return true;
 					}
@@ -639,9 +639,14 @@ package mesh
 		 */
 		override flash_proxy function getProperty(name:*):*
 		{
-			var relationship:Relationship = descriptor.getRelationshipForProperty(name);
-			if (relationship != null) {
-				return association(relationship.property);
+			// check if the caller wants the association proxy's target
+			if (descriptor.getRelationshipForProperty(name) != null) {
+				return association(name).target;
+			}
+			
+			// check if the caller wants the association proxy.
+			if (name.toString().indexOf("Association") > 0) {
+				return association(name.toString().replace("Association", ""));
 			}
 			
 			if (_properties.hasOwnProperty(name)) {
@@ -682,6 +687,10 @@ package mesh
 		 */
 		override flash_proxy function setProperty(name:*, value:*):void
 		{
+			if (!properties.contains(name.toString())) {
+				throw new ArgumentError(name + " not defined on " + className(this));
+			}
+			
 			var relationship:Relationship = descriptor.getRelationshipForProperty(name);
 			if (relationship != null) {
 				association(name).target = value is AssociationProxy ? value.target : value;
@@ -699,6 +708,36 @@ package mesh
 			if (aggregate != null && aggregate.isBindable && aggregate.property == name.toString()) {
 				dispatchEvent(PropertyChangeEvent.createUpdateEvent(this, name.toString(), oldValue, value));
 			}
+		}
+		
+		/**
+		 *  @private
+		 */
+		override flash_proxy function nextName(index:int):String
+		{
+			return _iteratingProperties[index-1];
+		}
+		
+		private var _iteratingProperties:Array;
+		private var _len:int;
+		/**
+		 * @private
+		 */
+		override flash_proxy function nextNameIndex(index:int):int
+		{
+			if (index == 0) {
+				_iteratingProperties = properties.toArray();
+				_len = _iteratingProperties.length;
+			}
+			return index < _len ? index+1 : 0;
+		}
+		
+		/**
+		 * @private
+		 */
+		override flash_proxy function nextValue(index:int):*
+		{
+			return this[_iteratingProperties[index-1]];
 		}
 		
 		/**

@@ -38,7 +38,7 @@ package mesh.models
 				leg.translateFrom(waypoint);
 				legs.push(leg);
 			}
-			this.legs.target = legs;
+			this.legs = legs;
 		}
 		
 		override public function translateTo():Object
