@@ -28,7 +28,6 @@ package mesh
 	import operations.EmptyOperation;
 	import operations.FactoryOperation;
 	import operations.Operation;
-	import operations.ParallelOperation;
 	import operations.SequentialOperation;
 	
 	import reflection.Property;
@@ -519,6 +518,18 @@ package mesh
 			return results;
 		}
 		
+		/**
+		 * The set of associations that belong to this entity.
+		 */
+		public function get associations():Array
+		{
+			var result:Array = [];
+			for each (var relationship:Relationship in descriptor.relationships) {
+				result.push(association(relationship.property));
+			}
+			return result;
+		}
+		
 		private var _descriptor:EntityDescription;
 		/**
 		 * The description that contains the aggregates, relationships, validators and service
@@ -789,30 +800,6 @@ package mesh
 		public function willTrigger(type:String):Boolean
 		{
 			return _dispatcher.willTrigger(type);
-		}
-	}
-}
-
-import mesh.Entity;
-import mesh.associations.BelongsToRelationship;
-import mesh.associations.Relationship;
-
-import operations.FactoryOperation;
-import operations.ParallelOperation;
-
-class SaveAssociationsCallbackOperation extends ParallelOperation
-{
-	public function SaveAssociationsCallbackOperation(entity:Entity)
-	{
-		super();
-		
-		for each (var relationship:Relationship in entity.descriptor.relationships) {
-			if (!(relationship is BelongsToRelationship)) { 
-				var association:* = entity[relationship.property];
-				if (association != null) {
-					add( new FactoryOperation(association.save, true) );
-				}
-			}
 		}
 	}
 }

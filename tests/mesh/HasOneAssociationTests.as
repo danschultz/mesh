@@ -38,8 +38,8 @@ package mesh
 			car.callback("afterDestroy");
 			
 			_customer.primaryCar = car;
-			assertThat(order.isNew, equalTo(true));
-			assertThat(order.isDirty, equalTo(true));
+			assertThat(car.isNew, equalTo(true));
+			assertThat(car.isDirty, equalTo(true));
 		}
 		
 	}

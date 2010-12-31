@@ -43,7 +43,7 @@ package mesh
 		private function buildRelationshipGraph():Array
 		{
 			var result:Array = [];
-			for each (var entity:Entity in findEntitiesToSave()) {
+			for each (var entity:Entity in _entitiesToSave) {
 				var length:int = countLongestParentPath(entity);
 				
 				if (result[length] == null) {
