@@ -135,9 +135,9 @@ package mesh
 			var assertion:Function = function(event:FinishedOperationEvent, data:Object):void
 			{
 				var customer:Customer = order1.customer.target;
-				assertThat(order1.customer, equalTo(_customer));
+				assertThat(order1.customer.target, equalTo(_customer));
 				assertThat(order1.customerId, equalTo(_customer.id));
-				assertThat(order2.customer, equalTo(_customer));
+				assertThat(order2.customer.target, equalTo(_customer));
 				assertThat(order2.customerId, equalTo(_customer.id));
 			};
 			assertion = Async.asyncHandler(this, assertion, 250);

@@ -96,7 +96,7 @@ package mesh
 			}
 			
 			obj.type = type;
-			obj.args = args;
+			obj.args = args.concat(this);
 			_callbacks.push(obj);
 		}
 		
@@ -110,7 +110,7 @@ package mesh
 			return sequence;
 		}
 		
-		private function callback(method:String):void
+		public function callback(method:String):void
 		{
 			callbacksAsOperation(method).execute();
 		}
@@ -175,12 +175,12 @@ package mesh
 			return callbacksAsOperation("beforeDestroy").then(destroy).then(callbacksAsOperation("afterDestroy"));
 		}
 		
-		protected function beforeDestroy(... args):void
+		public function beforeDestroy(... args):void
 		{
 			addCallback("beforeDestroy", args);
 		}
 		
-		protected function afterDestroy(... args):void
+		public function afterDestroy(... args):void
 		{
 			addCallback("afterDestroy", args);
 		}
@@ -343,7 +343,7 @@ package mesh
 		 * 
 		 * @param callback The callback function.
 		 */
-		protected function beforeSave(...args):void
+		public function beforeSave(...args):void
 		{
 			addCallback("beforeSave", args);
 		}
@@ -354,7 +354,7 @@ package mesh
 		 * @param callback
 		 * 
 		 */
-		protected function afterSave(...args):void
+		public function afterSave(...args):void
 		{
 			addCallback("afterSave", args);
 		}
@@ -641,7 +641,7 @@ package mesh
 		{
 			// check if the caller wants the association proxy's target
 			if (descriptor.getRelationshipForProperty(name) != null) {
-				return association(name).target;
+				return association(name);
 			}
 			
 			// check if the caller wants the association proxy.

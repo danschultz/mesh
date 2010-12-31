@@ -15,21 +15,21 @@ package mesh.models
 		}
 		
 		[HasMany(type="mesh.models.Manufacturer", lazy="true")]
-		public function get manufacturers():IList
+		public function get manufacturers():*
 		{
 			return association("manufacturers").target;
 		}
-		public function set manufacturers(value:IList):void
+		public function set manufacturers(value:*):void
 		{
 			association("manufacturers").target = value;
 		}
 		
 		[HasOne(type="mesh.models.Customer", lazy="true")]
-		public function get owner():Customer
+		public function get owner():*
 		{
-			return association("owner").target;
+			return association("owner");
 		}
-		public function set owner(value:Customer):void
+		public function set owner(value:*):void
 		{
 			association("owner").target = value;
 		}

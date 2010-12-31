@@ -1,13 +1,15 @@
 package mesh
 {
+	import mesh.associations.AssociationCollection;
 	import mesh.models.Address;
 	import mesh.models.Customer;
 	import mesh.models.Order;
 	
 	import org.flexunit.assertThat;
 	import org.hamcrest.collection.array;
+	import org.hamcrest.collection.hasItem;
+	import org.hamcrest.core.not;
 	import org.hamcrest.object.equalTo;
-	import mesh.associations.AssociationCollection;
 
 	public class AssociationCollectionTests
 	{
@@ -59,6 +61,28 @@ package mesh
 			
 			_collection.revert();
 			assertThat(order.isDirty, equalTo(false));
+		}
+		
+		[Test]
+		public function testAddingDestroyedEntityIsDirty():void
+		{
+			var order:Order = new Order();
+			order.id = 3;
+			order.shippingAddress = new Address("2306 Zanker Rd", "San Jose");
+			order.callback("afterDestroy");
+			
+			_collection.addItem(order);
+			assertThat(_collection.isDirty, equalTo(true));
+		}
+		
+		[Test]
+		public function testFindRemovedEntitiesDoesntContainNonPersistedEntities():void
+		{
+			var order:Order = new Order();
+			_collection.addItem(order);
+			
+			_collection.removeItem(order);
+			assertThat(_collection.findRemovedEntities().toArray(), not(hasItem(order)));
 		}
 	}
 }

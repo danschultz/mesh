@@ -20,7 +20,7 @@ package mesh
 		[Test]
 		public function testHasManyRelationshipReturnsAssociationCollectionProxy():void
 		{
-			assertThat(_customer.orders, not(isA(AssociationCollection)));
+			assertThat(_customer.orders, isA(AssociationCollection));
 			assertThat(_customer.ordersAssociation, isA(AssociationCollection));
 		}
 		

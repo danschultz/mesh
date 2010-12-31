@@ -14,10 +14,6 @@ package mesh.associations
 	import mx.events.CollectionEvent;
 	import mx.events.CollectionEventKind;
 	
-	import operations.FactoryOperation;
-	import operations.Operation;
-	import operations.SequentialOperation;
-	
 	import reflection.Type;
 	import reflection.className;
 	import reflection.reflect;
@@ -26,9 +22,8 @@ package mesh.associations
 	
 	public dynamic class AssociationCollection extends AssociationProxy implements IList
 	{
-		private var _mirroredEntities:collections.ArrayList;
-		private var _originalEntities:collections.ArrayList;
-		
+		private var _originalEntities:ArrayList;
+		private var _mirroredEntities:ArrayList;
 		private var _removedEntities:ArraySet = new ArraySet();
 		
 		/**
@@ -101,7 +96,10 @@ package mesh.associations
 		 */
 		public function findRemovedEntities():ISet
 		{
-			return new HashSet(_removedEntities);
+			return _removedEntities.where(function(entity:Entity):Boolean
+			{
+				return entity.isPersisted;
+			});
 		}
 		
 		/**
@@ -140,20 +138,20 @@ package mesh.associations
 		{
 			switch (event.kind) {
 				case CollectionEventKind.ADD:
-					populateBelongsToRelationships(event.items);
-					_removedEntities.removeAll(event.items);
+					populateBelongsToRelationships(entities);
+					_removedEntities.removeAll(entities);
 					break;
 				case CollectionEventKind.REMOVE:
 					_removedEntities.addAll(event.items);
 					break;
 				case CollectionEventKind.RESET:
-					_removedEntities.addAll(_mirroredEntities.difference(new collections.ArrayList(target.toArray())));
-					populateBelongsToRelationships(target.toArray());
+					_removedEntities.addAll(_mirroredEntities.difference(target));
+					populateBelongsToRelationships(target.source);
 					break;
 			}
 			
 			if (event.kind != CollectionEventKind.UPDATE) {
-				_mirroredEntities = new collections.ArrayList(toArray());
+				_mirroredEntities = new ArrayList(target.source);
 			}
 			
 			dispatchEvent(event.clone());
@@ -174,7 +172,7 @@ package mesh.associations
 		{
 			super.loaded();
 			
-			_originalEntities = new collections.ArrayList(toArray());
+			_originalEntities = new ArrayList(toArray());
 			
 			for each (var entity:Entity in this) {
 				entity.loaded();
@@ -247,62 +245,9 @@ package mesh.associations
 			
 			target = _originalEntities;
 			
-			for each (var entity:Entity in _mirroredEntities) {
+			for each (var entity:Entity in target) {
 				entity.revert();
 			}
-		}
-		
-		/**
-		 * @inheritDoc
-		 */
-		override public function save(validate:Boolean = true):Operation
-		{
-			var beforeSave:SequentialOperation = new SequentialOperation();
-			var afterSave:SequentialOperation = new SequentialOperation();
-			var newEntities:Array = [];
-			var persistedEntities:Array = [];
-			
-			for each (var entity:Entity in _mirroredEntities) {
-				var isDirty:Boolean = entity.isDirty;
-				
-				if (isDirty) {
-					beforeSave.add(entity.callbacksAsOperation("beforeSave"));
-					afterSave.add(entity.callbacksAsOperation("afterSave"));
-					
-					if (entity.isNew) {
-						newEntities.push(entity);
-					} else if (isDirty) {
-						persistedEntities.push(entity);
-					}
-				}
-			}
-			
-			var saveOperation:Operation = beforeSave;
-			if (newEntities.length > 0) {
-				saveOperation = saveOperation.then( new FactoryOperation(Entity.adaptorFor(relationship.target).create, newEntities) );
-			}
-			if (persistedEntities.length > 0) {
-				saveOperation = saveOperation.then( new FactoryOperation(Entity.adaptorFor(relationship.target).update, persistedEntities) );
-			}
-			saveOperation = saveOperation.then(afterSave);
-			
-			var beforeDestroy:SequentialOperation = new SequentialOperation();
-			var afterDestroy:SequentialOperation = new SequentialOperation();
-			var entitiesToRemove:Array = [];
-			for each (var removedEntity:Entity in _removedEntities) {
-				if (removedEntity.isPersisted) {
-					beforeDestroy.add(removedEntity.callbacksAsOperation("beforeDestroy"));
-					afterDestroy.add(removedEntity.callbacksAsOperation("afterDestroy"));
-					entitiesToRemove.push(removedEntity);
-				}
-			}
-			var destroyOperation:Operation = beforeDestroy;
-			if (entitiesToRemove.length > 0) {
-				destroyOperation = destroyOperation.then( new FactoryOperation(Entity.adaptorFor(relationship.target).destroy, entitiesToRemove) );
-			}
-			destroyOperation = destroyOperation.then(afterDestroy);
-			
-			return saveOperation.during(destroyOperation);
 		}
 		
 		/**
@@ -363,7 +308,7 @@ package mesh.associations
 		{
 			return hasUnsavedRemovedEntities || toArray().some(function(entity:Entity, index:int, array:Array):Boolean
 			{
-				return entity.isDirty;
+				return !entity.isPersisted || entity.isDirty;
 			});
 		}
 		
@@ -403,8 +348,7 @@ package mesh.associations
 					value = value.toArray();
 				}
 				
-				super.target = new mx.collections.ArrayList(value as Array);
-				_mirroredEntities = new collections.ArrayList(value);
+				super.target = new ArrayCollection(value);
 				
 				dispatchEvent(new CollectionEvent(CollectionEvent.COLLECTION_CHANGE, false, false, CollectionEventKind.RESET));
 				target.addEventListener(CollectionEvent.COLLECTION_CHANGE, handleEntitiesCollectionChange);
