@@ -138,8 +138,8 @@ package mesh.associations
 		{
 			switch (event.kind) {
 				case CollectionEventKind.ADD:
-					populateBelongsToRelationships(entities);
-					_removedEntities.removeAll(entities);
+					populateBelongsToRelationships(event.items);
+					_removedEntities.removeAll(event.items);
 					break;
 				case CollectionEventKind.REMOVE:
 					_removedEntities.addAll(event.items);
