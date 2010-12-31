@@ -18,7 +18,7 @@ package mesh
 		[Before]
 		public function setup():void
 		{
-			_collection = new Customer().ordersAssociation;
+			_collection = new Customer().orders;
 			
 			var target:Array = [];
 			var address:Address = new Address("2306 Zanker Rd", "San Jose");
@@ -73,6 +73,19 @@ package mesh
 			
 			_collection.addItem(order);
 			assertThat(_collection.isDirty, equalTo(true));
+		}
+		
+		[Test]
+		public function testDestroyedEntityIsNewWhenReadded():void
+		{
+			var order:Order = new Order();
+			order.id = 3;
+			order.shippingAddress = new Address("2306 Zanker Rd", "San Jose");
+			order.callback("afterDestroy");
+			
+			_collection.addItem(order);
+			assertThat(order.isNew, equalTo(true));
+			assertThat(order.isDirty, equalTo(true));
 		}
 		
 		[Test]

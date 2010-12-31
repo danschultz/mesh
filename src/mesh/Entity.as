@@ -96,7 +96,7 @@ package mesh
 			}
 			
 			obj.type = type;
-			obj.args = args.concat(this);
+			obj.args = args;
 			_callbacks.push(obj);
 		}
 		
@@ -306,6 +306,17 @@ package mesh
 				if (hasOwnProperty(relationship.property) && association(relationship.property) != null) {
 					association(relationship.property).revert();
 				}
+			}
+		}
+		
+		/**
+		 * Marks the entity as a new entity if the entity has been destroyed.
+		 */
+		public function revive():void
+		{
+			if (isDestroyed) {
+				id = 0;
+				_isDestroyed = false;
 			}
 		}
 		

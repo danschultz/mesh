@@ -2,7 +2,6 @@ package mesh.models
 {
 	import mesh.Entity;
 	import mesh.adaptors.InMemoryAdaptor;
-	import mesh.associations.AssociationProxy;
 	
 	[Validate(properties="addressStreet,addressCity", validator="mesh.validators.LengthValidator", minimum="1")]
 	[ComposedOf(property="address", type="mesh.models.Address", prefix="address", mapping="street,city")]
@@ -50,18 +49,14 @@ package mesh.models
 			_age = value;
 		}
 		
-		private var _primaryCar:AssociationProxy;
 		[HasOne(type="mesh.models.Car")]
-		public function get primaryCar():AssociationProxy
+		public function get primaryCar():*
 		{
-			if (_primaryCar == null) {
-				_primaryCar = association("primaryCar");
-			}
-			return _primaryCar;
+			return association("primaryCar");
 		}
-		public function set primaryCar(value:AssociationProxy):void
+		public function set primaryCar(value:*):void
 		{
-			_primaryCar = value;
+			association("primaryCar").target = value;
 		}
 	}
 }

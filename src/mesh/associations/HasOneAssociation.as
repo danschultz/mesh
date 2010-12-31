@@ -29,5 +29,21 @@ package mesh.associations
 				target.revert();
 			}
 		}
+		
+		/**
+		 * @inheritDoc
+		 */
+		override public function get target():*
+		{
+			return super.target;
+		}
+		override public function set target(value:*):void
+		{
+			super.target = value;
+			
+			if (target != null) {
+				target.revive();
+			}
+		}
 	}
 }

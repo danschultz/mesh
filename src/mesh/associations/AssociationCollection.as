@@ -138,8 +138,7 @@ package mesh.associations
 		{
 			switch (event.kind) {
 				case CollectionEventKind.ADD:
-					populateBelongsToRelationships(event.items);
-					_removedEntities.removeAll(event.items);
+					handleEntitiesAdded(event.items);
 					break;
 				case CollectionEventKind.REMOVE:
 					_removedEntities.addAll(event.items);
@@ -155,6 +154,16 @@ package mesh.associations
 			}
 			
 			dispatchEvent(event.clone());
+		}
+		
+		private function handleEntitiesAdded(entities:Array):void
+		{
+			populateBelongsToRelationships(entities);
+			_removedEntities.removeAll(entities);
+			
+			for each (var entity:Entity in entities) {
+				entity.revive();
+			}
 		}
 		
 		/**
@@ -308,7 +317,7 @@ package mesh.associations
 		{
 			return hasUnsavedRemovedEntities || toArray().some(function(entity:Entity, index:int, array:Array):Boolean
 			{
-				return !entity.isPersisted || entity.isDirty;
+				return entity.isDirty;
 			});
 		}
 		
