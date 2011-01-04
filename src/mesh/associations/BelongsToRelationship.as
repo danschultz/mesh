@@ -2,8 +2,6 @@ package mesh.associations
 {
 	import inflections.camelize;
 	
-	import mesh.Entity;
-	
 	import reflection.className;
 
 	/**
@@ -22,14 +20,6 @@ package mesh.associations
 		}
 		
 		/**
-		 * @inheritDoc
-		 */
-		override public function createProxy(entity:Entity):*
-		{
-			return new AssociationProxy(entity, this);
-		}
-		
-		/**
 		 * The name of the foreign key property.
 		 */
 		public function get foreignKey():String
@@ -37,7 +27,7 @@ package mesh.associations
 			if (options.hasOwnProperty("foreignKey")) {
 				return options.foreignKey;
 			}
-			return camelize(className(target), false) + "Id";
+			return property + "Id";
 		}
 		
 		/**

@@ -6,12 +6,10 @@ package mesh.models
 	[Validate(properties="addressStreet,addressCity", validator="mesh.validators.LengthValidator", minimum="1")]
 	[ComposedOf(property="address", type="mesh.models.Address", prefix="address", mapping="street,city")]
 	
-	[ComposedOf(property="location", type="mesh.models.Coordinate", mapping="latitude, longitude", bindable="false")]
-	
 	[HasMany(type="mesh.models.Order", property="orders")]
 	[HasMany(type="mesh.models.Car")]
 	
-	public dynamic class Customer extends Entity
+	public dynamic class Customer extends Person
 	{
 		[ServiceAdaptor]
 		public static var adaptor:InMemoryAdaptor = new InMemoryAdaptor(Customer);
@@ -22,31 +20,6 @@ package mesh.models
 			
 			Order;
 			Car;
-		}
-		
-		private var _fullName:Name;
-		[Bindable]
-		[ComposedOf(mapping="firstName,lastName")]
-		[Validate(properties="firstName,lastName", validator="mesh.validators.LengthValidator", minimum="1")]
-		public function get fullName():Name
-		{
-			return _fullName;
-		}
-		public function set fullName(value:Name):void
-		{
-			_fullName = value;
-		}
-		
-		private var _age:Number;
-		[Bindable]
-		[Validate(validator="mesh.validators.NumericValidator", between="1..120")]
-		public function get age():Number
-		{
-			return _age;
-		}
-		public function set age(value:Number):void
-		{
-			_age = value;
 		}
 		
 		[HasOne(type="mesh.models.Car")]

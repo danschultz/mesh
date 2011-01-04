@@ -17,6 +17,7 @@ package mesh
 	import mesh.adaptors.ServiceAdaptor;
 	import mesh.associations.AssociationCollection;
 	import mesh.associations.AssociationProxy;
+	import mesh.associations.BelongsToAssociation;
 	import mesh.associations.BelongsToRelationship;
 	import mesh.associations.Relationship;
 	import mesh.callbacks.AfterCallbackOperation;
@@ -69,6 +70,16 @@ package mesh
 			afterDestroy(destroyed);
 			
 			addEventListener(PropertyChangeEvent.PROPERTY_CHANGE, handlePropertyChange);
+		}
+		
+		public function accept(visitor:Visitor):void
+		{
+			for each (var association:AssociationProxy in associations) {
+				if (visitor.enter(association)) {
+					association.accept(visitor);
+				}
+				visitor.exit(association);
+			}
 		}
 		
 		protected function afterFind(...args):void
@@ -152,7 +163,7 @@ package mesh
 		public function equals(entity:Entity):Boolean
 		{
 			return entity != null && 
-				   ((isPersisted && id === entity.id) || this === entity) && 
+				   (this === entity || (isPersisted && id === entity.id)) && 
 				   clazz(this) == clazz(entity);
 		}
 		
@@ -387,11 +398,7 @@ package mesh
 		
 		private function markNonLazyAssociationsAsLoaded():void
 		{
-			for each (var relationship:Relationship in descriptor.relationships) {
-				if (!(relationship is BelongsToRelationship) && !relationship.isLazy) {
-					association(relationship.property).loaded();
-				}
-			}
+			accept(new MarkAssociationsAsLoadedVisitor());
 		}
 		
 		/**
@@ -603,16 +610,9 @@ package mesh
 		 */
 		public function get hasDirtyAssociations():Boolean
 		{
-			// more in depth check on the entity's relationships.
-			for each (var relationship:Relationship in descriptor.relationships) {
-				if (!(relationship is BelongsToRelationship)) {
-					var association:* = association(relationship.property);
-					if (association != null && association.isDirty) {
-						return true;
-					}
-				}
-			}
-			return false;
+			var visitor:DirtyVisitor = new DirtyVisitor();
+			accept(visitor);
+			return visitor.isDirty;
 		}
 		
 		/**
@@ -801,5 +801,31 @@ package mesh
 		{
 			return _dispatcher.willTrigger(type);
 		}
+	}
+}
+
+import flash.utils.Dictionary;
+
+import mesh.Visitor;
+import mesh.associations.AssociationProxy;
+
+class MarkAssociationsAsLoadedVisitor extends Visitor
+{
+	private var _associations:Dictionary = new Dictionary();
+	
+	public function MarkAssociationsAsLoadedVisitor()
+	{
+		
+	}
+	
+	override public function enter(association:AssociationProxy):Boolean
+	{
+		return _associations[association] === undefined;
+	}
+	
+	override public function visit(association:AssociationProxy):void
+	{
+		_associations[association] = association;
+		association.loaded();
 	}
 }

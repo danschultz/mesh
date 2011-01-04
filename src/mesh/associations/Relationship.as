@@ -4,6 +4,8 @@ package mesh.associations
 	import flash.utils.getDefinitionByName;
 	import flash.utils.getQualifiedClassName;
 	
+	import inflections.humanize;
+	
 	import mesh.Entity;
 	
 	import reflection.className;
@@ -30,6 +32,10 @@ package mesh.associations
 		 */
 		public function Relationship(owner:Class, property:String, target:Class, options:Object)
 		{
+			if (property == null || property.length == 0) {
+				throw new ArgumentError("Missing property for '" + humanize(className(this)).toLowerCase() + "' on " + className(owner));
+			}
+			
 			if (options.hasOwnProperty("isLazy")) {
 				options.lazy = options.isLazy;
 			}

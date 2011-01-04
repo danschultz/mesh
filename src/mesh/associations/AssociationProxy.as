@@ -6,14 +6,13 @@ package mesh.associations
 	import flash.events.Event;
 	import flash.events.EventDispatcher;
 	import flash.events.IEventDispatcher;
-	import flash.utils.IDataInput;
-	import flash.utils.IDataOutput;
 	import flash.utils.Proxy;
 	import flash.utils.describeType;
 	import flash.utils.flash_proxy;
 	import flash.utils.setTimeout;
 	
 	import mesh.Entity;
+	import mesh.Visitor;
 	
 	import mx.events.PropertyChangeEvent;
 	
@@ -48,6 +47,11 @@ package mesh.associations
 			_dispatcher = new EventDispatcher(this);
 			_owner = owner;
 			_relationship = relationship;
+		}
+		
+		public function accept(visitor:Visitor):void
+		{
+			visitor.visit(this);
 		}
 		
 		public function fromVO(vo:Object, options:Object = null):void
@@ -138,22 +142,6 @@ package mesh.associations
 		public function save(validate:Boolean = true):Operation
 		{
 			return new EmptyOperation();
-		}
-		
-		/**
-		 * @inheritDoc
-		 */
-		public function readExternal(input:IDataInput):void
-		{
-			target = input.readObject();
-		}
-		
-		/**
-		 * @inheritDoc
-		 */
-		public function writeExternal(output:IDataOutput):void
-		{
-			output.writeObject(target);
 		}
 		
 		/**

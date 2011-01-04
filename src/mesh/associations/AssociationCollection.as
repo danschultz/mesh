@@ -8,6 +8,7 @@ package mesh.associations
 	import flash.utils.flash_proxy;
 	
 	import mesh.Entity;
+	import mesh.Visitor;
 	
 	import mx.collections.ArrayCollection;
 	import mx.collections.IList;
@@ -191,9 +192,10 @@ package mesh.associations
 		private function populateBelongsToRelationships(entities:Array):void
 		{
 			for each (var entity:Entity in entities) {
-				for each (var relationship:Relationship in entity.descriptor.relationships) {
-					if (relationship is BelongsToRelationship) {
-						entity[relationship.property] = owner;
+				for each (var association:AssociationProxy in entity.associations) {
+					if (association is BelongsToAssociation) {
+						association.target = owner;
+						association.loaded();
 					}
 				}
 			}

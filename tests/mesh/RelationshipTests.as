@@ -6,6 +6,7 @@ package mesh
 	import mesh.models.Airplane;
 	import mesh.models.Customer;
 	import mesh.models.Order;
+	import mesh.models.Person;
 	
 	import org.flexunit.assertThat;
 	import org.hamcrest.collection.everyItem;
@@ -55,7 +56,8 @@ package mesh
 		{
 			var tests:Array = [{instance:new Customer(), expects:["orders", "cars", "primaryCar"]},
 							   {instance:new Airplane(), expects:["manufacturers"]},
-							   {instance:new Order(), expects:["customer", "customerId"]}];
+							   {instance:new Order(), expects:["customer", "customerId"]},
+							   {instance:new Person(), expects:["significantOther", "significantOtherId"]}];
 			
 			for each (var test:Object in tests) {
 				var properties:Array = test.instance.properties.toArray();

@@ -5,6 +5,7 @@ package mesh
 	import mesh.models.Customer;
 	import mesh.models.Name;
 	import mesh.models.Order;
+	import mesh.models.Person;
 	
 	import org.flexunit.assertThat;
 	import org.hamcrest.collection.array;
@@ -35,7 +36,7 @@ package mesh
 			car.id = 1;
 			_customer.primaryCar.target = car;
 			
-			_customer.persisted();
+			_customer.loaded();
 		}
 		
 		[Test]
@@ -165,6 +166,26 @@ package mesh
 			var result:Array = _customer.findDirtyEntities().toArray();
 			assertThat(result, arrayWithSize(3));
 			assertThat(result, hasItems(_customer, _customer.orders.getItemAt(0), _customer.primaryCar.target));
+		}
+		
+		[Test]
+		public function testIsAssociationsDirtyWithCircularReferences():void
+		{
+			var jack:Person = new Person();
+			jack.id = 1;
+			jack.firstName = "Jack";
+			jack.persisted();
+			
+			var jill:Person = new Person();
+			jill.id = 2;
+			jill.firstName = "Jill";
+			jill.persisted();
+			
+			jack.significantOther = jill;
+			jill.significantOther = jack;
+			
+			assertThat(jack.hasDirtyAssociations, equalTo(true));
+			assertThat(jill.hasDirtyAssociations, equalTo(true));
 		}
 	}
 }
