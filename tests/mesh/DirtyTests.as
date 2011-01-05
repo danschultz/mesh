@@ -162,6 +162,7 @@ package mesh
 		{
 			_customer.age = 25;
 			_customer.orders.getItemAt(0).total = 5;
+			_customer.account.number = "000-001";
 			
 			var result:Array = _customer.findDirtyEntities().toArray();
 			assertThat(result, arrayWithSize(3));
