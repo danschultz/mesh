@@ -1,6 +1,5 @@
 package mesh.models
 {
-	import mesh.Entity;
 	import mesh.adaptors.InMemoryAdaptor;
 	
 	[Validate(properties="addressStreet,addressCity", validator="mesh.validators.LengthValidator", minimum="1")]
@@ -20,16 +19,17 @@ package mesh.models
 			
 			Order;
 			Car;
+			Account;
 		}
 		
-		[HasOne(type="mesh.models.Car")]
-		public function get primaryCar():*
+		[HasOne(type="mesh.models.Account")]
+		public function get account():*
 		{
-			return association("primaryCar");
+			return association("account");
 		}
-		public function set primaryCar(value:*):void
+		public function set account(value:*):void
 		{
-			association("primaryCar").target = value;
+			association("account").target = value;
 		}
 	}
 }

@@ -1,5 +1,6 @@
 package mesh
 {
+	import mesh.models.Account;
 	import mesh.models.Address;
 	import mesh.models.Car;
 	import mesh.models.Customer;
@@ -32,11 +33,11 @@ package mesh
 			order.id = 1;
 			_customer.orders.addItem(order);
 			
-			var car:Car = new Car();
-			car.id = 1;
-			_customer.primaryCar.target = car;
+			var account:Account = new Account();
+			account.id = 1;
+			_customer.account = account;
 			
-			_customer.loaded();
+			_customer.found();
 		}
 		
 		[Test]
@@ -161,11 +162,10 @@ package mesh
 		{
 			_customer.age = 25;
 			_customer.orders.getItemAt(0).total = 5;
-			_customer.primaryCar.msrp = 20000;
 			
 			var result:Array = _customer.findDirtyEntities().toArray();
 			assertThat(result, arrayWithSize(3));
-			assertThat(result, hasItems(_customer, _customer.orders.getItemAt(0), _customer.primaryCar.target));
+			assertThat(result, hasItems(_customer, _customer.orders.getItemAt(0)));
 		}
 		
 		[Test]
@@ -182,7 +182,9 @@ package mesh
 			jill.persisted();
 			
 			jack.significantOther = jill;
+			jack.partner = jill;
 			jill.significantOther = jack;
+			jill.partner = jack;
 			
 			assertThat(jack.hasDirtyAssociations, equalTo(true));
 			assertThat(jill.hasDirtyAssociations, equalTo(true));

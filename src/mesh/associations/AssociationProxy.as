@@ -118,10 +118,6 @@ package mesh.associations
 			var oldValue:Boolean = isLoaded;
 			_isLoaded = true;
 			dispatchEvent(PropertyChangeEvent.createUpdateEvent(this, "isLoaded", oldValue, isLoaded));
-			
-			if (target.hasOwnProperty("loaded")) {
-				target.loaded();
-			}
 		}
 		
 		/**
@@ -149,7 +145,7 @@ package mesh.associations
 		 */
 		public function get isDirty():Boolean
 		{
-			return target != null && target.isDirty;
+			return false;
 		}
 		
 		private var _isLoaded:Boolean;
@@ -167,7 +163,7 @@ package mesh.associations
 		/**
 		 * The relationship model that this association represents.
 		 */
-		protected function get relationship():Relationship
+		public function get relationship():Relationship
 		{
 			return _relationship;
 		}

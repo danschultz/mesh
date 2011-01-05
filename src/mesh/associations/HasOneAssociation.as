@@ -4,6 +4,9 @@ package mesh.associations
 	
 	public dynamic class HasOneAssociation extends AssociationProxy
 	{
+		/**
+		 * @copy AssociationProxy#AssociationProxy()
+		 */
 		public function HasOneAssociation(owner:Entity, relationship:Relationship)
 		{
 			super(owner, relationship);
@@ -20,11 +23,31 @@ package mesh.associations
 		/**
 		 * @inheritDoc
 		 */
+		override public function loaded():void
+		{
+			super.loaded();
+			
+			if (target != null) {
+				target.found();
+			}
+		}
+		
+		/**
+		 * @inheritDoc
+		 */
 		override public function revert():void
 		{
 			if (target != null) {
 				target.revert();
 			}
+		}
+		
+		/**
+		 * @inheritDoc
+		 */
+		override public function get isDirty():Boolean
+		{
+			return target != null && target.isDirty;
 		}
 		
 		/**
@@ -36,11 +59,11 @@ package mesh.associations
 		}
 		override public function set target(value:*):void
 		{
-			super.target = value;
-			
-			if (target != null) {
-				target.revive();
+			if (value != null) {
+				value.revive();
 			}
+			
+			super.target = value;
 		}
 	}
 }

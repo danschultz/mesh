@@ -1,6 +1,7 @@
 package mesh
 {
 	import mesh.associations.HasOneAssociation;
+	import mesh.models.Account;
 	import mesh.models.Car;
 	import mesh.models.Customer;
 	
@@ -20,26 +21,26 @@ package mesh
 		[Test]
 		public function testAssociatingDestroyedEntityIsDirty():void
 		{
-			var car:Car = new Car();
-			car.id = 3;
-			car.make = "Mazda";
-			car.callback("afterDestroy");
+			var account:Account = new Account();
+			account.id = 3;
+			account.number = "000-001";
+			account.callback("afterDestroy");
 			
-			_customer.primaryCar = car;
-			assertThat(_customer.primaryCar.isDirty, equalTo(true));
+			_customer.account = account;
+			assertThat(_customer.account.isDirty, equalTo(true));
 		}
 		
 		[Test]
 		public function testDestroyedEntityIsNewWhenAssociating():void
 		{
-			var car:Car = new Car();
-			car.id = 3;
-			car.make = "Mazda";
-			car.callback("afterDestroy");
+			var account:Account = new Account();
+			account.id = 3;
+			account.number = "000-001";
+			account.callback("afterDestroy");
 			
-			_customer.primaryCar = car;
-			assertThat(car.isNew, equalTo(true));
-			assertThat(car.isDirty, equalTo(true));
+			_customer.account = account;
+			assertThat(account.isNew, equalTo(true));
+			assertThat(account.isDirty, equalTo(true));
 		}
 		
 	}

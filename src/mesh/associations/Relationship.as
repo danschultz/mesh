@@ -84,6 +84,16 @@ package mesh.associations
 		}
 		
 		/**
+		 * The property name for this relationship.
+		 * 
+		 * @return The property name.
+		 */
+		public function toString():String
+		{
+			return property;
+		}
+		
+		/**
 		 * <code>true</code> if this relationship is lazy, and its data is not loaded when
 		 * the owner is loaded.
 		 */

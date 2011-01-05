@@ -39,7 +39,7 @@ package mesh
 		public function testRelationshipMetadataOnGetterSetsPropertyAsGetter():void
 		{
 			var relationships:Array = new Customer().descriptor.relationships.toArray();
-			assertThat(relationships, hasItem(allOf(instanceOf(HasOneRelationship), hasProperty("property", equalTo("primaryCar")))));
+			assertThat(relationships, hasItem(allOf(instanceOf(HasOneRelationship), hasProperty("property", equalTo("account")))));
 		}
 		
 		[Test]
@@ -54,7 +54,7 @@ package mesh
 		[Test]
 		public function testEntityContainsRelationshipProperties():void
 		{
-			var tests:Array = [{instance:new Customer(), expects:["orders", "cars", "primaryCar"]},
+			var tests:Array = [{instance:new Customer(), expects:["orders", "cars", "account"]},
 							   {instance:new Airplane(), expects:["manufacturers"]},
 							   {instance:new Order(), expects:["customer", "customerId"]},
 							   {instance:new Person(), expects:["significantOther", "significantOtherId"]}];

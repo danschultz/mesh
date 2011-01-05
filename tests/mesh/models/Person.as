@@ -5,6 +5,7 @@ package mesh.models
 	[ComposedOf(property="location", type="mesh.models.Coordinate", mapping="latitude, longitude", bindable="false")]
 	
 	[BelongsTo(property="significantOther", type="mesh.models.Person")]
+	[HasOne(property="partner", type="mesh.models.Person")]
 	
 	public dynamic class Person extends Entity
 	{

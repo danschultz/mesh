@@ -52,7 +52,7 @@ package mesh
 		{
 			for (var i:int = 0; i < event.data.length; i++) {
 				var entity:Entity = EntityDescription.describe(_entityType).newEntity(event.data[i]);
-				entity.loaded();
+				entity.found();
 				event.data[i] = entity;
 			}
 		}

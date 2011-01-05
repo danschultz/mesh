@@ -8,7 +8,6 @@ package mesh.associations
 	import flash.utils.flash_proxy;
 	
 	import mesh.Entity;
-	import mesh.Visitor;
 	
 	import mx.collections.ArrayCollection;
 	import mx.collections.IList;
@@ -181,11 +180,10 @@ package mesh.associations
 		override public function loaded():void
 		{
 			super.loaded();
-			
 			_originalEntities = new ArrayList(toArray());
 			
 			for each (var entity:Entity in this) {
-				entity.loaded();
+				entity.found();
 			}
 		}
 		
@@ -193,9 +191,8 @@ package mesh.associations
 		{
 			for each (var entity:Entity in entities) {
 				for each (var association:AssociationProxy in entity.associations) {
-					if (association is BelongsToAssociation) {
+					if (association is BelongsToAssociation && relationship.target == association.relationship.owner) {
 						association.target = owner;
-						association.loaded();
 					}
 				}
 			}
@@ -361,8 +358,22 @@ package mesh.associations
 				
 				super.target = new ArrayCollection(value);
 				
-				dispatchEvent(new CollectionEvent(CollectionEvent.COLLECTION_CHANGE, false, false, CollectionEventKind.RESET));
+				if (_mirroredEntities == null) {
+					_mirroredEntities = new ArrayList(value);
+				}
+				
 				target.addEventListener(CollectionEvent.COLLECTION_CHANGE, handleEntitiesCollectionChange);
+				target.dispatchEvent(new CollectionEvent(CollectionEvent.COLLECTION_CHANGE, false, false, CollectionEventKind.RESET));
+			}
+		}
+		
+		/**
+		 * @inheritDoc
+		 */
+		override flash_proxy function callProperty(name:*, ...parameters):*
+		{
+			for each (var entity:Entity in this) {
+				entity[name].apply(null, parameters);
 			}
 		}
 		

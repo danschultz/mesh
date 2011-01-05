@@ -17,7 +17,6 @@ package mesh
 	import mesh.adaptors.ServiceAdaptor;
 	import mesh.associations.AssociationCollection;
 	import mesh.associations.AssociationProxy;
-	import mesh.associations.BelongsToAssociation;
 	import mesh.associations.BelongsToRelationship;
 	import mesh.associations.Relationship;
 	import mesh.callbacks.AfterCallbackOperation;
@@ -391,7 +390,7 @@ package mesh
 		/**
 		 * Marks this entity as being loaded from its backend service.
 		 */
-		public function loaded():void
+		public function found():void
 		{
 			callback("afterFind");
 		}
@@ -826,6 +825,9 @@ class MarkAssociationsAsLoadedVisitor extends Visitor
 	override public function visit(association:AssociationProxy):void
 	{
 		_associations[association] = association;
-		association.loaded();
+		
+		if (!association.relationship.isLazy && !association.isLoaded) {
+			association.loaded();
+		}
 	}
 }

@@ -18,5 +18,16 @@ package mesh.associations
 		{
 			super(owner, property, target, options);
 		}
+		
+		/**
+		 * The name of the foreign key property.
+		 */
+		public function get foreignKey():String
+		{
+			if (options.hasOwnProperty("foreignKey")) {
+				return options.foreignKey;
+			}
+			return property + "Id";
+		}
 	}
 }

@@ -4,6 +4,9 @@ package mesh.associations
 	
 	public class BelongsToAssociation extends AssociationProxy
 	{
+		/**
+		 * @copy AssociationProxy#AssociationProxy()
+		 */
 		public function BelongsToAssociation(owner:Entity, relationship:Relationship)
 		{
 			super(owner, relationship);
@@ -14,7 +17,16 @@ package mesh.associations
 		 */
 		override public function loaded():void
 		{
-			_oldTarget = target;
+			super.loaded();
+			
+			if (target != null) {
+				target.found();
+			}
+		}
+		
+		private function replaceKey():void
+		{
+			owner[(relationship as BelongsToRelationship).foreignKey] = target != null ? target.id : undefined;
 		}
 		
 		/**
@@ -22,20 +34,29 @@ package mesh.associations
 		 */
 		override public function get isDirty():Boolean
 		{
-			if (_oldTarget != null && target != null) {
-				return !_oldTarget.equals(target);
+			var foreignKey:* = (relationship as BelongsToRelationship).foreignKey;
+			if (target == null) {
+				return owner[foreignKey] != null;
 			}
-			return _oldTarget != target;
+			return target.id != owner[foreignKey];
 		}
 		
-		private var _oldTarget:*;
+		/**
+		 * @inheritDoc
+		 */
 		override public function get target():*
 		{
 			return super.target;
 		}
 		override public function set target(value:*):void
 		{
+			if (value != null) {
+				value.revive();
+			}
+			
 			super.target = value;
+			
+			replaceKey();
 		}
 	}
 }
