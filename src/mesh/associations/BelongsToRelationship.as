@@ -9,7 +9,7 @@ package mesh.associations
 	 * 
 	 * @author Dan Schultz
 	 */
-	public class BelongsToRelationship extends Relationship
+	public class BelongsToRelationship extends HasOneRelationship
 	{
 		/**
 		 * @copy Relationship#Relationship()
@@ -17,25 +17,6 @@ package mesh.associations
 		public function BelongsToRelationship(owner:Class, property:String, target:Class, options:Object)
 		{
 			super(owner, property, target, options);
-		}
-		
-		/**
-		 * The name of the foreign key property.
-		 */
-		public function get foreignKey():String
-		{
-			if (options.hasOwnProperty("foreignKey")) {
-				return options.foreignKey;
-			}
-			return property + "Id";
-		}
-		
-		/**
-		 * @inheritDoc
-		 */
-		override public function get properties():Array
-		{
-			return super.properties.concat(foreignKey);
 		}
 	}
 }

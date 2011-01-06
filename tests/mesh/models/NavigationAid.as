@@ -3,6 +3,7 @@ package mesh.models
 	import mesh.Entity;
 	import mesh.adaptors.MockAdaptor;
 	
+	[BelongsTo(type="mesh.models.FlightPlan")]
 	public dynamic class NavigationAid extends Entity
 	{
 		[ServiceAdaptor]

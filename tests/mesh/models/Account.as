@@ -2,6 +2,7 @@ package mesh.models
 {
 	import mesh.Entity;
 	
+	[BelongsTo(type="mesh.models.Customer")]
 	public dynamic class Account extends Entity
 	{
 		[Bindable]

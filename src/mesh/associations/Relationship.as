@@ -1,12 +1,17 @@
 package mesh.associations
 {
 	import flash.errors.IllegalOperationError;
+	import flash.utils.Proxy;
+	import flash.utils.flash_proxy;
 	import flash.utils.getDefinitionByName;
 	import flash.utils.getQualifiedClassName;
 	
+	import inflections.camelize;
 	import inflections.humanize;
 	
 	import mesh.Entity;
+	
+	import org.hamcrest.object.hasProperty;
 	
 	import reflection.className;
 	import reflection.newInstance;
@@ -20,7 +25,7 @@ package mesh.associations
 	 * 
 	 * @author Dan Schultz
 	 */
-	public class Relationship
+	public dynamic class Relationship extends Proxy
 	{
 		/**
 		 * Constructor.
@@ -38,6 +43,10 @@ package mesh.associations
 			
 			if (options.hasOwnProperty("isLazy")) {
 				options.lazy = options.isLazy;
+			}
+			
+			if (!options.hasOwnProperty("autoSave")) {
+				options.autoSave = true;
 			}
 			
 			_owner = owner;
@@ -151,6 +160,33 @@ package mesh.associations
 		public function get target():Class
 		{
 			return _target;
+		}
+		
+		/**
+		 * @inheritDoc
+		 */
+		override flash_proxy function getProperty(name:*):*
+		{
+			// supports calls like: relationship.isHasOne, or relationship.isHasMany.
+			if (name.toString().indexOf("is") == 0) {
+				return camelize(name.toString().replace("is", ""), false) == className(this).replace(className(Relationship), "");
+			}
+			
+			// supports calls like: relationship.hasLazy
+			if (name.toString().indexOf("has") == 0) {
+				return hasProperty(camelize(name.toString().replace("has", ""), false));
+			}
+			
+			// forward calls to options.
+			return options[name];
+		}
+		
+		/**
+		 * @inheritDoc
+		 */
+		override flash_proxy function hasProperty(name:*):Boolean
+		{
+			return flash_proxy::getProperty(name) !== undefined;
 		}
 	}
 }

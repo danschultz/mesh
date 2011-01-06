@@ -1,7 +1,9 @@
 package mesh.associations
 {
-	import mesh.Entity;
-
+	import inflections.camelize;
+	
+	import reflection.className;
+	
 	/**
 	 * An association that defines a one-to-one relationship with another model. This
 	 * relationship indicates that each instance of a model contains an instance of
@@ -16,6 +18,10 @@ package mesh.associations
 		 */
 		public function HasOneRelationship(owner:Class, property:String, target:Class, options:Object)
 		{
+			if (property == null || property.length == 0) {
+				property = camelize(className(target), false);
+			}
+			
 			super(owner, property, target, options);
 		}
 		

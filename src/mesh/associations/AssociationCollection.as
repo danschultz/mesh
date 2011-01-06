@@ -144,7 +144,6 @@ package mesh.associations
 					break;
 				case CollectionEventKind.RESET:
 					_removedEntities.addAll(_mirroredEntities.difference(target));
-					populateBelongsToRelationships(target.source);
 					break;
 			}
 			
@@ -157,7 +156,6 @@ package mesh.associations
 		
 		private function handleEntitiesAdded(entities:Array):void
 		{
-			populateBelongsToRelationships(entities);
 			_removedEntities.removeAll(entities);
 			
 			for each (var entity:Entity in entities) {
@@ -183,17 +181,6 @@ package mesh.associations
 			
 			for each (var entity:Entity in this) {
 				entity.found();
-			}
-		}
-		
-		private function populateBelongsToRelationships(entities:Array):void
-		{
-			for each (var entity:Entity in entities) {
-				for each (var association:AssociationProxy in entity.associations) {
-					if (association is BelongsToAssociation && relationship.target == association.relationship.owner) {
-						association.target = owner;
-					}
-				}
 			}
 		}
 		

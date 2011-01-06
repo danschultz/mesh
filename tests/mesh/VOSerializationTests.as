@@ -17,6 +17,7 @@ package mesh
 	import org.hamcrest.object.equalTo;
 	import org.hamcrest.object.nullValue;
 
+	[Ignore]
 	public class VOSerializationTests
 	{
 		private function createAirport():Airport

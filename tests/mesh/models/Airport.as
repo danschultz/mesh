@@ -1,5 +1,6 @@
 package mesh.models
 {
+	[BelongsTo(type="mesh.models.FlightPlan")]
 	public dynamic class Airport extends NavigationAid
 	{
 		[VO]

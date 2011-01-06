@@ -2,12 +2,10 @@ package mesh
 {
 	import collections.HashMap;
 	import collections.HashSet;
-	import collections.ISet;
 	
 	import functions.closure;
 	
 	import mesh.adaptors.ServiceAdaptor;
-	import mesh.associations.AssociationProxy;
 	import mesh.associations.BelongsToRelationship;
 	import mesh.associations.Relationship;
 	
@@ -16,13 +14,20 @@ package mesh
 	import operations.ParallelOperation;
 	import operations.SequentialOperation;
 	
-	public class SaveBuilder extends VisitOnceVisitor
+	public class SaveBuilder
 	{
 		private var _entities:Array;
+		private var _entitiesToSave:HashSet = new HashSet();
+		private var _entitiesToRemove:HashSet = new HashSet();
 		
 		public function SaveBuilder(entities:Array)
 		{
 			_entities = entities;
+			
+			for each (var entity:Entity in _entities) {
+				_entitiesToSave.addAll(entity.findDirtyEntities());
+				_entitiesToRemove.addAll(entity.findRemovedEntities());
+			}
 		}
 		
 		public function build():Operation
@@ -64,24 +69,6 @@ package mesh
 				}
 			}
 			return count;
-		}
-		
-		private function findEntitiesToRemove():ISet
-		{
-			var result:HashSet = new HashSet();
-			for each (var entity:Entity in _entities) {
-				result.addAll(entity.findRemovedEntities());
-			}
-			return result;
-		}
-		
-		private function findEntitiesToSave():ISet
-		{
-			var result:HashSet = new HashSet();
-			for each (var entity:Entity in _entities) {
-				result.addAll(entity.findDirtyEntities());
-			}
-			return result;
 		}
 		
 		private function buildSaveOperation(entities:Array):Operation
@@ -151,20 +138,6 @@ package mesh
 			}
 			
 			return map;
-		}
-		
-		private var _entitiesToSave:HashSet = new HashSet();
-		private var _entitiesToRemove:HashSet = new HashSet();
-		
-		/**
-		 * @inheritDoc
-		 */
-		override public function visit(association:AssociationProxy):void
-		{
-			super.visit(association);
-			
-			_entitiesToSave.addAll(association.findDirtyEntities());
-			_entitiesToRemove.addAll(association.findRemovedEntities());
 		}
 	}
 }

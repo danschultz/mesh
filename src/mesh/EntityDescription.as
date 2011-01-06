@@ -11,8 +11,6 @@ package mesh
 	import flash.utils.getQualifiedClassName;
 	import flash.utils.getQualifiedSuperclassName;
 	
-	import inflections.pluralize;
-	
 	import mesh.adaptors.ServiceAdaptor;
 	import mesh.associations.BelongsToRelationship;
 	import mesh.associations.HasManyRelationship;
@@ -21,10 +19,8 @@ package mesh
 	
 	import mx.utils.StringUtil;
 	
-	import reflection.className;
 	import reflection.clazz;
 	import reflection.newInstance;
-	import reflection.reflect;
 
 	public class EntityDescription
 	{
@@ -200,11 +196,6 @@ package mesh
 					// first try to see if there's an accessor we can use.
 					if (relationshipXML.parent().name() == "accessor") {
 						options.property = relationshipXML.parent().@name;
-					}
-					// pluralize the entity type if we're a has many.
-					else if (kind == "HasMany") {
-						var pluralizedClassName:String = pluralize(className(options.type));
-						options.property = pluralizedClassName.substr(0, 1).toLowerCase() + pluralizedClassName.substr(1);
 					}
 				}
 				

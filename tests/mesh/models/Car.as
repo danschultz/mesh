@@ -3,6 +3,7 @@ package mesh.models
 	import mesh.Entity;
 	import mesh.adaptors.InMemoryAdaptor;
 	
+	[BelongsTo(property="mesh.models.Customer")]
 	public dynamic class Car extends Entity
 	{
 		[ServiceAdaptor]

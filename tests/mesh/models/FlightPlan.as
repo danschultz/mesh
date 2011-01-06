@@ -2,7 +2,6 @@ package mesh.models
 {
 	import mesh.Entity;
 	import mesh.adaptors.MockAdaptor;
-	import mesh.adaptors.ServiceAdaptor;
 	
 	import mx.collections.ArrayCollection;
 	

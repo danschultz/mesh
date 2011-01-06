@@ -17,7 +17,6 @@ package mesh
 	import mesh.adaptors.ServiceAdaptor;
 	import mesh.associations.AssociationCollection;
 	import mesh.associations.AssociationProxy;
-	import mesh.associations.BelongsToRelationship;
 	import mesh.associations.HasOneRelationship;
 	import mesh.associations.Relationship;
 	import mesh.callbacks.AfterCallbackOperation;
@@ -210,12 +209,11 @@ package mesh
 		 */
 		public function findDirtyEntities():ISet
 		{
+			var visitor:FindDirtyEntitiesVisitor = new FindDirtyEntitiesVisitor();
+			accept(visitor);
+			
 			var result:HashSet = new HashSet(hasPropertyChanges ? [this] : []);
-			for each (var relationship:Relationship in descriptor.relationships) {
-				if (!(relationship is BelongsToRelationship)) {
-					result.addAll(association(relationship.property).findDirtyEntities());
-				}
-			}
+			result.addAll(visitor.dirtyEntities);
 			return result;
 		}
 		
@@ -227,12 +225,11 @@ package mesh
 		 */
 		public function findRemovedEntities():ISet
 		{
+			var visitor:FindRemovedEntitiesVisitor = new FindRemovedEntitiesVisitor();
+			accept(visitor);
+			
 			var result:HashSet = new HashSet();
-			for each (var relationship:Relationship in descriptor.relationships) {
-				if (!(relationship is BelongsToRelationship)) {
-					result.addAll(association(relationship.property).findRemovedEntities());
-				}
-			}
+			result.addAll(visitor.removedEntities);
 			return result;
 		}
 		
@@ -804,12 +801,17 @@ package mesh
 	}
 }
 
+import collections.HashSet;
+import collections.ISet;
+
 import flash.utils.Dictionary;
 
+import mesh.VisitOnceVisitor;
 import mesh.Visitor;
 import mesh.associations.AssociationProxy;
+import mesh.associations.BelongsToAssociation;
 
-class MarkAssociationsAsLoadedVisitor extends Visitor
+class MarkAssociationsAsLoadedVisitor extends VisitOnceVisitor
 {
 	private var _associations:Dictionary = new Dictionary();
 	
@@ -818,17 +820,64 @@ class MarkAssociationsAsLoadedVisitor extends Visitor
 		
 	}
 	
-	override public function enter(association:AssociationProxy):Boolean
-	{
-		return _associations[association] === undefined;
-	}
-	
 	override public function visit(association:AssociationProxy):void
 	{
-		_associations[association] = association;
+		super.visit(association);
 		
 		if (!association.relationship.isLazy && !association.isLoaded) {
 			association.loaded();
 		}
+	}
+}
+
+class FindDirtyEntitiesVisitor extends VisitOnceVisitor
+{
+	private var _dirtyEntities:HashSet = new HashSet();
+	
+	public function FindDirtyEntitiesVisitor()
+	{
+		
+	}
+	
+	override public function enter(association:AssociationProxy):Boolean
+	{
+		return !(association is BelongsToAssociation) && super.enter(association);
+	}
+	
+	override public function visit(association:AssociationProxy):void
+	{
+		super.visit(association);
+		_dirtyEntities.addAll(association.findDirtyEntities());
+	}
+	
+	public function get dirtyEntities():ISet
+	{
+		return _dirtyEntities;
+	}
+}
+
+class FindRemovedEntitiesVisitor extends VisitOnceVisitor
+{
+	private var _removedEntities:HashSet = new HashSet();
+	
+	public function FindRemovedEntitiesVisitor()
+	{
+		
+	}
+	
+	override public function enter(association:AssociationProxy):Boolean
+	{
+		return !(association is BelongsToAssociation) && super.enter(association);
+	}
+	
+	override public function visit(association:AssociationProxy):void
+	{
+		super.visit(association);
+		_removedEntities.addAll(association.findRemovedEntities());
+	}
+	
+	public function get removedEntities():ISet
+	{
+		return _removedEntities;
 	}
 }

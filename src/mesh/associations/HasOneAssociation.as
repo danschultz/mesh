@@ -20,7 +20,7 @@ package mesh.associations
 		 */
 		override public function findDirtyEntities():ISet
 		{
-			return new HashSet(target != null && isDirty ? [this] : []);
+			return new HashSet(target != null && isDirty ? [target] : []);
 		}
 		
 		/**
@@ -75,7 +75,10 @@ package mesh.associations
 		 */
 		override public function get isDirty():Boolean
 		{
-			return _persistedTarget != null && target != null ? !_persistedTarget.equals(target) : _persistedTarget != target;
+			if (target != null) {
+				return target.isDirty || !target.equals(_persistedTarget);
+			}
+			return _persistedTarget != target;
 		}
 		
 		private var _persistedTarget:*;

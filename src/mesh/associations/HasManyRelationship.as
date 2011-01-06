@@ -1,6 +1,11 @@
 package mesh.associations
 {
+	import inflections.camelize;
+	import inflections.pluralize;
+	
 	import mesh.Entity;
+	
+	import reflection.className;
 
 	/**
 	 * An association that defines a one-to-many relationship with another model. This
@@ -16,6 +21,10 @@ package mesh.associations
 		 */
 		public function HasManyRelationship(owner:Class, property:String, target:Class, options:Object)
 		{
+			if (property == null || property.length == 0) {
+				property = camelize(pluralize(className(target)), false);
+			}
+			
 			super(owner, property, target, options);
 		}
 	}
