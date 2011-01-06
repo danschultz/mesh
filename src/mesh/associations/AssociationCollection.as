@@ -80,21 +80,20 @@ package mesh.associations
 		}
 		
 		/**
-		 * @copy mesh.Entity#findDirtyEntities()
+		 * @inheritDoc
 		 */
-		public function findDirtyEntities():ISet
+		override public function findDirtyEntities():ISet
 		{
-			var result:HashSet = new HashSet();
-			for each (var entity:Entity in this) {
-				result.addAll(entity.findDirtyEntities());
-			}
-			return result;
+			return new HashSet(_mirroredEntities.where(function(entity:Entity):Boolean
+			{
+				return entity.isDirty;
+			}));
 		}
 		
 		/**
-		 * @copy mesh.Entity#findRemovedEntities()
+		 * @inheritDoc
 		 */
-		public function findRemovedEntities():ISet
+		override public function findRemovedEntities():ISet
 		{
 			return _removedEntities.where(function(entity:Entity):Boolean
 			{

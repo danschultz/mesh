@@ -4,8 +4,6 @@ package mesh
 	import collections.HashSet;
 	import collections.ISet;
 	
-	import flash.utils.Dictionary;
-	
 	import functions.closure;
 	
 	import mesh.adaptors.ServiceAdaptor;
@@ -18,17 +16,13 @@ package mesh
 	import operations.ParallelOperation;
 	import operations.SequentialOperation;
 	
-	public class SaveBuilder
+	public class SaveBuilder extends VisitOnceVisitor
 	{
 		private var _entities:Array;
-		private var _entitiesToSave:ISet;
-		private var _entitiesToRemove:ISet;
 		
 		public function SaveBuilder(entities:Array)
 		{
 			_entities = entities;
-			_entitiesToSave = findEntitiesToSave();
-			_entitiesToRemove = findEntitiesToRemove();
 		}
 		
 		public function build():Operation
@@ -157,6 +151,20 @@ package mesh
 			}
 			
 			return map;
+		}
+		
+		private var _entitiesToSave:HashSet = new HashSet();
+		private var _entitiesToRemove:HashSet = new HashSet();
+		
+		/**
+		 * @inheritDoc
+		 */
+		override public function visit(association:AssociationProxy):void
+		{
+			super.visit(association);
+			
+			_entitiesToSave.addAll(association.findDirtyEntities());
+			_entitiesToRemove.addAll(association.findRemovedEntities());
 		}
 	}
 }

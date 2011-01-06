@@ -1,5 +1,8 @@
 package mesh.associations
 {
+	import collections.HashSet;
+	import collections.ISet;
+	
 	import mesh.Entity;
 	
 	public dynamic class HasOneAssociation extends AssociationProxy
@@ -10,6 +13,22 @@ package mesh.associations
 		public function HasOneAssociation(owner:Entity, relationship:Relationship)
 		{
 			super(owner, relationship);
+		}
+		
+		/**
+		 * @inheritDoc
+		 */
+		override public function findDirtyEntities():ISet
+		{
+			return new HashSet(target != null && isDirty ? [this] : []);
+		}
+		
+		/**
+		 * @inheritDoc
+		 */
+		override public function findRemovedEntities():ISet
+		{
+			return new HashSet(_persistedTarget != null && target == null ? [_persistedTarget] : []);
 		}
 		
 		/**
