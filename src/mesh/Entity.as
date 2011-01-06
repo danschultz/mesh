@@ -18,6 +18,7 @@ package mesh
 	import mesh.associations.AssociationCollection;
 	import mesh.associations.AssociationProxy;
 	import mesh.associations.BelongsToRelationship;
+	import mesh.associations.HasOneRelationship;
 	import mesh.associations.Relationship;
 	import mesh.callbacks.AfterCallbackOperation;
 	import mesh.callbacks.BeforeCallbackOperation;
@@ -285,8 +286,8 @@ package mesh
 		protected function populateForeignKeys():void
 		{
 			for each (var relationship:Relationship in descriptor.relationships) {
-				if (relationship is BelongsToRelationship) {
-					this[(relationship as BelongsToRelationship).foreignKey] = association(relationship.property).id;
+				if (relationship is HasOneRelationship) {
+					this[(relationship as HasOneRelationship).foreignKey] = association(relationship.property).id;
 				}
 			}
 		}

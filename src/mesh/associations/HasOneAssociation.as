@@ -27,9 +27,16 @@ package mesh.associations
 		{
 			super.loaded();
 			
+			_persistedTarget = target;
+			
 			if (target != null) {
 				target.found();
 			}
+		}
+		
+		private function replaceKey():void
+		{
+			owner[(relationship as HasOneRelationship).foreignKey] = target != null ? target.id : undefined;
 		}
 		
 		/**
@@ -37,6 +44,8 @@ package mesh.associations
 		 */
 		override public function revert():void
 		{
+			target = _persistedTarget;
+			
 			if (target != null) {
 				target.revert();
 			}
@@ -47,9 +56,10 @@ package mesh.associations
 		 */
 		override public function get isDirty():Boolean
 		{
-			return target != null && target.isDirty;
+			return _persistedTarget != null && target != null ? !_persistedTarget.equals(target) : _persistedTarget != target;
 		}
 		
+		private var _persistedTarget:*;
 		/**
 		 * @inheritDoc
 		 */
@@ -64,6 +74,8 @@ package mesh.associations
 			}
 			
 			super.target = value;
+			
+			replaceKey();
 		}
 	}
 }

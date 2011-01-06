@@ -5,7 +5,7 @@ package mesh.models
 	
 	[RemoteClass(alias="mesh.models.Order")]
 	[ComposedOf(property="shippingAddress", type="mesh.models.Address", prefix="shippingAddress", mapping="street,city")]
-	[BelongsTo(type="mesh.models.Customer", property="customer")]
+	[HasOne(type="mesh.models.Customer", property="customer")]
 	public dynamic class Order extends Entity
 	{
 		[ServiceAdaptor]

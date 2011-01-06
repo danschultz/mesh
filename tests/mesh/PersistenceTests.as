@@ -123,6 +123,7 @@ package mesh
 			});
 		}
 		
+		[Ignore("Removing belongs to relationships.")]
 		[Test(async)]
 		public function testSavingBelongsToAssociationPopulatesForeignKey():void
 		{

@@ -182,9 +182,7 @@ package mesh
 			jill.firstName = "Jill";
 			jill.persisted();
 			
-			jack.significantOther = jill;
 			jack.partner = jill;
-			jill.significantOther = jack;
 			jill.partner = jack;
 			
 			assertThat(jack.hasDirtyAssociations, equalTo(true));

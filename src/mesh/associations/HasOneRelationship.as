@@ -29,5 +29,13 @@ package mesh.associations
 			}
 			return property + "Id";
 		}
+		
+		/**
+		 * @inheritDoc
+		 */
+		override public function get properties():Array
+		{
+			return super.properties.concat(foreignKey);
+		}
 	}
 }

@@ -27,10 +27,14 @@ package mesh.models
 		{
 			var data:FlightPlanVO = FlightPlanVO( object );
 			id = data.id;
-			this.departing = NavigationAid.from(data.departing) as Airport;
-			this.departing.translateFrom(data.departing);
-			this.arriving = NavigationAid.from(data.arriving) as Airport;
-			this.arriving.translateFrom(data.arriving);
+			
+			var departing:Airport = NavigationAid.from(data.departing) as Airport;
+			departing.translateFrom(data.departing);
+			this.departing = departing;
+			
+			var arriving:Airport = NavigationAid.from(data.arriving) as Airport;
+			arriving.translateFrom(data.arriving);
+			this.arriving = arriving;
 			
 			var legs:Array = [];
 			for each (var waypoint:NavigationAidVO in data.legs) {

@@ -57,7 +57,7 @@ package mesh
 			var tests:Array = [{instance:new Customer(), expects:["orders", "cars", "account"]},
 							   {instance:new Airplane(), expects:["manufacturers"]},
 							   {instance:new Order(), expects:["customer", "customerId"]},
-							   {instance:new Person(), expects:["significantOther", "significantOtherId"]}];
+							   {instance:new Person(), expects:["partner", "partnerId"]}];
 			
 			for each (var test:Object in tests) {
 				var properties:Array = test.instance.properties.toArray();
