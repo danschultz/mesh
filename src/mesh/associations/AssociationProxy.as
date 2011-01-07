@@ -153,17 +153,6 @@ package mesh.associations
 		}
 		
 		/**
-		 * Saves the target association.
-		 *  
-		 * @param validate
-		 * @return 
-		 */
-		public function save(validate:Boolean = true):Operation
-		{
-			return new EmptyOperation();
-		}
-		
-		/**
 		 * @copy Entity#isDirty
 		 */
 		public function get isDirty():Boolean

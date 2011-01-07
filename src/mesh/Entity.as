@@ -1,6 +1,5 @@
 package mesh
 {
-	import collections.HashMap;
 	import collections.HashSet;
 	import collections.ISet;
 	
