@@ -14,9 +14,6 @@ package mesh.associations
 	import flash.utils.setTimeout;
 	
 	import mesh.Entity;
-	import mesh.Visitor;
-	
-	import mx.events.PropertyChangeEvent;
 	
 	import operations.EmptyOperation;
 	import operations.FinishedOperationEvent;
@@ -49,11 +46,6 @@ package mesh.associations
 			_dispatcher = new EventDispatcher(this);
 			_owner = owner;
 			_relationship = relationship;
-		}
-		
-		public function accept(visitor:Visitor):void
-		{
-			visitor.visit(this);
 		}
 		
 		/**
@@ -138,9 +130,7 @@ package mesh.associations
 		
 		public function loaded():void
 		{
-			var oldValue:Boolean = isLoaded;
 			_isLoaded = true;
-			dispatchEvent(PropertyChangeEvent.createUpdateEvent(this, "isLoaded", oldValue, isLoaded));
 		}
 		
 		/**
@@ -152,6 +142,11 @@ package mesh.associations
 			
 		}
 		
+		public function save():Operation
+		{
+			return new EmptyOperation();
+		}
+		
 		/**
 		 * @copy Entity#isDirty
 		 */
@@ -161,7 +156,6 @@ package mesh.associations
 		}
 		
 		private var _isLoaded:Boolean;
-		[Bindable(event="propertyChange")]
 		/**
 		 * <code>true</code> if the association objects for this relationship have been
 		 * loaded.

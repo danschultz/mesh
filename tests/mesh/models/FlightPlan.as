@@ -22,9 +22,9 @@ package mesh.models
 			super();
 		}
 		
-		override public function translateFrom(object:Object):void
+		override public function fromVO(vo:Object, options:Object=null):void
 		{
-			var data:FlightPlanVO = FlightPlanVO( object );
+			var data:FlightPlanVO = FlightPlanVO( vo );
 			id = data.id;
 			
 			var departing:Airport = NavigationAid.from(data.departing) as Airport;
@@ -44,7 +44,7 @@ package mesh.models
 			this.legs = legs;
 		}
 		
-		override public function translateTo():Object
+		override public function toVO(options:Object=null):Object
 		{
 			var data:FlightPlanVO = new FlightPlanVO();
 			data.id = id;

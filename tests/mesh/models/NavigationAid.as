@@ -37,15 +37,15 @@ package mesh.models
 			return new NavigationAidVO();
 		}
 		
-		override public function translateFrom(object:Object):void
+		override public function fromVO(vo:Object, options:Object=null):void
 		{
-			var data:NavigationAidVO = NavigationAidVO( object );
+			var data:NavigationAidVO = NavigationAidVO( vo );
 			id = data.id;
 			location = new Coordinate(data.latitude, data.longitude);
 			name = data.name;
 		}
 		
-		override public function translateTo():Object
+		override public function toVO(options:Object=null):Object
 		{
 			var data:NavigationAidVO = generateTranslationObject();
 			data.id = id;
@@ -53,18 +53,6 @@ package mesh.models
 			data.longitude = location.longitude;
 			data.name = name;
 			return data;
-		}
-		
-		override public function toVO(options:Object = null):Object
-		{
-			if (options == null) {
-				options = {};
-			}
-			if (!options.hasOwnProperty("excluding")) {
-				options.excluding = [];
-			}
-			options.excluding.push("location");
-			return super.toVO(options);
 		}
 		
 		private var _location:Coordinate;

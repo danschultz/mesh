@@ -69,7 +69,7 @@ package mesh
 		}
 		
 		[Test(async)]
-		public function testSaveNewAssociations():void
+		public function testSaveNewHasManyAssociations():void
 		{
 			var order1:Order = new Order();
 			_customer.orders.addItem(order1);
@@ -85,7 +85,7 @@ package mesh
 				assertThat(order2.isDirty, equalTo(false));
 			};
 			
-			var operation:Operation = _customer.save();
+			var operation:Operation = _customer.orders.save();
 			operation.addEventListener(FinishedOperationEvent.FINISHED, Async.asyncHandler(this, assertion, 100));
 			operation.addEventListener(FaultOperationEvent.FAULT, function(event:FaultOperationEvent):void
 			{
@@ -94,7 +94,7 @@ package mesh
 		}
 		
 		[Test(async)]
-		public function testSaveUpdatedAssociations():void
+		public function testSaveUpdatedHasManyAssociations():void
 		{
 			var order1:Order = new Order();
 			_customer.orders.addItem(order1);
@@ -109,46 +109,12 @@ package mesh
 			};
 			assertion = Async.asyncHandler(this, assertion, 250);
 			
-			var operation:Operation = _customer.save();
+			var operation:Operation = _customer.orders.save();
 			operation.addEventListener(FinishedOperationEvent.FINISHED, function(event:FinishedOperationEvent):void
 			{
 				order2.total = 10;
 				
-				var operation:Operation = _customer.save() as Operation;
-				operation.addEventListener(FinishedOperationEvent.FINISHED, assertion);
-			});
-			operation.addEventListener(FaultOperationEvent.FAULT, function(event:FaultOperationEvent):void
-			{
-				fail(event.summary);
-			});
-		}
-		
-		[Ignore("Removing belongs to relationships.")]
-		[Test(async)]
-		public function testSavingBelongsToAssociationPopulatesForeignKey():void
-		{
-			var order1:Order = new Order();
-			_customer.orders.addItem(order1);
-			
-			var order2:Order = new Order();
-			_customer.orders.addItem(order2);
-			
-			var assertion:Function = function(event:FinishedOperationEvent, data:Object):void
-			{
-				var customer:Customer = order1.customer.target;
-				assertThat(order1.customer.target, equalTo(_customer));
-				assertThat(order1.customerId, equalTo(_customer.id));
-				assertThat(order2.customer.target, equalTo(_customer));
-				assertThat(order2.customerId, equalTo(_customer.id));
-			};
-			assertion = Async.asyncHandler(this, assertion, 250);
-			
-			var operation:Operation = _customer.save();
-			operation.addEventListener(FinishedOperationEvent.FINISHED, function(event:FinishedOperationEvent):void
-			{
-				order2.total = 10;
-				
-				var operation:Operation = _customer.save() as Operation;
+				var operation:Operation = _customer.orders.save();
 				operation.addEventListener(FinishedOperationEvent.FINISHED, assertion);
 			});
 			operation.addEventListener(FaultOperationEvent.FAULT, function(event:FaultOperationEvent):void
@@ -158,7 +124,7 @@ package mesh
 		}
 		
 		[Test(async)]
-		public function testSaveDestroyedAssociations():void
+		public function testSaveDestroyedHasManyAssociations():void
 		{
 			var order1:Order = new Order();
 			_customer.orders.addItem(order1);
@@ -178,18 +144,18 @@ package mesh
 				assertThat(order3.isDestroyed, equalTo(true));
 				assertThat(order4.isDestroyed, equalTo(true));
 				assertThat(order2.isPersisted, equalTo(true));
-				assertThat(_customer.ordersAssociation.hasUnsavedRemovedEntities, equalTo(false));
+				assertThat(_customer.orders.hasUnsavedRemovedEntities, equalTo(false));
 			};
 			assertion = Async.asyncHandler(this, assertion, 250);
 			
-			var operation:Operation = _customer.save();
+			var operation:Operation = _customer.orders.save();
 			operation.addEventListener(FinishedOperationEvent.FINISHED, function(event:FinishedOperationEvent):void
 			{
 				_customer.orders.removeItem(order1);
 				_customer.orders.removeItem(order3);
 				_customer.orders.removeItem(order4);
 				
-				var operation:Operation = _customer.save() as Operation;
+				var operation:Operation = _customer.orders.save();
 				operation.addEventListener(FinishedOperationEvent.FINISHED, assertion);
 			});
 			operation.addEventListener(FaultOperationEvent.FAULT, function(event:FaultOperationEvent):void

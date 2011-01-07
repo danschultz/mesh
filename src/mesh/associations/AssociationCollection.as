@@ -6,13 +6,18 @@ package mesh.associations
 	import collections.ISet;
 	
 	import flash.utils.flash_proxy;
+	import flash.utils.setTimeout;
 	
 	import mesh.Entity;
+	import mesh.Mesh;
+	import mesh.SaveBuilder;
 	
 	import mx.collections.ArrayCollection;
 	import mx.collections.IList;
 	import mx.events.CollectionEvent;
 	import mx.events.CollectionEventKind;
+	
+	import operations.Operation;
 	
 	import reflection.Type;
 	import reflection.className;
@@ -242,6 +247,16 @@ package mesh.associations
 			for each (var entity:Entity in target) {
 				entity.revert();
 			}
+		}
+		
+		/**
+		 * @inheritDoc
+		 */
+		override public function save():Operation
+		{
+			var operation:Operation = new SaveBuilder(toArray()).build();
+			setTimeout(operation.execute, Mesh.DELAY);
+			return operation;
 		}
 		
 		/**

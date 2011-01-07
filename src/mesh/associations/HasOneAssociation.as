@@ -5,6 +5,9 @@ package mesh.associations
 	
 	import mesh.Entity;
 	
+	import operations.EmptyOperation;
+	import operations.Operation;
+	
 	public dynamic class HasOneAssociation extends AssociationProxy
 	{
 		/**
@@ -63,6 +66,14 @@ package mesh.associations
 			if (target != null) {
 				target.revert();
 			}
+		}
+		
+		/**
+		 * @inheritDoc
+		 */
+		override public function save():Operation
+		{
+			return target != null ? target.save() : new EmptyOperation();
 		}
 		
 		/**

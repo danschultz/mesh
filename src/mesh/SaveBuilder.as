@@ -20,14 +20,9 @@ package mesh
 		private var _entitiesToSave:HashSet = new HashSet();
 		private var _entitiesToRemove:HashSet = new HashSet();
 		
-		public function SaveBuilder(entities:Array)
+		public function SaveBuilder(...items)
 		{
-			_entities = entities;
-			
-			for each (var entity:Entity in _entities) {
-				_entitiesToSave.addAll(entity.findDirtyEntities());
-				_entitiesToRemove.addAll(entity.findRemovedEntities());
-			}
+			_entities = items;
 		}
 		
 		public function build():Operation

@@ -2,17 +2,11 @@ package mesh
 {
 	import mesh.models.Account;
 	import mesh.models.Address;
-	import mesh.models.Car;
 	import mesh.models.Customer;
 	import mesh.models.Name;
 	import mesh.models.Order;
-	import mesh.models.Person;
 	
 	import org.flexunit.assertThat;
-	import org.hamcrest.collection.array;
-	import org.hamcrest.collection.arrayWithSize;
-	import org.hamcrest.collection.emptyArray;
-	import org.hamcrest.collection.hasItems;
 	import org.hamcrest.object.equalTo;
 	import org.hamcrest.object.notNullValue;
 
@@ -86,8 +80,6 @@ package mesh
 		public function testIsDirtyWhenPropertyChanges():void
 		{
 			_customer.address = new Address("1 Infinite Loop", "Cupertino");
-			assertThat(_customer.hasDirtyAssociations, equalTo(false));
-			assertThat(_customer.hasPropertyChanges, equalTo(true));
 			assertThat(_customer.isDirty, equalTo(true));
 		}
 		
@@ -99,8 +91,6 @@ package mesh
 			_customer.address = new Address("1 Infinite Loop", "Cupertino");
 			
 			_customer.revert();
-			assertThat(_customer.hasDirtyAssociations, equalTo(false));
-			assertThat(_customer.hasPropertyChanges, equalTo(false));
 			assertThat(_customer.isDirty, equalTo(false));
 		}
 		
@@ -113,15 +103,6 @@ package mesh
 		}
 		
 		[Test]
-		public function testDoesNotHaveDirtyAssociations():void
-		{
-			var order:Order = _customer.orders.getItemAt(0);
-			order.total = 10;
-			order.persisted();
-			assertThat(_customer.hasDirtyAssociations, equalTo(false));
-		}
-		
-		[Test]
 		public function testIsNotDirtyWhenRemovedAssociationIsNotPersisted():void
 		{
 			var order:Order = new Order();
@@ -129,85 +110,7 @@ package mesh
 			_customer.orders.addItem(order);
 			
 			_customer.orders.removeItem(order);
-			assertThat(_customer.ordersAssociation.isDirty, equalTo(false));
-			assertThat(_customer.hasDirtyAssociations, equalTo(false));
-		}
-		
-		[Test]
-		public function testIsDirtyWhenAssociationIsDirty():void
-		{
-			_customer.orders.getItemAt(0).total = 10;
-			assertThat(_customer.hasPropertyChanges, equalTo(false));
-			assertThat(_customer.hasDirtyAssociations, equalTo(true));
-			assertThat(_customer.isDirty, equalTo(true));
-		}
-		
-		[Test]
-		public function testFindDirtyEntitiesReturnsEmptySetWhenNotDirty():void
-		{
-			var result:Array = _customer.findDirtyEntities().toArray();
-			assertThat(result, emptyArray());
-		}
-		
-		[Test]
-		public function testFindDirtyEntitiesDoesNotReturnEntitiesFromNonDirtyAssociations():void
-		{
-			_customer.age = 25;
-			var result:Array = _customer.findDirtyEntities().toArray();
-			assertThat(result, array(_customer));
-		}
-		
-		[Test]
-		public function testFindDirtyEntitiesReturnsEntitiesFromDirtyAssociations():void
-		{
-			_customer.age = 25;
-			_customer.orders.getItemAt(0).total = 5;
-			_customer.account.number = "000-001";
-			
-			var result:Array = _customer.findDirtyEntities().toArray();
-			assertThat(result, arrayWithSize(3));
-			assertThat(result, hasItems(_customer, _customer.orders.getItemAt(0)));
-		}
-		
-		[Test]
-		public function testAssociationsIsDirtyWithCircularReferences():void
-		{
-			var jack:Person = new Person();
-			jack.id = 1;
-			jack.firstName = "Jack";
-			jack.persisted();
-			
-			var jill:Person = new Person();
-			jill.id = 2;
-			jill.firstName = "Jill";
-			jill.persisted();
-			
-			jack.partner = jill;
-			jill.partner = jack;
-			
-			assertThat(jack.hasDirtyAssociations, equalTo(true));
-			assertThat(jill.hasDirtyAssociations, equalTo(true));
-		}
-		
-		[Test]
-		public function testAssociationsIsNotDirtyWithCircularReferences():void
-		{
-			var jack:Person = new Person();
-			jack.id = 1;
-			jack.firstName = "Jack";
-			
-			var jill:Person = new Person();
-			jill.id = 2;
-			jill.firstName = "Jill";
-			
-			jack.partner = jill;
-			jill.partner = jack;
-			
-			jack.found();
-			jill.found();
-			
-			assertThat(jack.hasDirtyAssociations, equalTo(false));
-			assertThat(jill.hasDirtyAssociations, equalTo(false));
+			assertThat(_customer.orders.isDirty, equalTo(false));
 		}
 	}
 }

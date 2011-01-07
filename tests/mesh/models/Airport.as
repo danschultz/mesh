@@ -19,17 +19,17 @@ package mesh.models
 			return new AirportVO();
 		}
 		
-		override public function translateFrom(object:Object):void
+		override public function fromVO(vo:Object, options:Object=null):void
 		{
-			super.translateFrom(object);
+			super.fromVO(vo, options);
 			
-			var data:AirportVO = AirportVO( object );
+			var data:AirportVO = AirportVO( vo );
 			icao = data.icao;
 		}
 		
-		override public function translateTo():Object
+		override public function toVO(options:Object=null):Object
 		{
-			var data:AirportVO = super.translateTo() as AirportVO;
+			var data:AirportVO = super.toVO(options) as AirportVO;
 			data.icao = icao;
 			return data;
 		}

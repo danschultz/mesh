@@ -1,6 +1,5 @@
 package mesh
 {
-	import collections.HashSet;
 	import collections.ISet;
 	
 	import flash.events.Event;
@@ -25,7 +24,6 @@ package mesh
 	
 	import mx.events.PropertyChangeEvent;
 	
-	import operations.EmptyOperation;
 	import operations.FactoryOperation;
 	import operations.Operation;
 	import operations.SequentialOperation;
@@ -69,16 +67,6 @@ package mesh
 			afterDestroy(destroyed);
 			
 			addEventListener(PropertyChangeEvent.PROPERTY_CHANGE, handlePropertyChange);
-		}
-		
-		public function accept(visitor:Visitor):void
-		{
-			for each (var association:AssociationProxy in associations) {
-				if (visitor.enter(association)) {
-					association.accept(visitor);
-				}
-				visitor.exit(association);
-			}
 		}
 		
 		protected function afterFind(...args):void
@@ -173,15 +161,9 @@ package mesh
 		 */
 		public function destroy():Operation
 		{
-			var operation:Operation = buildDestroyOperation();
+			var operation:Operation = callbacksAsOperation("beforeDestroy").then(new FactoryOperation(adaptorFor(this).destroy, [this])).then(callbacksAsOperation("afterDestroy"));
 			setTimeout(operation.execute, Mesh.DELAY);
 			return operation;
-		}
-		
-		public function buildDestroyOperation():Operation
-		{
-			var destroy:Operation = new FactoryOperation(adaptorFor(this).destroy, [this]);
-			return callbacksAsOperation("beforeDestroy").then(destroy).then(callbacksAsOperation("afterDestroy"));
 		}
 		
 		public function beforeDestroy(... args):void
@@ -200,37 +182,6 @@ package mesh
 		protected function destroyed():void
 		{
 			_isDestroyed = true;
-		}
-		
-		/**
-		 * Returns a set that contains this entity, and its associated entities that are dirty.
-		 * 
-		 * @return A set of <code>Entity</code>s.
-		 */
-		public function findDirtyEntities():ISet
-		{
-			var visitor:FindDirtyEntitiesVisitor = new FindDirtyEntitiesVisitor();
-			accept(visitor);
-			
-			var result:HashSet = new HashSet(hasPropertyChanges ? [this] : []);
-			result.addAll(visitor.dirtyEntities);
-			return result;
-		}
-		
-		/**
-		 * Returns s set that contains the any entity belonging to this association that has
-		 * been marked for deletion.
-		 * 
-		 * @return A set of <code>Entity</code>s.
-		 */
-		public function findRemovedEntities():ISet
-		{
-			var visitor:FindRemovedEntitiesVisitor = new FindRemovedEntitiesVisitor();
-			accept(visitor);
-			
-			var result:HashSet = new HashSet();
-			result.addAll(visitor.removedEntities);
-			return result;
 		}
 		
 		private function handlePropertyChange(event:PropertyChangeEvent):void
@@ -344,15 +295,9 @@ package mesh
 		 */
 		public function save(validate:Boolean = true):Operation
 		{
-			var operation:Operation = new SaveBuilder([this]).build();
+			var operation:Operation = new SaveBuilder(this).build();
 			setTimeout(operation.execute, Mesh.DELAY);
 			return operation;
-		}
-		
-		public function buildSaveOperation(validate:Boolean = true):Operation
-		{
-			var save:Operation = hasPropertyChanges ? (new FactoryOperation(isNew ? adaptorFor(this).create : adaptorFor(this).update, [this])) : new EmptyOperation();
-			return callbacksAsOperation("beforeSave").then(save).then(callbacksAsOperation("afterSave"));
 		}
 		
 		/**
@@ -395,7 +340,11 @@ package mesh
 		
 		private function markNonLazyAssociationsAsLoaded():void
 		{
-			accept(new MarkAssociationsAsLoadedVisitor());
+			for each (var association:AssociationProxy in associations) {
+				if (!association.relationship.isLazy && !association.isLoaded) {
+					association.loaded();
+				}
+			}
 		}
 		
 		/**
@@ -453,28 +402,6 @@ package mesh
 		}
 		
 		/**
-		 * Copies the translated values on the given object to this entity. This method is useful for
-		 * copying the values of a transfer object or XML into the entity for service calls.
-		 * 
-		 * @param object The object to translate and copy.
-		 */
-		public function translateFrom(object:Object):void
-		{
-			
-		}
-		
-		/**
-		 * Creates a new translation object, which is useful for creating transfer objects or XML for
-		 * service calls.
-		 * 
-		 * @return A new translation object.
-		 */
-		public function translateTo():Object
-		{
-			return null;
-		}
-		
-		/**
 		 * Returns the value for a given property before the entity's last save.
 		 * 
 		 * @param property The property to retrieve.
@@ -520,6 +447,14 @@ package mesh
 			}
 			_errors = results;
 			return results;
+		}
+		
+		/**
+		 * The adaptor defined for this entity.
+		 */
+		public function get adaptor():ServiceAdaptor
+		{
+			return descriptor.adaptor;
 		}
 		
 		/**
@@ -588,38 +523,13 @@ package mesh
 		}
 		
 		/**
-		 * <code>true</code> if this entity is either a new record or contains any property changes.
-		 * This does not check to see if its associations are dirty.
-		 * 
-		 * @see #isDirty
-		 * @see #hasDirtyAssociations
-		 */
-		public function get hasPropertyChanges():Boolean
-		{
-			return isNew || _properties.hasChanges;
-		}
-		
-		/**
-		 * <code>true</code> if this entity contains any associations that are dirty.
-		 * 
-		 * @see #isDirty
-		 * @see #hasPropertyChanges
-		 */
-		public function get hasDirtyAssociations():Boolean
-		{
-			var visitor:DirtyVisitor = new DirtyVisitor();
-			accept(visitor);
-			return visitor.isDirty;
-		}
-		
-		/**
 		 * <code>true</code> if this entity is dirty and needs to be persisted. An object is dirty
 		 * if any of its properties have changed since its last save or if its a new record. An
 		 * entity is also dirty if any of its relationships are dirty.
 		 */
 		public function get isDirty():Boolean
 		{
-			return hasPropertyChanges || hasDirtyAssociations;
+			return isNew || _properties.hasChanges;
 		}
 		
 		/**
@@ -798,86 +708,5 @@ package mesh
 		{
 			return _dispatcher.willTrigger(type);
 		}
-	}
-}
-
-import collections.HashSet;
-import collections.ISet;
-
-import flash.utils.Dictionary;
-
-import mesh.VisitOnceVisitor;
-import mesh.Visitor;
-import mesh.associations.AssociationProxy;
-import mesh.associations.BelongsToAssociation;
-
-class MarkAssociationsAsLoadedVisitor extends VisitOnceVisitor
-{
-	private var _associations:Dictionary = new Dictionary();
-	
-	public function MarkAssociationsAsLoadedVisitor()
-	{
-		
-	}
-	
-	override public function visit(association:AssociationProxy):void
-	{
-		super.visit(association);
-		
-		if (!association.relationship.isLazy && !association.isLoaded) {
-			association.loaded();
-		}
-	}
-}
-
-class FindDirtyEntitiesVisitor extends VisitOnceVisitor
-{
-	private var _dirtyEntities:HashSet = new HashSet();
-	
-	public function FindDirtyEntitiesVisitor()
-	{
-		
-	}
-	
-	override public function enter(association:AssociationProxy):Boolean
-	{
-		return !(association is BelongsToAssociation) && super.enter(association);
-	}
-	
-	override public function visit(association:AssociationProxy):void
-	{
-		super.visit(association);
-		_dirtyEntities.addAll(association.findDirtyEntities());
-	}
-	
-	public function get dirtyEntities():ISet
-	{
-		return _dirtyEntities;
-	}
-}
-
-class FindRemovedEntitiesVisitor extends VisitOnceVisitor
-{
-	private var _removedEntities:HashSet = new HashSet();
-	
-	public function FindRemovedEntitiesVisitor()
-	{
-		
-	}
-	
-	override public function enter(association:AssociationProxy):Boolean
-	{
-		return !(association is BelongsToAssociation) && super.enter(association);
-	}
-	
-	override public function visit(association:AssociationProxy):void
-	{
-		super.visit(association);
-		_removedEntities.addAll(association.findRemovedEntities());
-	}
-	
-	public function get removedEntities():ISet
-	{
-		return _removedEntities;
 	}
 }
