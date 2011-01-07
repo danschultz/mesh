@@ -55,6 +55,16 @@ package mesh.models
 			return data;
 		}
 		
+		override public function translateFrom(object:Object):void
+		{
+			fromVO(object);
+		}
+		
+		override public function translateTo():Object
+		{
+			return toVO();
+		}
+		
 		private var _location:Coordinate;
 		[Bindable]
 		[ComposedOf(mapping="latitude, longitude")]

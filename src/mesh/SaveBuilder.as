@@ -6,6 +6,7 @@ package mesh
 	import functions.closure;
 	
 	import mesh.adaptors.ServiceAdaptor;
+	import mesh.associations.AssociationProxy;
 	import mesh.associations.BelongsToRelationship;
 	import mesh.associations.Relationship;
 	
@@ -16,13 +17,30 @@ package mesh
 	
 	public class SaveBuilder
 	{
-		private var _entities:Array;
-		private var _entitiesToSave:HashSet = new HashSet();
-		private var _entitiesToRemove:HashSet = new HashSet();
+		private var _entitiesToSave:HashSet;
 		
 		public function SaveBuilder(...items)
 		{
-			_entities = items;
+			_entitiesToSave = new HashSet(gather(items));
+		}
+		
+		private function gather(items:Array):Array
+		{
+			var result:Array = [];
+			for each (var item:* in items) {
+				if (item is Entity) {
+					result.push(item);
+				}
+				
+				if (item is AssociationProxy) {
+					result = result.concat(item.findEntitiesToSave().toArray());
+				}
+				
+				if (item is Array) {
+					result = result.concat(gather(item));
+				}
+			}
+			return result;
 		}
 		
 		public function build():Operation
@@ -34,7 +52,7 @@ package mesh
 					operation.add(buildSaveOperation(graph[i]));
 				}
 			}
-			return operation.then(buildRemoveOperation(_entitiesToRemove.toArray()));
+			return operation;
 		}
 		
 		private function buildRelationshipGraph():Array
@@ -75,14 +93,18 @@ package mesh
 				{
 					return entity.isNew;
 				}));
-				var entitiesToSave:Array = map.grab(adaptor).filter(closure(function(entity:Entity):Boolean
+				var entitiesToUpdate:Array = map.grab(adaptor).filter(closure(function(entity:Entity):Boolean
 				{
-					return !entity.isNew && entity.hasPropertyChanges;
+					return !entity.isNew && !entity.isMarkedForRemoval;
+				}));
+				var entitiesToRemove:Array = map.grab(adaptor).filter(closure(function(entity:Entity):Boolean
+				{
+					return entity.isMarkedForRemoval;
 				}));
 				
 				var beforeSave:SequentialOperation = new SequentialOperation();
 				var afterSave:SequentialOperation = new SequentialOperation();
-				for each (var entityToSave:Entity in entitiesToCreate.concat(entitiesToSave)) {
+				for each (var entityToSave:Entity in entitiesToCreate.concat(entitiesToUpdate)) {
 					beforeSave.add(entityToSave.callbacksAsOperation("beforeSave"));
 					afterSave.add(entityToSave.callbacksAsOperation("afterSave"));
 				}
@@ -91,32 +113,24 @@ package mesh
 				if (entitiesToCreate.length > 0) {
 					saveOperation = saveOperation.then( new FactoryOperation(adaptor.create, entitiesToCreate) );
 				}
-				if (entitiesToSave.length > 0) {
-					saveOperation = saveOperation.then( new FactoryOperation(adaptor.update, entitiesToSave) );
+				if (entitiesToUpdate.length > 0) {
+					saveOperation = saveOperation.then( new FactoryOperation(adaptor.update, entitiesToUpdate) );
 				}
 				saveOperation = saveOperation.then(afterSave);
-				
 				operation.add(saveOperation);
+				
+				if (entitiesToRemove.length > 0) {
+					var beforeDestroy:SequentialOperation = new SequentialOperation();
+					var afterDestroy:SequentialOperation = new SequentialOperation();
+					for each (var entityToRemove:Entity in entitiesToRemove) {
+						beforeDestroy.add(entityToRemove.callbacksAsOperation("beforeDestroy"));
+						afterDestroy.add(entityToRemove.callbacksAsOperation("afterDestroy"));
+					}
+					
+					operation.add(beforeDestroy.then( new FactoryOperation(adaptor.destroy, entitiesToRemove) ).then(afterDestroy));
+				}
 			}
 			
-			return operation;
-		}
-		
-		private function buildRemoveOperation(entities:Array):Operation
-		{
-			var map:HashMap = mapEntitiesByAdaptor(entities);
-			var operation:ParallelOperation = new ParallelOperation();
-			for each (var adaptor:ServiceAdaptor in map.keys()) {
-				var beforeDestroy:SequentialOperation = new SequentialOperation();
-				var afterDestroy:SequentialOperation = new SequentialOperation();
-				
-				for each (var entity:Entity in map.grab(adaptor)) {
-					beforeDestroy.add(entity.callbacksAsOperation("beforeDestroy"));
-					afterDestroy.add(entity.callbacksAsOperation("afterDestroy"));
-				}
-				
-				operation.add(beforeDestroy.then(adaptor.destroy(map.grab(adaptor)).then(afterDestroy)));
-			}
 			return operation;
 		}
 		

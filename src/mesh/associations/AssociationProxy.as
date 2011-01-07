@@ -54,17 +54,7 @@ package mesh.associations
 		 * 
 		 * @return A set of <code>Entity</code>s.
 		 */
-		public function findDirtyEntities():ISet
-		{
-			return new HashSet();
-		}
-		
-		/**
-		 * Returns the set of entities that have been removed from this association.
-		 * 
-		 * @return A set of <code>Entity</code>s.
-		 */
-		public function findRemovedEntities():ISet
+		public function findEntitiesToSave():ISet
 		{
 			return new HashSet();
 		}

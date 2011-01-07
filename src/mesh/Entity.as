@@ -24,7 +24,6 @@ package mesh
 	
 	import mx.events.PropertyChangeEvent;
 	
-	import operations.FactoryOperation;
 	import operations.Operation;
 	import operations.SequentialOperation;
 	
@@ -154,18 +153,6 @@ package mesh
 				   clazz(this) == clazz(entity);
 		}
 		
-		/**
-		 * Removes the entity.
-		 * 
-		 * @return An executing operation.
-		 */
-		public function destroy():Operation
-		{
-			var operation:Operation = callbacksAsOperation("beforeDestroy").then(new FactoryOperation(adaptorFor(this).destroy, [this])).then(callbacksAsOperation("afterDestroy"));
-			setTimeout(operation.execute, Mesh.DELAY);
-			return operation;
-		}
-		
 		public function beforeDestroy(... args):void
 		{
 			addCallback("beforeDestroy", args);
@@ -259,12 +246,6 @@ package mesh
 		public function revert():void
 		{
 			_properties.revert();
-			
-			for each (var relationship:Relationship in descriptor.relationships) {
-				if (hasOwnProperty(relationship.property) && association(relationship.property) != null) {
-					association(relationship.property).revert();
-				}
-			}
 		}
 		
 		/**
@@ -272,6 +253,10 @@ package mesh
 		 */
 		public function revive():void
 		{
+			if (isMarkedForRemoval) {
+				_isMarkedForRemoval = false;
+			}
+			
 			if (isDestroyed) {
 				id = 0;
 				_isDestroyed = false;
@@ -348,6 +333,14 @@ package mesh
 		}
 		
 		/**
+		 * Marks the entity to be destroyed on its next save call.
+		 */
+		public function markForRemoval():void
+		{
+			_isMarkedForRemoval = true;
+		}
+		
+		/**
 		 * @private
 		 */
 		public function toString():String
@@ -399,6 +392,28 @@ package mesh
 					this[property] = vo[property];
 				}
 			}
+		}
+		
+		/**
+		 * Copies the translated values on the given object to this entity. This method is useful for
+		 * copying the values of a transfer object or XML into the entity for service calls.
+		 * 
+		 * @param object The object to translate and copy.
+		 */
+		public function translateFrom(object:Object):void
+		{
+			
+		}
+		
+		/**
+		 * Creates a new translation object, which is useful for creating transfer objects or XML for
+		 * service calls.
+		 * 
+		 * @return A new translation object.
+		 */
+		public function translateTo():Object
+		{
+			return null;
 		}
 		
 		/**
@@ -529,7 +544,7 @@ package mesh
 		 */
 		public function get isDirty():Boolean
 		{
-			return isNew || _properties.hasChanges;
+			return isNew || isMarkedForRemoval || _properties.hasChanges;
 		}
 		
 		/**
@@ -551,6 +566,15 @@ package mesh
 			return !isNew && !isDestroyed;
 		}
 		
+		private var _isMarkedForRemoval:Boolean;
+		/**
+		 * <code>true</code> if this entity will be removed on its next save call.
+		 */
+		public function get isMarkedForRemoval():Boolean
+		{
+			return _isMarkedForRemoval;
+		}
+		
 		/**
 		 * A set of properties that are accessible on this entity. Properties include any that
 		 * are defined on the entity and its sub-classes, and any properties defined within 
@@ -561,6 +585,14 @@ package mesh
 			return descriptor.properties;
 		}
 		
+		/**
+		 * @private
+		 */
+		override flash_proxy function callProperty(name:*, ...parameters):*
+		{
+			throw new Error("Method '" + name + "' does not exist on " + className(this) + ".");
+		}
+		
 		private var _properties:Properties = new Properties(this);
 		private var _associations:Properties = new Properties(this);
 		/**
@@ -568,7 +600,7 @@ package mesh
 		 */
 		override flash_proxy function getProperty(name:*):*
 		{
-			// check if the caller wants the association proxy's target
+			// check if the caller wants the association
 			if (descriptor.getRelationshipForProperty(name) != null) {
 				return association(name);
 			}
@@ -620,8 +652,7 @@ package mesh
 				throw new ArgumentError(name + " not defined on " + className(this));
 			}
 			
-			var relationship:Relationship = descriptor.getRelationshipForProperty(name);
-			if (relationship != null) {
+			if (descriptor.getRelationshipForProperty(name) != null) {
 				association(name).target = value is AssociationProxy ? value.target : value;
 				return;
 			}

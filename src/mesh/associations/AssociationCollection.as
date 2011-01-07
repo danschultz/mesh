@@ -87,22 +87,13 @@ package mesh.associations
 		/**
 		 * @inheritDoc
 		 */
-		override public function findDirtyEntities():ISet
+		override public function findEntitiesToSave():ISet
 		{
-			return new HashSet(_mirroredEntities.where(function(entity:Entity):Boolean
+			var entities:HashSet = new HashSet(_removedEntities);
+			entities.addAll(_mirroredEntities);
+			return entities.where(function(entity:Entity):Boolean
 			{
 				return entity.isDirty;
-			}));
-		}
-		
-		/**
-		 * @inheritDoc
-		 */
-		override public function findRemovedEntities():ISet
-		{
-			return _removedEntities.where(function(entity:Entity):Boolean
-			{
-				return entity.isPersisted;
 			});
 		}
 		
@@ -145,10 +136,11 @@ package mesh.associations
 					handleEntitiesAdded(event.items);
 					break;
 				case CollectionEventKind.REMOVE:
-					_removedEntities.addAll(event.items);
+					handleEntitiesRemoved(event.items);
 					break;
 				case CollectionEventKind.RESET:
-					_removedEntities.addAll(_mirroredEntities.difference(target));
+					handleEntitiesRemoved(_mirroredEntities.difference(target).toArray());
+					handleEntitiesAdded(toArray());
 					break;
 			}
 			
@@ -165,6 +157,15 @@ package mesh.associations
 			
 			for each (var entity:Entity in entities) {
 				entity.revive();
+			}
+		}
+		
+		private function handleEntitiesRemoved(entities:Array):void
+		{
+			_removedEntities.addAll(entities);
+			
+			for each (var entity:Entity in entities) {
+				entity.markForRemoval();
 			}
 		}
 		
@@ -254,7 +255,7 @@ package mesh.associations
 		 */
 		override public function save():Operation
 		{
-			var operation:Operation = new SaveBuilder(toArray()).build();
+			var operation:Operation = new SaveBuilder(this).build();
 			setTimeout(operation.execute, Mesh.DELAY);
 			return operation;
 		}

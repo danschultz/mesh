@@ -7,8 +7,6 @@ package mesh
 	
 	import org.flexunit.assertThat;
 	import org.hamcrest.collection.array;
-	import org.hamcrest.collection.hasItem;
-	import org.hamcrest.core.not;
 	import org.hamcrest.object.equalTo;
 
 	public class AssociationCollectionTests
@@ -86,16 +84,6 @@ package mesh
 			_collection.addItem(order);
 			assertThat(order.isNew, equalTo(true));
 			assertThat(order.isDirty, equalTo(true));
-		}
-		
-		[Test]
-		public function testFindRemovedEntitiesDoesntContainNonPersistedEntities():void
-		{
-			var order:Order = new Order();
-			_collection.addItem(order);
-			
-			_collection.removeItem(order);
-			assertThat(_collection.findRemovedEntities().toArray(), not(hasItem(order)));
 		}
 	}
 }

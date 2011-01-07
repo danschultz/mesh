@@ -6,7 +6,6 @@ package mesh.adaptors
 	
 	import mesh.Entity;
 	
-	import operations.EmptyOperation;
 	import operations.MethodOperation;
 	import operations.Operation;
 	import operations.OperationEvent;

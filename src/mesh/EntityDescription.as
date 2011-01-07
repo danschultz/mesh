@@ -256,7 +256,6 @@ package mesh
 		public function newEntity(data:Object):Entity
 		{
 			var entity:Entity = factoryMethod == null ? newInstance(entityType) as Entity : entityType[factoryMethod](data);
-			entity.translateFrom(data);
 			return entity;
 		}
 		

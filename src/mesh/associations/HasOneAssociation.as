@@ -21,17 +21,19 @@ package mesh.associations
 		/**
 		 * @inheritDoc
 		 */
-		override public function findDirtyEntities():ISet
+		override public function findEntitiesToSave():ISet
 		{
-			return new HashSet(target != null && isDirty ? [target] : []);
-		}
-		
-		/**
-		 * @inheritDoc
-		 */
-		override public function findRemovedEntities():ISet
-		{
-			return new HashSet(_persistedTarget != null && target == null ? [_persistedTarget] : []);
+			var entities:HashSet = new HashSet();
+			
+			if (_persistedTarget != null && _persistedTarget.isMarkedForRemoval) {
+				entities.add(_persistedTarget);
+			}
+			
+			if (target != null && target.isDirty) {
+				entities.add(target);
+			}
+			
+			return entities;
 		}
 		
 		/**
@@ -102,6 +104,10 @@ package mesh.associations
 			}
 			
 			super.target = value;
+			
+			if (_persistedTarget != null && !_persistedTarget.equals(value)) {
+				_persistedTarget.markForRemoval();
+			}
 		}
 	}
 }
