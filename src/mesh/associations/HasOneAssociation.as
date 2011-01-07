@@ -53,11 +53,6 @@ package mesh.associations
 			}
 		}
 		
-		private function replaceKey():void
-		{
-			owner[(relationship as HasOneRelationship).foreignKey] = target != null ? target.id : undefined;
-		}
-		
 		/**
 		 * @inheritDoc
 		 */
@@ -76,7 +71,7 @@ package mesh.associations
 		override public function get isDirty():Boolean
 		{
 			if (target != null) {
-				return target.isDirty || !target.equals(_persistedTarget);
+				return !target.equals(_persistedTarget) || target.isDirty;
 			}
 			return _persistedTarget != target;
 		}
@@ -96,8 +91,6 @@ package mesh.associations
 			}
 			
 			super.target = value;
-			
-			replaceKey();
 		}
 	}
 }

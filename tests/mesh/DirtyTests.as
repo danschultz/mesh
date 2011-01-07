@@ -170,7 +170,7 @@ package mesh
 		}
 		
 		[Test]
-		public function testIsAssociationsDirtyWithCircularReferences():void
+		public function testAssociationsIsDirtyWithCircularReferences():void
 		{
 			var jack:Person = new Person();
 			jack.id = 1;
@@ -187,6 +187,27 @@ package mesh
 			
 			assertThat(jack.hasDirtyAssociations, equalTo(true));
 			assertThat(jill.hasDirtyAssociations, equalTo(true));
+		}
+		
+		[Test]
+		public function testAssociationsIsNotDirtyWithCircularReferences():void
+		{
+			var jack:Person = new Person();
+			jack.id = 1;
+			jack.firstName = "Jack";
+			
+			var jill:Person = new Person();
+			jill.id = 2;
+			jill.firstName = "Jill";
+			
+			jack.partner = jill;
+			jill.partner = jack;
+			
+			jack.found();
+			jill.found();
+			
+			assertThat(jack.hasDirtyAssociations, equalTo(false));
+			assertThat(jill.hasDirtyAssociations, equalTo(false));
 		}
 	}
 }

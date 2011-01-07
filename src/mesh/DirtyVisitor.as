@@ -3,8 +3,9 @@ package mesh
 	import flash.utils.Dictionary;
 	
 	import mesh.associations.AssociationProxy;
+	import mesh.associations.BelongsToAssociation;
 
-	public dynamic class DirtyVisitor extends Visitor
+	public dynamic class DirtyVisitor extends VisitOnceVisitor
 	{
 		private var _results:Dictionary = new Dictionary();
 		
@@ -15,13 +16,13 @@ package mesh
 		
 		override public function enter(association:AssociationProxy):Boolean
 		{
-			return _results[association] === undefined;
+			return !(association is BelongsToAssociation) && super.enter(association);
 		}
 		
 		override public function visit(association:AssociationProxy):void
 		{
-			_results[association] = association.isDirty;
-			_isDirty = isDirty || (_results[association] == true);
+			super.visit(association);
+			_isDirty = isDirty || (association.isDirty == true);
 		}
 		
 		private var _isDirty:Boolean;

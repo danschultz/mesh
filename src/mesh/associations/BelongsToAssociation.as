@@ -11,5 +11,10 @@ package mesh.associations
 		{
 			super(owner, relationship);
 		}
+		
+		private function replaceKey():void
+		{
+			owner[(relationship as HasOneRelationship).foreignKey] = target != null ? target.id : undefined;
+		}
 	}
 }
