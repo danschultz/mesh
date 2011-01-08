@@ -34,6 +34,7 @@
 		
 		<attribute name="type" type="Class" hint="classes" hintType="mesh.Entity" required="true"/>
 		<attribute name="lazy" type="Boolean" required="true" defaultValue="true" hint="boolean"/>
+		<attribute name="autoSave" type="Boolean" defaultValue="false" hint="boolean"/>
 	</metadata>
 	
 	<!-- 
@@ -67,6 +68,7 @@
 		
 		<attribute name="type" type="Class" hint="classes" hintType="mesh.Entity" required="true"/>
 		<attribute name="lazy" type="Boolean" required="true" defaultValue="true" hint="boolean"/>
+		<attribute name="autoSave" type="Boolean" defaultValue="false" hint="boolean"/>
 	</metadata>
 	
 	<!-- 

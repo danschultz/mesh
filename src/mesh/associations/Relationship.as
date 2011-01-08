@@ -15,7 +15,6 @@ package mesh.associations
 	
 	import reflection.className;
 	import reflection.newInstance;
-	import reflection.path;
 
 	/**
 	 * A relationship represents an association between two entities, where the <code>owner</code>
@@ -43,10 +42,6 @@ package mesh.associations
 			
 			if (options.hasOwnProperty("isLazy")) {
 				options.lazy = options.isLazy;
-			}
-			
-			if (!options.hasOwnProperty("autoSave")) {
-				options.autoSave = true;
 			}
 			
 			_owner = owner;
@@ -102,6 +97,22 @@ package mesh.associations
 			return property;
 		}
 		
+		private function toBoolean(obj:Object):Boolean
+		{
+			return obj.toString().toLowerCase() == "true";
+		}
+		
+		/**
+		 * <code>true</code> if this relationship will be saved when its owner is saved.
+		 */
+		public function get autoSave():Boolean
+		{
+			if (options.hasOwnProperty("autoSave")) {
+				return toBoolean(options.autoSave);
+			}
+			return false;
+		}
+		
 		/**
 		 * <code>true</code> if this relationship is lazy, and its data is not loaded when
 		 * the owner is loaded.
@@ -109,10 +120,7 @@ package mesh.associations
 		public function get isLazy():Boolean
 		{
 			if (options.hasOwnProperty("lazy")) {
-				if (options.lazy is String) {
-					options.lazy = (options.lazy.toLowerCase() != "false");
-				}
-				return options.lazy;
+				return toBoolean(options.lazy);
 			}
 			return false;
 		}

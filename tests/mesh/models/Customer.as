@@ -5,7 +5,7 @@ package mesh.models
 	[Validate(properties="addressStreet,addressCity", validator="mesh.validators.LengthValidator", minimum="1")]
 	[ComposedOf(property="address", type="mesh.models.Address", prefix="address", mapping="street,city")]
 	
-	[HasMany(type="mesh.models.Order", property="orders")]
+	[HasMany(type="mesh.models.Order", property="orders", autoSave="true")]
 	[HasMany(type="mesh.models.Car")]
 	
 	public dynamic class Customer extends Person

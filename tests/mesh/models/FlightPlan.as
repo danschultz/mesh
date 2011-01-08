@@ -63,7 +63,7 @@ package mesh.models
 			fromVO(object);
 		}
 		
-		override public function translateTo():Object
+		override public function translateTo():*
 		{
 			return toVO();
 		}

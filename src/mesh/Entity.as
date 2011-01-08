@@ -411,7 +411,7 @@ package mesh
 		 * 
 		 * @return A new translation object.
 		 */
-		public function translateTo():Object
+		public function translateTo():*
 		{
 			return null;
 		}
@@ -540,11 +540,38 @@ package mesh
 		/**
 		 * <code>true</code> if this entity is dirty and needs to be persisted. An object is dirty
 		 * if any of its properties have changed since its last save or if its a new record. An
-		 * entity is also dirty if any of its relationships are dirty.
+		 * entity is also dirty if any association that is marked for auto-save is dirty.
+		 * 
+		 * @see #hasPropertyChanges
 		 */
 		public function get isDirty():Boolean
 		{
-			return isNew || isMarkedForRemoval || _properties.hasChanges;
+			return isNew || isMarkedForRemoval || hasPropertyChanges || hasDirtyAssociations;
+		}
+		
+		/**
+		 * <code>true</code> if this entity has any changes to its properties that need to be 
+		 * persisted. This does not include auto-saved associations. To check if any associations
+		 * need to be persisted, use <code>isDirty</code>.
+		 * 
+		 * @see #isDirty
+		 */
+		public function get hasPropertyChanges():Boolean
+		{
+			return _properties.hasChanges;
+		}
+		
+		/**
+		 * <code>true</code> if this entity contains an association marked for auto-save that is dirty.
+		 */
+		public function get hasDirtyAssociations():Boolean
+		{
+			for each (var association:AssociationProxy in associations) {
+				if (association.relationship.autoSave && association.isDirty) {
+					return true;
+				}
+			}
+			return false;
 		}
 		
 		/**

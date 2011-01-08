@@ -98,8 +98,8 @@ package mesh
 		public function testIsNotDirtyWhenAssociationsReverted():void
 		{
 			_customer.orders.getItemAt(0).total = 10;
-			_customer.revert();
-			assertThat(_customer.isDirty, equalTo(false));
+			_customer.orders.revert();
+			assertThat(_customer.orders.isDirty, equalTo(false));
 		}
 		
 		[Test]

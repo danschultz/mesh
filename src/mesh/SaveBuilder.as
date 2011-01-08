@@ -30,6 +30,12 @@ package mesh
 			for each (var item:* in items) {
 				if (item is Entity) {
 					result.push(item);
+					
+					for each (var association:AssociationProxy in item.associations) {
+						if (association.relationship.autoSave) {
+							result = result.concat(gather([association]));
+						}
+					}
 				}
 				
 				if (item is AssociationProxy) {
@@ -95,7 +101,7 @@ package mesh
 				}));
 				var entitiesToUpdate:Array = map.grab(adaptor).filter(closure(function(entity:Entity):Boolean
 				{
-					return !entity.isNew && !entity.isMarkedForRemoval;
+					return !entity.isNew && !entity.isMarkedForRemoval && entity.hasPropertyChanges;
 				}));
 				var entitiesToRemove:Array = map.grab(adaptor).filter(closure(function(entity:Entity):Boolean
 				{

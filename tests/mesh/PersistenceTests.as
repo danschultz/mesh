@@ -163,5 +163,30 @@ package mesh
 				fail(event.summary);
 			});
 		}
+		
+		[Test(async)]
+		public function testAutoSaveHasManyAssociation():void
+		{
+			var order1:Order = new Order();
+			_customer.orders.addItem(order1);
+			
+			var order2:Order = new Order();
+			_customer.orders.addItem(order2);
+			
+			var assertion:Function = function(event:FinishedOperationEvent, data:Object):void
+			{
+				assertThat(order1.isPersisted, equalTo(true));
+				assertThat(order1.isDirty, equalTo(false));
+				assertThat(order2.isPersisted, equalTo(true));
+				assertThat(order2.isDirty, equalTo(false));
+			};
+			
+			var operation:Operation = _customer.save();
+			operation.addEventListener(FinishedOperationEvent.FINISHED, Async.asyncHandler(this, assertion, 100));
+			operation.addEventListener(FaultOperationEvent.FAULT, function(event:FaultOperationEvent):void
+			{
+				fail(event.summary);
+			});
+		}
 	}
 }

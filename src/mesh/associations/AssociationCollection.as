@@ -245,7 +245,7 @@ package mesh.associations
 			
 			target = _originalEntities;
 			
-			for each (var entity:Entity in target) {
+			for each (var entity:Entity in this) {
 				entity.revert();
 			}
 		}
