@@ -112,5 +112,42 @@ package mesh
 			_customer.orders.removeItem(order);
 			assertThat(_customer.orders.isDirty, equalTo(false));
 		}
+		
+		[Test]
+		public function testIsNotDirtyWhenNewAndMarkedForRemoval():void
+		{
+			var order:Order = new Order();
+			order.markForRemoval();
+			assertThat(order.isDirty, equalTo(false));
+		}
+		
+		[Test]
+		public function testIsDirtyWhenNewAndNotMarkedForRemoval():void
+		{
+			var order:Order = new Order();
+			assertThat(order.isDirty, equalTo(true));
+		}
+		
+		[Test]
+		public function testIsDirtyWhenHasPropertyChangesAndIsPersisted():void
+		{
+			var order:Order = new Order();
+			order.id = 1;
+			order.found();
+			
+			order.total = 10;
+			assertThat(order.isDirty, equalTo(true));
+		}
+		
+		[Test]
+		public function testIsDirtyWhenMarkedForRemovalAndIsPersisted():void
+		{
+			var order:Order = new Order();
+			order.id = 1;
+			order.found();
+			
+			order.markForRemoval();
+			assertThat(order.isDirty, equalTo(true));
+		}
 	}
 }

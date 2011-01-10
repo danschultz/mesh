@@ -97,7 +97,7 @@ package mesh
 			for each (var adaptor:ServiceAdaptor in map.keys()) {
 				var entitiesToCreate:Array = map.grab(adaptor).filter(closure(function(entity:Entity):Boolean
 				{
-					return entity.isNew;
+					return entity.isNew && !entity.isMarkedForRemoval;
 				}));
 				var entitiesToUpdate:Array = map.grab(adaptor).filter(closure(function(entity:Entity):Boolean
 				{
