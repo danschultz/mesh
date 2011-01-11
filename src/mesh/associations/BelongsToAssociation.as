@@ -2,7 +2,7 @@ package mesh.associations
 {
 	import mesh.Entity;
 	
-	public class BelongsToAssociation extends HasOneAssociation
+	public class BelongsToAssociation extends HasAssociation
 	{
 		/**
 		 * @copy AssociationProxy#AssociationProxy()
@@ -10,11 +10,6 @@ package mesh.associations
 		public function BelongsToAssociation(owner:Entity, relationship:Relationship)
 		{
 			super(owner, relationship);
-		}
-		
-		private function replaceKey():void
-		{
-			owner[(relationship as HasOneRelationship).foreignKey] = target != null ? target.id : undefined;
 		}
 	}
 }

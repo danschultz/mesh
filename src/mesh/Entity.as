@@ -547,8 +547,7 @@ package mesh
 		public function get isDirty():Boolean
 		{
 			return (isNew && !isMarkedForRemoval) || 
-				   ((isMarkedForRemoval || hasPropertyChanges) && isPersisted) || 
-				   hasDirtyAssociations;
+				   ((isMarkedForRemoval || hasPropertyChanges || hasDirtyAssociations) && isPersisted); 
 		}
 		
 		/**

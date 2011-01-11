@@ -124,6 +124,22 @@ package mesh.associations
 		}
 		
 		/**
+		 * Populates the belongs to association on the given entity that represents the inverse
+		 * of this association.
+		 * 
+		 * @param entity The entity to populate.
+		 */
+		protected function populateBelongsToAssociation(entity:Entity):void
+		{
+			for each (var association:AssociationProxy in entity.associations) {
+				if (association is BelongsToAssociation && relationship.target == association.relationship.owner) {
+					association.target = owner;
+					break;
+				}
+			}
+		}
+		
+		/**
 		 * Changes the state of the target for this association back to what it was at the
 		 * last save.
 		 */

@@ -151,7 +151,7 @@ package mesh.associations
 			dispatchEvent(event.clone());
 		}
 		
-		private function handleEntitiesAdded(entities:Array):void
+		protected function handleEntitiesAdded(entities:Array):void
 		{
 			_removedEntities.removeAll(entities);
 			
@@ -160,7 +160,7 @@ package mesh.associations
 			}
 		}
 		
-		private function handleEntitiesRemoved(entities:Array):void
+		protected function handleEntitiesRemoved(entities:Array):void
 		{
 			_removedEntities.addAll(entities);
 			

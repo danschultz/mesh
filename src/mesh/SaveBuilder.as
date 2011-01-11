@@ -31,15 +31,17 @@ package mesh
 				if (item is Entity) {
 					result.push(item);
 					
-					for each (var association:AssociationProxy in item.associations) {
-						if (association.relationship.autoSave) {
-							result = result.concat(gather([association]));
+					if (!item.isMarkedForRemoval) {
+						for each (var association:AssociationProxy in item.associations) {
+							if (association.relationship.autoSave) {
+								result = result.concat(gather([association]));
+							}
 						}
 					}
 				}
 				
 				if (item is AssociationProxy) {
-					result = result.concat(item.findEntitiesToSave().toArray());
+					result = result.concat(gather(item.findEntitiesToSave().toArray()));
 				}
 				
 				if (item is Array) {

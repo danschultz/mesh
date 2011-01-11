@@ -8,10 +8,10 @@ package mesh.associations
 	import operations.EmptyOperation;
 	import operations.Operation;
 	
-	public dynamic class HasOneAssociation extends AssociationProxy
+	public dynamic class HasOneAssociation extends HasAssociation
 	{
 		/**
-		 * @copy AssociationProxy#AssociationProxy()
+		 * @copy HasAssociation#HasAssociation()
 		 */
 		public function HasOneAssociation(owner:Entity, relationship:Relationship)
 		{
@@ -107,6 +107,10 @@ package mesh.associations
 			
 			if (_persistedTarget != null && !_persistedTarget.equals(value)) {
 				_persistedTarget.markForRemoval();
+			}
+			
+			if (value != null) {
+				populateBelongsToAssociation(value);
 			}
 		}
 	}

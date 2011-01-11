@@ -149,5 +149,15 @@ package mesh
 			order.markForRemoval();
 			assertThat(order.isDirty, equalTo(true));
 		}
+		
+		[Test]
+		public function testIsNotDirtyWhenDestroyedAndHasDirtyAssociations():void
+		{
+			var order:Order = new Order();
+			_customer.orders.addItem(order);
+			_customer.callback("afterDestroy");
+			
+			assertThat(_customer.isDirty, equalTo(false));
+		}
 	}
 }

@@ -1,8 +1,6 @@
 package mesh
 {
-	import mesh.associations.HasOneAssociation;
 	import mesh.models.Account;
-	import mesh.models.Car;
 	import mesh.models.Customer;
 	
 	import org.flexunit.assertThat;
@@ -43,5 +41,13 @@ package mesh
 			assertThat(account.isDirty, equalTo(true));
 		}
 		
+		[Test]
+		public function testBelongsToIsPopulated():void
+		{
+			var account:Account = new Account();
+			_customer.account = account;
+			
+			assertThat(account.customer.target, equalTo(_customer));
+		}
 	}
 }
