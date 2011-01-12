@@ -2,45 +2,52 @@ package mesh
 {
 	import collections.HashMap;
 	import collections.HashSet;
+	
+	import operations.Operation;
+	import operations.ParallelOperation;
+	import operations.SequentialOperation;
 
-	public class Save
+	public class Batch
 	{
 		private var _elements:HashSet = new HashSet();
 		private var _entities:HashSet = new HashSet();
 		private var _caches:HashMap = new HashMap();
 		
-		public function Save(...elements)
+		public function Batch()
 		{
-			for each (var element:* in elements) {
-				include(element);
-			}
-		}
-		
-		public function save(block:Function = null):void
-		{
-			block(this);
 			
-			for each (var entity:Entity in _entities) {
-				entity.determineSaveOperation(this);
-			}
 		}
 		
-		public function include(element:*):void
+		public function include(...elements):Batch
 		{
-			if (element is Entity) {
-				_entities.add(element);
+			for each (var element:IPersistable in elements) {
+				if (!_elements.contains(element)) {
+					element.batch(this);
+				}
 			}
 			_elements.add(element);
-			element.include(this);
 		}
 		
-		public function exclude(element:*):void
+		public function save():Operation
 		{
-			if (element is Entity) {
-				_entities.remove(element);
+			var operation:SequentialOperation = new SequentialOperation();
+			
+			var previous:PersistenceCache;
+			var batch:ParallelOperation;
+			var caches:Array = _caches.keys().sortOn("depth", Array.NUMERIC);
+			for each (var cache:PersistenceCache in caches) {
+				if (previous == null || previous.depth != cache.depth) {
+					if (batch != null) {
+						operation.add(batch);
+					}
+					batch = new ParallelOperation();
+				}
+				
+				batch.add(cache.save());
+				previous = cache;
 			}
-			_elements.remove(element);
-			element.exclude(this);
+			
+			return operation;
 		}
 		
 		public function create(entity:Entity):void
@@ -90,6 +97,17 @@ class PersistenceCache
 		_description = description;
 	}
 	
+	private function countLongestParentPath(description:EntityDescription):int
+	{
+		var count:int = 0;
+		for each (var relationship:Relationship in description.relationships) {
+			if (relationship is BelongsToRelationship) {
+				count = Math.max(count, countLongestParentPath(EntityDescription.describe(relationship.target)) + 1);
+			}
+		}
+		return count;
+	}
+	
 	public function create(entity:Entity):void
 	{
 		_create.add(entity);
@@ -118,5 +136,20 @@ class PersistenceCache
 			saveOperation = saveOperation.then( new FactoryOperation(_description.adaptor.destroy, _destroy.toArray()) );
 		}
 		return saveOperation;
+	}
+	
+	private var _depth:int = -1;
+	public function get depth():int
+	{
+		if (_depth == -1) {
+			var visited:HashSet = new HashSet();
+			for each (var entity:Entity in _create.toArray().concat(_destroy.toArray()).concat(_update.toArray())) {
+				if (!visited.contains(entity.descriptor.entityType)) {
+					_depth = Math.max(_depth, countLongestParentPath(entity.descriptor));
+					visited.add(entity.descriptor.entityType);
+				}
+			}
+		}
+		return _depth;
 	}
 }

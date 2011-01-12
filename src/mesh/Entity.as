@@ -36,7 +36,7 @@ package mesh
 	 * 
 	 * @author Dan Schultz
 	 */
-	public dynamic class Entity extends Proxy implements IEventDispatcher
+	public dynamic class Entity extends Proxy implements IEventDispatcher, IPersistable
 	{
 		private var _dispatcher:EventDispatcher;
 		private var _callbacks:Array = [];
@@ -249,6 +249,26 @@ package mesh
 		}
 		
 		/**
+		 * @inheritDoc
+		 */
+		public function batch(batch:Batch):void
+		{
+			if (isMarkedForRemoval) {
+				batch.destroy(this);
+			} else if (isNew) {
+				batch.create(this);
+			} else if (hasPropertyChanges) {
+				batch.update(this);
+			}
+			
+			for each (var association:AssociationProxy in associations) {
+				if (association.relationship.autoSave) {
+					batch.include(association);
+				}
+			}
+		}
+		
+		/**
 		 * Saves the entity by executing either a create or update operation on the entity's 
 		 * service.
 		 * 
@@ -263,33 +283,7 @@ package mesh
 		 */
 		public function save(validate:Boolean = true):Operation
 		{
-			var save:Save = new Save();
-			return save;
-		}
-		
-		public function determineSaveOperation(builder:Save):void
-		{
-			if (isMarkedForRemoval) {
-				builder.destroy(this);
-			} else if (isNew) {
-				builder.create(this);
-			} else if (hasPropertyChanges) {
-				builder.update(this);
-			}
-		}
-		
-		public function include(builder:Save):void
-		{
-			for each (var association:AssociationProxy in associations) {
-				association.include(builder);
-			}
-		}
-		
-		public function exclude(builder:Save):void
-		{
-			for each (var association:AssociationProxy in associations) {
-				association.exclude(builder);
-			}
+			return new Batch().include(this).save();
 		}
 		
 		/**

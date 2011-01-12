@@ -15,8 +15,9 @@ package mesh.associations
 	
 	import functions.closure;
 	
+	import mesh.Batch;
 	import mesh.Entity;
-	import mesh.Save;
+	import mesh.IPersistable;
 	
 	import operations.EmptyOperation;
 	import operations.FinishedOperationEvent;
@@ -33,7 +34,7 @@ package mesh.associations
 	 * 
 	 * @author Dan Schultz
 	 */
-	public dynamic class AssociationProxy extends Proxy implements IEventDispatcher
+	public dynamic class AssociationProxy extends Proxy implements IEventDispatcher, IPersistable
 	{
 		private var _dispatcher:EventDispatcher;
 		
@@ -156,18 +157,9 @@ package mesh.associations
 			return new EmptyOperation();
 		}
 		
-		public function include(builder:Save):void
+		public function batch(batch:Batch):void
 		{
-			for each (var entity:Entity in dirtyEntities) {
-				builder.include(entity);
-			}
-		}
-		
-		public function exclude(builder:Save):void
-		{
-			for each (var entity:Entity in dirtyEntities) {
-				builder.exclude(entity);
-			}
+			batch.include.apply(null, dirtyEntities);
 		}
 		
 		/**

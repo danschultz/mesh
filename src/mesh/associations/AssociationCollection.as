@@ -12,7 +12,7 @@ package mesh.associations
 	
 	import mesh.Entity;
 	import mesh.Mesh;
-	import mesh.Save;
+	import mesh.Batch;
 	import mesh.SaveBuilder;
 	
 	import mx.collections.ArrayCollection;
