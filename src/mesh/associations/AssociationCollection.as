@@ -8,8 +8,11 @@ package mesh.associations
 	import flash.utils.flash_proxy;
 	import flash.utils.setTimeout;
 	
+	import functions.closure;
+	
 	import mesh.Entity;
 	import mesh.Mesh;
+	import mesh.Save;
 	import mesh.SaveBuilder;
 	
 	import mx.collections.ArrayCollection;
@@ -314,12 +317,12 @@ package mesh.associations
 		/**
 		 * @inheritDoc
 		 */
-		override public function get isDirty():Boolean
+		override protected function get dirtyEntities():Array
 		{
-			return hasUnsavedRemovedEntities || toArray().some(function(entity:Entity, index:int, array:Array):Boolean
+			return toArray().concat(_removedEntities.toArray()).filter(closure(function(entity:Entity):Boolean
 			{
 				return entity.isDirty;
-			});
+			}));
 		}
 		
 		/**

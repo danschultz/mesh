@@ -13,7 +13,10 @@ package mesh.associations
 	import flash.utils.flash_proxy;
 	import flash.utils.setTimeout;
 	
+	import functions.closure;
+	
 	import mesh.Entity;
+	import mesh.Save;
 	
 	import operations.EmptyOperation;
 	import operations.FinishedOperationEvent;
@@ -153,12 +156,34 @@ package mesh.associations
 			return new EmptyOperation();
 		}
 		
+		public function include(builder:Save):void
+		{
+			for each (var entity:Entity in dirtyEntities) {
+				builder.include(entity);
+			}
+		}
+		
+		public function exclude(builder:Save):void
+		{
+			for each (var entity:Entity in dirtyEntities) {
+				builder.exclude(entity);
+			}
+		}
+		
+		/**
+		 * The set of <code>Entity</code>s that are dirty and need to be persisted.
+		 */
+		protected function get dirtyEntities():Array
+		{
+			return [];
+		}
+		
 		/**
 		 * @copy Entity#isDirty
 		 */
 		public function get isDirty():Boolean
 		{
-			return false;
+			return dirtyEntities.length > 0;
 		}
 		
 		private var _isLoaded:Boolean;

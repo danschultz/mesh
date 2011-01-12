@@ -4,6 +4,7 @@ package mesh.associations
 	import collections.ISet;
 	
 	import mesh.Entity;
+	import mesh.Save;
 	
 	import operations.EmptyOperation;
 	import operations.Operation;
@@ -81,12 +82,12 @@ package mesh.associations
 		/**
 		 * @inheritDoc
 		 */
-		override public function get isDirty():Boolean
+		override protected function get dirtyEntities():Array
 		{
-			if (target != null) {
-				return !target.equals(_persistedTarget) || target.isDirty;
-			}
-			return _persistedTarget != target;
+			return [_persistedTarget, target].filter(closure(function(entity:Entity):Boolean
+			{
+				return entity != null && entity.isDirty;
+			}));
 		}
 		
 		private var _persistedTarget:*;

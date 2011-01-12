@@ -7,7 +7,6 @@ package mesh
 	import flash.events.IEventDispatcher;
 	import flash.utils.Proxy;
 	import flash.utils.flash_proxy;
-	import flash.utils.setTimeout;
 	
 	import functions.closure;
 	
@@ -16,7 +15,6 @@ package mesh
 	import mesh.adaptors.ServiceAdaptor;
 	import mesh.associations.AssociationCollection;
 	import mesh.associations.AssociationProxy;
-	import mesh.associations.HasOneRelationship;
 	import mesh.associations.Relationship;
 	import mesh.callbacks.AfterCallbackOperation;
 	import mesh.callbacks.BeforeCallbackOperation;
@@ -59,7 +57,6 @@ package mesh
 			
 			// add necessary callbacks for save
 			beforeSave(isValid);
-			beforeSave(populateForeignKeys);
 			afterSave(persisted);
 			
 			// add necessary callback for destory
@@ -216,18 +213,6 @@ package mesh
 		}
 		
 		/**
-		 * Executed as a callback when the entity is saved to populate its foreign keys.
-		 */
-		protected function populateForeignKeys():void
-		{
-			for each (var relationship:Relationship in descriptor.relationships) {
-				if (relationship is HasOneRelationship) {
-					this[(relationship as HasOneRelationship).foreignKey] = association(relationship.property).id;
-				}
-			}
-		}
-		
-		/**
 		 * Marks a property on the entity as being dirty. This method allows sub-classes to manually 
 		 * manage when a property changes.
 		 * 
@@ -274,15 +259,37 @@ package mesh
 		 * </p>
 		 * 
 		 * @param validate <code>false</code> if validations should be ignored.
-		 * @param execute <code>false</code> if the operation should be returned without being
-		 * 	executed.
 		 * @return An executing operation, or <code>false</code> if a validation fails.
 		 */
 		public function save(validate:Boolean = true):Operation
 		{
-			var operation:Operation = new SaveBuilder(this).build();
-			setTimeout(operation.execute, Mesh.DELAY);
-			return operation;
+			var save:Save = new Save();
+			return save;
+		}
+		
+		public function determineSaveOperation(builder:Save):void
+		{
+			if (isMarkedForRemoval) {
+				builder.destroy(this);
+			} else if (isNew) {
+				builder.create(this);
+			} else if (hasPropertyChanges) {
+				builder.update(this);
+			}
+		}
+		
+		public function include(builder:Save):void
+		{
+			for each (var association:AssociationProxy in associations) {
+				association.include(builder);
+			}
+		}
+		
+		public function exclude(builder:Save):void
+		{
+			for each (var association:AssociationProxy in associations) {
+				association.exclude(builder);
+			}
 		}
 		
 		/**
