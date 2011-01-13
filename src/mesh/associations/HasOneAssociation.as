@@ -69,6 +69,21 @@ package mesh.associations
 			}
 		}
 		
+		private function replace(newTarget:Entity):void
+		{
+			if (newTarget != null) {
+				newTarget.revive();
+			}
+			
+			if (_persistedTarget != null && !_persistedTarget.equals(newTarget)) {
+				_persistedTarget.markForRemoval();
+			}
+			
+			if (newTarget != null) {
+				populateBelongsToAssociation(newTarget);
+			}
+		}
+		
 		/**
 		 * @inheritDoc
 		 */
@@ -90,19 +105,8 @@ package mesh.associations
 		}
 		override public function set target(value:*):void
 		{
-			if (value != null) {
-				value.revive();
-			}
-			
+			replace(value);
 			super.target = value;
-			
-			if (_persistedTarget != null && !_persistedTarget.equals(value)) {
-				_persistedTarget.markForRemoval();
-			}
-			
-			if (value != null) {
-				populateBelongsToAssociation(value);
-			}
 		}
 	}
 }

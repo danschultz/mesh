@@ -153,6 +153,7 @@ package mesh.associations
 			_removedEntities.removeAll(entities);
 			
 			for each (var entity:Entity in entities) {
+				entity.afterDestroy(entityDestroyed);
 				entity.revive();
 			}
 		}
@@ -185,6 +186,12 @@ package mesh.associations
 			for each (var entity:Entity in this) {
 				entity.found();
 			}
+		}
+		
+		private function entityDestroyed(entity:Entity):void
+		{
+			_removedEntities.remove(entity);
+			entity.removeCallback(entityDestroyed);
 		}
 		
 		/**

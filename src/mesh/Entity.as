@@ -39,7 +39,7 @@ package mesh
 	public dynamic class Entity extends Proxy implements IEventDispatcher, IPersistable
 	{
 		private var _dispatcher:EventDispatcher;
-		private var _callbacks:Array = [];
+		private var _callbacks:Callbacks = new Callbacks();
 		
 		/**
 		 * Constructor.
@@ -52,68 +52,48 @@ package mesh
 			_descriptor = EntityDescription.describe(this);
 			
 			// add necessary callbacks for find
-			afterFind(_properties.clear);
-			afterFind(markNonLazyAssociationsAsLoaded);
+			afterFind(function(entity:Entity):void
+			{
+				_properties.clear();
+			});
+			afterFind(function(entity:Entity):void
+			{
+				markNonLazyAssociationsAsLoaded();
+			});
 			
 			// add necessary callbacks for save
-			beforeSave(isValid);
-			afterSave(persisted);
+			afterSave(function(entity:Entity):void
+			{
+				_properties.clear();
+			});
 			
 			// add necessary callback for destory
-			afterDestroy(destroyed);
+			afterDestroy(function(entity:Entity):void
+			{
+				_isDestroyed = true;
+			});
 			
 			addEventListener(PropertyChangeEvent.PROPERTY_CHANGE, handlePropertyChange);
 		}
 		
-		protected function afterFind(...args):void
+		public function afterFind(block:Function):void
 		{
-			addCallback("afterFind", args);
-		}
-		
-		private function addCallback(type:String, args:Array):void
-		{
-			var obj:Object = {};
-			
-			if (args[0] is Function) {
-				if (type.indexOf("before") == 0) {
-					obj.operationType = BeforeCallbackOperation;
-				} else if (type.indexOf("after") == 0) {
-					obj.operationType = AfterCallbackOperation;
-				} else {
-					throw new ArgumentError("Unsupported callback '" + type + "'");
-				}
-			} else if (args[0] is Class) {
-				obj.operationType = args.shift();
-			} else {
-				throw new ArgumentError("Exepcted first argument to be a Function or Class.");
-			}
-			
-			obj.type = type;
-			obj.args = args;
-			_callbacks.push(obj);
-		}
-		
-		public function callbacksAsOperation(method:String):Operation
-		{
-			var sequence:SequentialOperation = new SequentialOperation();
-			callbacksFor(method).forEach(closure(function(callback:Object):void
-			{
-				sequence.add(newInstance.apply(null, [callback.operationType].concat(callback.args)));
-			}));
-			return sequence;
+			addCallback("afterFind", block);
 		}
 		
 		public function callback(method:String):void
 		{
-			callbacksAsOperation(method).execute();
+			_callbacks.callback(method);
 		}
 		
-		private function callbacksFor(method:String):Array
+		private function addCallback(method:String, block:Function):void
 		{
-			return _callbacks.filter(function(obj:Object, index:int, array:Array):Boolean
-			{
-				return obj.type == method;
-			});
+			_callbacks.addCallback(method, block, [this]);
+		}
+		
+		public function removeCallback(block:Function):void
+		{
+			_callbacks.removeCallback(block);
 		}
 		
 		/**
@@ -150,14 +130,14 @@ package mesh
 				   clazz(this) == clazz(entity);
 		}
 		
-		public function beforeDestroy(... args):void
+		public function beforeDestroy(block:Function):void
 		{
-			addCallback("beforeDestroy", args);
+			addCallback("beforeDestroy", block);
 		}
 		
-		public function afterDestroy(... args):void
+		public function afterDestroy(block:Function):void
 		{
-			addCallback("afterDestroy", args);
+			addCallback("afterDestroy", block)
 		}
 		
 		/**
@@ -292,20 +272,19 @@ package mesh
 		 * 
 		 * @param callback The callback function.
 		 */
-		public function beforeSave(...args):void
+		public function beforeSave(block:Function):void
 		{
-			addCallback("beforeSave", args);
+			addCallback("beforeSave", block);
 		}
 		
 		/**
 		 * Adds a callback function that will be executed after a save operation has finished.
 		 * 
 		 * @param callback
-		 * 
 		 */
-		public function afterSave(...args):void
+		public function afterSave(block:Function):void
 		{
-			addCallback("afterSave", args);
+			addCallback("afterSave", block);
 		}
 		
 		/**

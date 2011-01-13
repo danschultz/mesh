@@ -37,7 +37,7 @@ package mesh
 			
 			var previous:PersistenceCache;
 			var batch:ParallelOperation;
-			var caches:Array = _caches.keys().sortOn("depth", Array.NUMERIC);
+			var caches:Array = _caches.values().sortOn("depth", Array.NUMERIC);
 			for each (var cache:PersistenceCache in caches) {
 				if (previous == null || previous.depth != cache.depth) {
 					if (batch != null) {
@@ -48,6 +48,10 @@ package mesh
 				
 				batch.add(cache.save());
 				previous = cache;
+			}
+			
+			if (batch != null) {
+				operation.add(batch);
 			}
 			
 			setTimeout(operation.execute, Mesh.DELAY);
@@ -81,6 +85,8 @@ package mesh
 
 import collections.HashSet;
 
+import flash.events.Event;
+
 import mesh.Entity;
 import mesh.EntityDescription;
 import mesh.associations.BelongsToRelationship;
@@ -88,7 +94,12 @@ import mesh.associations.Relationship;
 
 import operations.EmptyOperation;
 import operations.FactoryOperation;
+import operations.FinishedOperationEvent;
+import operations.MethodOperation;
 import operations.Operation;
+import operations.SequentialOperation;
+
+import strings.capitalize;
 
 class PersistenceCache
 {
@@ -129,17 +140,45 @@ class PersistenceCache
 		_update.add(entity);
 	}
 	
+	private function createSaveOperation(adaptorFunc:Function, entities:Array, callback:String):Operation
+	{
+		var before:SequentialOperation = new SequentialOperation();
+		var after:SequentialOperation = new SequentialOperation();
+		for each (var entity:Entity in entities) {
+			before.add( new MethodOperation(entity.callback, "before" + capitalize(callback)) );
+			after.add( new MethodOperation(entity.callback, "after" + capitalize(callback)) );
+		}
+		
+		before.addEventListener(FinishedOperationEvent.FINISHED, function(event:Event):void
+		{
+			trace("before finished");
+		});
+		
+		var factory:FactoryOperation = new FactoryOperation(adaptorFunc, entities);
+		factory.addEventListener(FinishedOperationEvent.FINISHED, function(event:Event):void
+		{
+			trace("adaptor finished");
+		});
+		
+		after.addEventListener(FinishedOperationEvent.FINISHED, function(event:Event):void
+		{
+			trace("after finished");
+		});
+		
+		return before.then( factory ).then(after);
+	}
+	
 	public function save():Operation
 	{
 		var saveOperation:Operation = new EmptyOperation();
 		if (_create.length > 0) {
-			saveOperation = saveOperation.then( new FactoryOperation(_description.adaptor.create, _create.toArray()) );
+			saveOperation = saveOperation.then( createSaveOperation(_description.adaptor.create, _create.toArray(), "save") );
 		}
 		if (_update.length > 0) {
-			saveOperation = saveOperation.then( new FactoryOperation(_description.adaptor.update, _update.toArray()) );
+			saveOperation = saveOperation.then( createSaveOperation(_description.adaptor.update, _update.toArray(), "save") );
 		}
 		if (_destroy.length > 0) {
-			saveOperation = saveOperation.then( new FactoryOperation(_description.adaptor.destroy, _destroy.toArray()) );
+			saveOperation = saveOperation.then( createSaveOperation(_description.adaptor.destroy, _destroy.toArray(), "destroy") );
 		}
 		return saveOperation;
 	}
