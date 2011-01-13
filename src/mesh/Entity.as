@@ -263,7 +263,7 @@ package mesh
 			
 			for each (var association:AssociationProxy in associations) {
 				if (association.relationship.autoSave) {
-					batch.include(association);
+					batch.add(association);
 				}
 			}
 		}
@@ -281,9 +281,9 @@ package mesh
 		 * @param validate <code>false</code> if validations should be ignored.
 		 * @return An executing operation, or <code>false</code> if a validation fails.
 		 */
-		public function save(validate:Boolean = true):Operation
+		public function save():Operation
 		{
-			return new Batch().include(this).save();
+			return new Batch().add(this).save();
 		}
 		
 		/**

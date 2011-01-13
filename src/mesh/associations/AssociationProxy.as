@@ -154,12 +154,12 @@ package mesh.associations
 		
 		public function save():Operation
 		{
-			return new EmptyOperation();
+			return new Batch().add(this).save();
 		}
 		
 		public function batch(batch:Batch):void
 		{
-			batch.include.apply(null, dirtyEntities);
+			batch.add.apply(null, dirtyEntities);
 		}
 		
 		/**

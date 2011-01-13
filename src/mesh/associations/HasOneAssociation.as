@@ -3,11 +3,9 @@ package mesh.associations
 	import collections.HashSet;
 	import collections.ISet;
 	
-	import mesh.Entity;
-	import mesh.Batch;
+	import functions.closure;
 	
-	import operations.EmptyOperation;
-	import operations.Operation;
+	import mesh.Entity;
 	
 	public dynamic class HasOneAssociation extends HasAssociation
 	{
@@ -69,14 +67,6 @@ package mesh.associations
 			if (target != null) {
 				target.revert();
 			}
-		}
-		
-		/**
-		 * @inheritDoc
-		 */
-		override public function save():Operation
-		{
-			return target != null ? target.save() : new EmptyOperation();
 		}
 		
 		/**

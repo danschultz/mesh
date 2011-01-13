@@ -3,6 +3,8 @@ package mesh
 	import collections.HashMap;
 	import collections.HashSet;
 	
+	import flash.utils.setTimeout;
+	
 	import operations.Operation;
 	import operations.ParallelOperation;
 	import operations.SequentialOperation;
@@ -18,7 +20,7 @@ package mesh
 			
 		}
 		
-		public function include(...elements):Batch
+		public function add(...elements):Batch
 		{
 			for each (var element:IPersistable in elements) {
 				if (!_elements.contains(element)) {
@@ -26,6 +28,7 @@ package mesh
 				}
 			}
 			_elements.add(element);
+			return this;
 		}
 		
 		public function save():Operation
@@ -47,6 +50,7 @@ package mesh
 				previous = cache;
 			}
 			
+			setTimeout(operation.execute, Mesh.DELAY);
 			return operation;
 		}
 		
@@ -79,6 +83,8 @@ import collections.HashSet;
 
 import mesh.Entity;
 import mesh.EntityDescription;
+import mesh.associations.BelongsToRelationship;
+import mesh.associations.Relationship;
 
 import operations.EmptyOperation;
 import operations.FactoryOperation;
