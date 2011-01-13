@@ -4,7 +4,9 @@ package mesh
 
 	public interface IPersistable
 	{
-		function batch(batch:Batch):void;
+		function batch(batch:SaveBatch):void;
+		
+		function createSave():Operation;
 		
 		function save():Operation;
 	}

@@ -13,11 +13,10 @@ package mesh.associations
 	import flash.utils.flash_proxy;
 	import flash.utils.setTimeout;
 	
-	import functions.closure;
-	
-	import mesh.Batch;
 	import mesh.Entity;
 	import mesh.IPersistable;
+	import mesh.Mesh;
+	import mesh.SaveBatch;
 	
 	import operations.EmptyOperation;
 	import operations.FinishedOperationEvent;
@@ -152,12 +151,19 @@ package mesh.associations
 			
 		}
 		
-		public function save():Operation
+		public function createSave():Operation
 		{
-			return new Batch().add(this).save();
+			return new SaveBatch().add(this).build();
 		}
 		
-		public function batch(batch:Batch):void
+		public function save():Operation
+		{
+			var operation:Operation = createSave();
+			setTimeout(operation.execute, Mesh.DELAY);
+			return operation;
+		}
+		
+		public function batch(batch:SaveBatch):void
 		{
 			batch.add.apply(null, dirtyEntities);
 		}

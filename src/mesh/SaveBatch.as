@@ -9,18 +9,18 @@ package mesh
 	import operations.ParallelOperation;
 	import operations.SequentialOperation;
 
-	public class Batch
+	public class SaveBatch
 	{
 		private var _elements:HashSet = new HashSet();
 		private var _entities:HashSet = new HashSet();
 		private var _caches:HashMap = new HashMap();
 		
-		public function Batch()
+		public function SaveBatch()
 		{
 			
 		}
 		
-		public function add(...elements):Batch
+		public function add(...elements):SaveBatch
 		{
 			for each (var element:IPersistable in elements) {
 				if (!_elements.contains(element)) {
@@ -31,7 +31,7 @@ package mesh
 			return this;
 		}
 		
-		public function save():Operation
+		public function build():Operation
 		{
 			var operation:SequentialOperation = new SequentialOperation();
 			
@@ -53,7 +53,12 @@ package mesh
 			if (batch != null) {
 				operation.add(batch);
 			}
-			
+			return operation;
+		}
+		
+		public function save():Operation
+		{
+			var operation:Operation = build();
 			setTimeout(operation.execute, Mesh.DELAY);
 			return operation;
 		}

@@ -7,6 +7,7 @@ package mesh
 	import flash.events.IEventDispatcher;
 	import flash.utils.Proxy;
 	import flash.utils.flash_proxy;
+	import flash.utils.setTimeout;
 	
 	import inflections.humanize;
 	
@@ -225,7 +226,7 @@ package mesh
 		/**
 		 * @inheritDoc
 		 */
-		public function batch(batch:Batch):void
+		public function batch(batch:SaveBatch):void
 		{
 			if (isMarkedForRemoval) {
 				batch.destroy(this);
@@ -240,6 +241,11 @@ package mesh
 					batch.add(association);
 				}
 			}
+		}
+		
+		public function createSave():Operation
+		{
+			return new SaveBatch().add(this).build();
 		}
 		
 		/**
@@ -257,7 +263,9 @@ package mesh
 		 */
 		public function save():Operation
 		{
-			return new Batch().add(this).save();
+			var operation:Operation = createSave();
+			setTimeout(operation.execute, Mesh.DELAY);
+			return operation;
 		}
 		
 		/**
