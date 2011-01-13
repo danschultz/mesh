@@ -85,8 +85,6 @@ package mesh
 
 import collections.HashSet;
 
-import flash.events.Event;
-
 import mesh.Entity;
 import mesh.EntityDescription;
 import mesh.associations.BelongsToRelationship;
@@ -94,7 +92,6 @@ import mesh.associations.Relationship;
 
 import operations.EmptyOperation;
 import operations.FactoryOperation;
-import operations.FinishedOperationEvent;
 import operations.MethodOperation;
 import operations.Operation;
 import operations.SequentialOperation;
@@ -149,23 +146,7 @@ class PersistenceCache
 			after.add( new MethodOperation(entity.callback, "after" + capitalize(callback)) );
 		}
 		
-		before.addEventListener(FinishedOperationEvent.FINISHED, function(event:Event):void
-		{
-			trace("before finished");
-		});
-		
-		var factory:FactoryOperation = new FactoryOperation(adaptorFunc, entities);
-		factory.addEventListener(FinishedOperationEvent.FINISHED, function(event:Event):void
-		{
-			trace("adaptor finished");
-		});
-		
-		after.addEventListener(FinishedOperationEvent.FINISHED, function(event:Event):void
-		{
-			trace("after finished");
-		});
-		
-		return before.then( factory ).then(after);
+		return before.then( new FactoryOperation(adaptorFunc, entities) ).then(after);
 	}
 	
 	public function save():Operation

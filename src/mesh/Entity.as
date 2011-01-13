@@ -8,27 +8,21 @@ package mesh
 	import flash.utils.Proxy;
 	import flash.utils.flash_proxy;
 	
-	import functions.closure;
-	
 	import inflections.humanize;
 	
 	import mesh.adaptors.ServiceAdaptor;
 	import mesh.associations.AssociationCollection;
 	import mesh.associations.AssociationProxy;
 	import mesh.associations.Relationship;
-	import mesh.callbacks.AfterCallbackOperation;
-	import mesh.callbacks.BeforeCallbackOperation;
 	import mesh.validators.Validator;
 	
 	import mx.events.PropertyChangeEvent;
 	
 	import operations.Operation;
-	import operations.SequentialOperation;
 	
 	import reflection.Property;
 	import reflection.className;
 	import reflection.clazz;
-	import reflection.newInstance;
 	import reflection.reflect;
 	
 	/**
