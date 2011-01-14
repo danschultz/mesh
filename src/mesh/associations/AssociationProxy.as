@@ -1,6 +1,5 @@
 package mesh.associations
 {
-	import collections.HashMap;
 	import collections.HashSet;
 	import collections.ISet;
 	
@@ -13,10 +12,13 @@ package mesh.associations
 	import flash.utils.flash_proxy;
 	import flash.utils.setTimeout;
 	
+	import mesh.Callbacks;
 	import mesh.Entity;
 	import mesh.IPersistable;
 	import mesh.Mesh;
 	import mesh.SaveBatch;
+	
+	import mx.events.PropertyChangeEvent;
 	
 	import operations.EmptyOperation;
 	import operations.FinishedOperationEvent;
@@ -36,6 +38,7 @@ package mesh.associations
 	public dynamic class AssociationProxy extends Proxy implements IEventDispatcher, IPersistable
 	{
 		private var _dispatcher:EventDispatcher;
+		private var _callbacks:Callbacks = new Callbacks();
 		
 		/**
 		 * Constructor.
@@ -49,6 +52,37 @@ package mesh.associations
 			_dispatcher = new EventDispatcher(this);
 			_owner = owner;
 			_relationship = relationship;
+			
+			beforeLoad(function(proxy:AssociationProxy):void
+			{
+				setBindableProperty("isLoading", function():Boolean { return isLoading; }, function():void { _isLoading = true; });
+			});
+			
+			afterLoad(function(proxy:AssociationProxy):void
+			{
+				setBindableProperty("isLoaded", function():Boolean { return isLoaded; }, function():void { _isLoaded = true; });
+				setBindableProperty("isLoading", function():Boolean { return isLoading; }, function():void { _isLoading = false; });
+			});
+		}
+		
+		private function addCallback(method:String, block:Function):void
+		{
+			_callbacks.addCallback(method, block, [this]);
+		}
+		
+		public function beforeLoad(block:Function):void
+		{
+			addCallback("beforeLoad", block);
+		}
+		
+		public function afterLoad(block:Function):void
+		{
+			addCallback("afterLoad", block);
+		}
+		
+		public function callback(method:String):void
+		{
+			_callbacks.callback(method);
 		}
 		
 		/**
@@ -95,16 +129,14 @@ package mesh.associations
 		 */
 		final public function load():Operation
 		{
-			var operation:Operation = isLoaded ? new EmptyOperation() : generateLoadOperation();
+			var operation:Operation = isLoaded ? new EmptyOperation() : createLoad();
 			operation.addEventListener(ResultOperationEvent.RESULT, function(event:ResultOperationEvent):void
 			{
 				target = event.data;
 			});
 			operation.addEventListener(FinishedOperationEvent.FINISHED, function(event:FinishedOperationEvent):void
 			{
-				if (event.successful) {
-					loaded();
-				}
+				callback("afterLoad");
 			});
 			setTimeout(operation.execute, 50);
 			return operation;
@@ -116,14 +148,14 @@ package mesh.associations
 		 * 
 		 * @return An unexecuted operation.
 		 */
-		protected function generateLoadOperation():Operation
+		protected function createLoad():Operation
 		{
 			return Entity.adaptorFor(relationship.target).belongingTo(owner, relationship);
 		}
 		
 		public function loaded():void
 		{
-			_isLoaded = true;
+			callback("afterLoad");
 		}
 		
 		/**
@@ -143,8 +175,7 @@ package mesh.associations
 		}
 		
 		/**
-		 * Changes the state of the target for this association back to what it was at the
-		 * last save.
+		 * Changes the state of the target for this association back to what it was at the last save.
 		 */
 		public function revert():void
 		{
@@ -168,6 +199,13 @@ package mesh.associations
 			batch.add.apply(null, dirtyEntities);
 		}
 		
+		private function setBindableProperty(property:String, getter:Function, setter:Function):void
+		{
+			var oldValue:* = getter();
+			setter();
+			dispatchEvent(PropertyChangeEvent.createUpdateEvent(this, property, oldValue, getter()));
+		}
+		
 		/**
 		 * The set of <code>Entity</code>s that are dirty and need to be persisted.
 		 */
@@ -185,13 +223,23 @@ package mesh.associations
 		}
 		
 		private var _isLoaded:Boolean;
+		[Bindable(event="propertyChange")]
 		/**
-		 * <code>true</code> if the association objects for this relationship have been
-		 * loaded.
+		 * <code>true</code> if the association objects for this relationship have been loaded.
 		 */
 		public function get isLoaded():Boolean
 		{
 			return _isLoaded;
+		}
+		
+		private var _isLoading:Boolean;
+		[Bindable(event="propertyChange")]
+		/**
+		 * <code>true</code> if this association is in the process of loading its data.
+		 */
+		public function get isLoading():Boolean
+		{
+			return _isLoading;
 		}
 		
 		private var _relationship:Relationship;

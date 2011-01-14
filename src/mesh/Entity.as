@@ -44,7 +44,6 @@ package mesh
 			super();
 			
 			_dispatcher = new EventDispatcher(this);
-			_descriptor = EntityDescription.describe(this);
 			
 			// add necessary callbacks for find
 			afterFind(function(entity:Entity):void
@@ -473,6 +472,9 @@ package mesh
 		 */
 		public function get descriptor():EntityDescription
 		{
+			if (_descriptor == null) {
+				_descriptor = EntityDescription.describe(this);
+			}
 			return _descriptor;
 		}
 		
