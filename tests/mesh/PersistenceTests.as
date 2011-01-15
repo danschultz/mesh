@@ -124,7 +124,7 @@ package mesh
 		}
 		
 		[Test(async)]
-		public function testSaveDestroyedHasManyAssociations():void
+		public function testSaveRemovedHasManyAssociations():void
 		{
 			var order1:Order = new Order();
 			_customer.orders.addItem(order1);
@@ -183,6 +183,54 @@ package mesh
 			
 			var operation:Operation = _customer.save();
 			operation.addEventListener(FinishedOperationEvent.FINISHED, Async.asyncHandler(this, assertion, 100));
+			operation.addEventListener(FaultOperationEvent.FAULT, function(event:FaultOperationEvent):void
+			{
+				fail(event.summary);
+			});
+		}
+		
+		[Test(async)]
+		public function testDestroyEntityRemovesItFromHasManyAssociation():void
+		{
+			var order:Order = new Order();
+			_customer.orders.addItem(order);
+			
+			var assertion:Function = function(event:FinishedOperationEvent, data:Object):void
+			{
+				assertThat(_customer.orders.contains(order), equalTo(false));
+			};
+			assertion = Async.asyncHandler(this, assertion, 250);
+			
+			var operation:Operation = _customer.orders.save();
+			operation.addEventListener(FinishedOperationEvent.FINISHED, function(event:FinishedOperationEvent):void
+			{
+				var operation:Operation = order.destroy();
+				operation.addEventListener(FinishedOperationEvent.FINISHED, assertion);
+			});
+			operation.addEventListener(FaultOperationEvent.FAULT, function(event:FaultOperationEvent):void
+			{
+				fail(event.summary);
+			});
+		}
+		
+		[Test(async)]
+		public function testDestroyEntityFromHasManyAssociation():void
+		{
+			var order:Order = new Order();
+			_customer.orders.addItem(order);
+			
+			var assertion:Function = function(event:FinishedOperationEvent, data:Object):void
+			{
+				assertThat(_customer.orders.contains(order), equalTo(false));
+			};
+			assertion = Async.asyncHandler(this, assertion, 250);
+			
+			var operation:Operation = _customer.orders.save();
+			operation.addEventListener(FinishedOperationEvent.FINISHED, function(event:FinishedOperationEvent):void
+			{
+				var operation:Operation = _customer.orders.destroy(order);
+				operation.addEventListener(FinishedOperationEvent.FINISHED, assertion);
+			});
 			operation.addEventListener(FaultOperationEvent.FAULT, function(event:FaultOperationEvent):void
 			{
 				fail(event.summary);

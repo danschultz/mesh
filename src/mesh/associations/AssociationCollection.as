@@ -6,15 +6,20 @@ package mesh.associations
 	import collections.ISet;
 	
 	import flash.utils.flash_proxy;
+	import flash.utils.setTimeout;
 	
 	import functions.closure;
 	
 	import mesh.Entity;
+	import mesh.Mesh;
 	
 	import mx.collections.ArrayCollection;
 	import mx.collections.IList;
 	import mx.events.CollectionEvent;
 	import mx.events.CollectionEventKind;
+	
+	import operations.EmptyOperation;
+	import operations.Operation;
 	
 	import reflection.Type;
 	import reflection.className;
@@ -79,6 +84,24 @@ package mesh.associations
 		public function contains(item:Object):Boolean
 		{
 			return getItemIndex(item) >= 0;
+		}
+		
+		/**
+		 * Executes an operation that will remove the given entity from this association and from the
+		 * backend. If the entity does not belong to this association, an empty operation is executed
+		 * and nothing is performed.
+		 * 
+		 * @param entity The entity to destroy.
+		 * @return An executing operation.
+		 */
+		public function destroy(entity:Entity):Operation
+		{
+			var operation:Operation = new EmptyOperation();
+			if (contains(entity)) {
+				operation = entity.createDestroy();
+			}
+			setTimeout(operation.execute, Mesh.DELAY);
+			return operation;
 		}
 		
 		/**
@@ -190,6 +213,7 @@ package mesh.associations
 		
 		private function entityDestroyed(entity:Entity):void
 		{
+			remove(entity);
 			_removedEntities.remove(entity);
 			entity.removeCallback(entityDestroyed);
 		}

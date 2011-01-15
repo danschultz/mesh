@@ -1,5 +1,6 @@
 package mesh.associations
 {
+	import collections.HashMap;
 	import collections.HashSet;
 	import collections.ISet;
 	
@@ -130,14 +131,6 @@ package mesh.associations
 		final public function load():Operation
 		{
 			var operation:Operation = isLoaded ? new EmptyOperation() : createLoad();
-			operation.addEventListener(ResultOperationEvent.RESULT, function(event:ResultOperationEvent):void
-			{
-				target = event.data;
-			});
-			operation.addEventListener(FinishedOperationEvent.FINISHED, function(event:FinishedOperationEvent):void
-			{
-				callback("afterLoad");
-			});
 			setTimeout(operation.execute, 50);
 			return operation;
 		}
@@ -148,9 +141,18 @@ package mesh.associations
 		 * 
 		 * @return An unexecuted operation.
 		 */
-		protected function createLoad():Operation
+		public function createLoad():Operation
 		{
-			return Entity.adaptorFor(relationship.target).belongingTo(owner, relationship);
+			var operation:Operation = Entity.adaptorFor(relationship.target).belongingTo(owner, relationship);
+			operation.addEventListener(ResultOperationEvent.RESULT, function(event:ResultOperationEvent):void
+			{
+				target = event.data;
+			});
+			operation.addEventListener(FinishedOperationEvent.FINISHED, function(event:FinishedOperationEvent):void
+			{
+				callback("afterLoad");
+			});
+			return operation;
 		}
 		
 		public function loaded():void

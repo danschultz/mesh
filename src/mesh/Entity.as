@@ -19,6 +19,7 @@ package mesh
 	
 	import mx.events.PropertyChangeEvent;
 	
+	import operations.MethodOperation;
 	import operations.Operation;
 	
 	import reflection.Property;
@@ -122,6 +123,30 @@ package mesh
 			return entity != null && 
 				   (this === entity || (isPersisted && id === entity.id)) && 
 				   clazz(this) == clazz(entity);
+		}
+		
+		/**
+		 * Creates an operation that when executed will destroy the entity from the backend.
+		 * 
+		 * @return An unexecuted operation.
+		 */
+		public function createDestroy():Operation
+		{
+			markForRemoval();
+			return createSave();
+		}
+		
+		/**
+		 * Executes an operation that will destroy this entity from the backend. If the entity also belongs 
+		 * to any associations, it will be removed from those associations.
+		 * 
+		 * @return An executing operation.
+		 */
+		public function destroy():Operation
+		{
+			var operation:Operation = createDestroy();
+			setTimeout(operation.execute, Mesh.DELAY);
+			return operation;
 		}
 		
 		public function beforeDestroy(block:Function):void
