@@ -1,8 +1,6 @@
 package mesh.associations
 {
 	import collections.HashMap;
-	import collections.HashSet;
-	import collections.ISet;
 	
 	import flash.errors.IllegalOperationError;
 	import flash.events.Event;
@@ -84,17 +82,6 @@ package mesh.associations
 		public function callback(method:String):void
 		{
 			_callbacks.callback(method);
-		}
-		
-		/**
-		 * Returns the set of entities that are dirty for this association that need to be
-		 * persisted.
-		 * 
-		 * @return A set of <code>Entity</code>s.
-		 */
-		public function findEntitiesToSave():ISet
-		{
-			return new HashSet();
 		}
 		
 		public function fromVO(vo:Object, options:Object = null):void

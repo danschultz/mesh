@@ -2,8 +2,6 @@ package mesh.associations
 {
 	import collections.ArrayList;
 	import collections.ArraySet;
-	import collections.HashSet;
-	import collections.ISet;
 	
 	import flash.utils.flash_proxy;
 	import flash.utils.setTimeout;
@@ -102,19 +100,6 @@ package mesh.associations
 			}
 			setTimeout(operation.execute, Mesh.DELAY);
 			return operation;
-		}
-		
-		/**
-		 * @inheritDoc
-		 */
-		override public function findEntitiesToSave():ISet
-		{
-			var entities:HashSet = new HashSet(_removedEntities);
-			entities.addAll(_mirroredEntities);
-			return entities.where(function(entity:Entity):Boolean
-			{
-				return entity.isDirty;
-			});
 		}
 		
 		/**

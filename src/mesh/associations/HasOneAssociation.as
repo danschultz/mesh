@@ -1,8 +1,5 @@
 package mesh.associations
 {
-	import collections.HashSet;
-	import collections.ISet;
-	
 	import functions.closure;
 	
 	import mesh.Entity;
@@ -15,24 +12,6 @@ package mesh.associations
 		public function HasOneAssociation(owner:Entity, relationship:Relationship)
 		{
 			super(owner, relationship);
-		}
-		
-		/**
-		 * @inheritDoc
-		 */
-		override public function findEntitiesToSave():ISet
-		{
-			var entities:HashSet = new HashSet();
-			
-			if (_persistedTarget != null && _persistedTarget.isMarkedForRemoval) {
-				entities.add(_persistedTarget);
-			}
-			
-			if (target != null && target.isDirty) {
-				entities.add(target);
-			}
-			
-			return entities;
 		}
 		
 		/**
@@ -73,15 +52,18 @@ package mesh.associations
 		{
 			if (newTarget != null) {
 				newTarget.revive();
+				populateBelongsToAssociation(newTarget);
+				newTarget.afterDestroy(targetDestroyed);
 			}
 			
 			if (_persistedTarget != null && !_persistedTarget.equals(newTarget)) {
 				_persistedTarget.markForRemoval();
 			}
+		}
+		
+		private function targetDestroyed(entity:Entity):void
+		{
 			
-			if (newTarget != null) {
-				populateBelongsToAssociation(newTarget);
-			}
 		}
 		
 		/**
