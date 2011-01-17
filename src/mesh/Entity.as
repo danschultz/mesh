@@ -7,6 +7,8 @@ package mesh
 	import flash.events.IEventDispatcher;
 	import flash.utils.Proxy;
 	import flash.utils.flash_proxy;
+	import flash.utils.getQualifiedClassName;
+	import flash.utils.getQualifiedSuperclassName;
 	import flash.utils.setTimeout;
 	
 	import inflections.humanize;
@@ -19,7 +21,6 @@ package mesh
 	
 	import mx.events.PropertyChangeEvent;
 	
-	import operations.MethodOperation;
 	import operations.Operation;
 	
 	import reflection.Property;
@@ -453,8 +454,6 @@ package mesh
 		 * Calling this method will also populate the <code>Entity.errors</code> property with
 		 * the validation results.
 		 * </p>
-		 *
-		 * @return A set of <code>ValidationError</code>s.
 		 * 
 		 * @see #isInvalid()
 		 * @see #isValid()
@@ -463,9 +462,19 @@ package mesh
 		public function validate():Array
 		{
 			var results:Array = [];
-			for each (var validator:Validator in descriptor.validators) {
-				results = results.concat(validator.validate(this));
+			
+			var clazz:Class = getQualifiedClassName(this);
+			while (clazz is Entity) {
+				var validations:Object = clazz["validator"];
+				for (var property:String in validations) {
+					for each (var validation:Object in validations[property]) {
+						var ValidatorClass:Class = validation.validator;
+						results.push( (new ValidatorClass(validation) as Validator).validate(this) );
+					}
+				}
+				clazz = getQualifiedSuperclassName(clazz);
 			}
+			
 			_errors = results;
 			return results;
 		}
