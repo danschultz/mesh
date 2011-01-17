@@ -23,13 +23,13 @@ package reflection
 			return property.name;
 		}));
 		
-		for (var property:String in obj) {
-			properties.push(property);
+		for (var key:String in obj) {
+			properties.push(key);
 		}
 		
 		var result:String = "#<" + type.name;
-		for (var key:String in properties.sort()) {
-			result += " " + key + ": " + inspect(obj[key]);
+		for each (var property:String in properties.sort()) {
+			result += ", " + property + ": " + inspect(obj[property]);
 		}
 		
 		return result + ">";
