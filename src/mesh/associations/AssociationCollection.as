@@ -6,7 +6,7 @@ package mesh.associations
 	import flash.utils.flash_proxy;
 	import flash.utils.setTimeout;
 	
-	import functions.closure;
+	import mesh.core.functions.closure;
 	
 	import mesh.Entity;
 	import mesh.Mesh;

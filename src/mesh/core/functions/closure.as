@@ -1,4 +1,4 @@
-package functions
+package mesh.core.functions
 {
 	/**
 	 * Generates a function that can reference the variables defined within the scope 

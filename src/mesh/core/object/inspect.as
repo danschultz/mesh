@@ -1,6 +1,6 @@
 package mesh.core.object
 {
-	import functions.closure;
+	import mesh.core.functions.closure;
 	
 	import mx.utils.ObjectUtil;
 	import mesh.core.reflection.Property;

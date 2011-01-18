@@ -2,7 +2,7 @@ package mesh.adaptors
 {
 	import collections.HashMap;
 	
-	import functions.closure;
+	import mesh.core.functions.closure;
 	
 	import mesh.Entity;
 	

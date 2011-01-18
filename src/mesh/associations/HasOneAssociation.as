@@ -1,6 +1,6 @@
 package mesh.associations
 {
-	import functions.closure;
+	import mesh.core.functions.closure;
 	
 	import mesh.Entity;
 	
