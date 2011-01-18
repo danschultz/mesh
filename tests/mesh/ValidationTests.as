@@ -5,52 +5,38 @@ package mesh
 	import mesh.models.Name;
 	
 	import org.flexunit.assertThat;
-	import org.hamcrest.collection.array;
 	import org.hamcrest.collection.arrayWithSize;
 	import org.hamcrest.collection.emptyArray;
-	import org.hamcrest.collection.hasItems;
-	import org.hamcrest.core.allOf;
 	import org.hamcrest.object.equalTo;
-	import org.hamcrest.object.hasProperty;
 
 	public class ValidationTests
 	{
 		[Test]
 		public function testValidatePasses():void
 		{
-			var mockEntity:Customer = new Customer();
-			mockEntity.fullName = new Name("John", "Doe");
-			mockEntity.address = new Address("1 Infinite Loop", "Cupertino");
-			mockEntity.age = 10;
+			var customer:Customer = new Customer();
+			customer.fullName = new Name("John", "Doe");
+			customer.address = new Address("1 Infinite Loop", "Cupertino");
+			customer.age = 10;
 			
-			assertThat(mockEntity.validate(), emptyArray());
-			assertThat(mockEntity.errors, emptyArray());
-			assertThat(mockEntity.isValid(), equalTo(true));
-			assertThat(mockEntity.isInvalid(), equalTo(false));
+			assertThat(customer.validate(), emptyArray());
+			assertThat(customer.errors.toArray(), emptyArray());
+			assertThat(customer.isValid(), equalTo(true));
+			assertThat(customer.isInvalid(), equalTo(false));
 		}
 		
 		[Test]
 		public function testValidateFails():void
 		{
-			var mockEntity:Customer = new Customer();
-			mockEntity.fullName = new Name("", "");
-			mockEntity.address = new Address("", "");
-			mockEntity.age = 0;
+			var customer:Customer = new Customer();
+			customer.fullName = new Name("", "");
+			customer.address = new Address("", "");
+			customer.age = 0;
 			
-			assertThat(mockEntity.validate(), arrayWithSize(5));
-			assertThat(mockEntity.errors, arrayWithSize(5));
-			assertThat(mockEntity.isValid(), equalTo(false));
-			assertThat(mockEntity.isInvalid(), equalTo(true));
-		}
-		
-		[Test]
-		public function testEntityParsesValidationMetadata():void
-		{
-			var validations:Array = new Customer().descriptor.validators.toArray();
-			assertThat(validations, hasItems(hasProperty("options", allOf(hasProperty("lessThanOrEqualTo"), hasProperty("greaterThanOrEqualTo"))), 
-											 hasProperty("options", hasProperty("minimum")),
-											 hasProperty("options", hasProperty("property", equalTo("age"))),
-											 hasProperty("options", hasProperty("properties", array(equalTo("firstName"), equalTo("lastName"))))));
+			assertThat(customer.validate(), arrayWithSize(9));
+			assertThat(customer.errors.toArray(), arrayWithSize(9));
+			assertThat(customer.isValid(), equalTo(false));
+			assertThat(customer.isInvalid(), equalTo(true));
 		}
 	}
 }

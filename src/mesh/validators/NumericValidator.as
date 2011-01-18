@@ -68,11 +68,11 @@ package mesh.validators
 			integer:"is not an {check}",
 			even:"must be {check}",
 			odd:"must be {check}",
-			greaterThan:"must be {check} {value}",
-			greaterThanOrEqualTo:"must be {check} {value}",
-			equalTo:"must be {check} {value}",
-			lessThan:"must be {check} {value}",
-			lessThanOrEqualTo:"must be {check} {value}"
+			greaterThan:"must be {check} {count}",
+			greaterThanOrEqualTo:"must be {check} {count}",
+			equalTo:"must be {check} {count}",
+			lessThan:"must be {check} {count}",
+			lessThanOrEqualTo:"must be {check} {count}"
 		};
 		
 		/**

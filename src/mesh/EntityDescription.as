@@ -16,11 +16,10 @@ package mesh
 	import mesh.associations.HasManyRelationship;
 	import mesh.associations.HasOneRelationship;
 	import mesh.associations.Relationship;
-	
-	import mx.utils.StringUtil;
-	
 	import mesh.core.reflection.clazz;
 	import mesh.core.reflection.newInstance;
+	
+	import mx.utils.StringUtil;
 
 	public class EntityDescription
 	{
@@ -42,7 +41,6 @@ package mesh
 		private var _propertyToAggregate:HashMap = new HashMap();
 		
 		private var _adaptor:ServiceAdaptor;
-		private var _validators:HashSet = new HashSet();
 		
 		public function EntityDescription(entityType:Class)
 		{
@@ -54,7 +52,6 @@ package mesh
 			parseAggregates();
 			parseFactory();
 			parseRelationships();
-			parseValidators();
 			parseVOType();
 		}
 		
@@ -89,11 +86,6 @@ package mesh
 				_relationships.add(relationship);
 				_propertyToRelationship.put(relationship.property, relationship);
 			}
-		}
-		
-		public function addValidators(...validators):void
-		{
-			_validators.addAll(validators);
 		}
 		
 		public function equals(description:EntityDescription):Boolean
@@ -215,29 +207,6 @@ package mesh
 			}
 		}
 		
-		private function parseValidators():void
-		{
-			for each (var validateXML:XML in _metadata.(@name == "Validate")) {
-				var options:Object = {};
-				
-				for each (var argXML:XML in validateXML..arg) {
-					if (argXML.@key != "validator") {
-						options[argXML.@key] = argXML.@value.toString();
-					}
-				}
-				
-				if (validateXML.parent().name() == "accessor") {
-					options["property"] = validateXML.parent().@name.toString();
-				}
-				
-				if (options.hasOwnProperty("properties")) {
-					options.properties = StringUtil.trimArrayElements(options.properties, ",").split(",");
-				}
-				
-				addValidators(newInstance(getDefinitionByName(validateXML.arg.(@key == "validator").@value) as Class, options));
-			}
-		}
-		
 		private function parseVOType():void
 		{
 			for each (var voXML:XML in _metadata.(@name == "VO")) {
@@ -278,11 +247,6 @@ package mesh
 		public function get factoryMethod():String
 		{
 			return _factoryMethod;
-		}
-		
-		public function get validators():ISet
-		{
-			return new ImmutableSet(_validators);
 		}
 		
 		private var _entityType:Class;

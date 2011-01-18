@@ -7,27 +7,26 @@ package mesh
 	import flash.events.IEventDispatcher;
 	import flash.utils.Proxy;
 	import flash.utils.flash_proxy;
+	import flash.utils.getDefinitionByName;
 	import flash.utils.getQualifiedClassName;
 	import flash.utils.getQualifiedSuperclassName;
 	import flash.utils.setTimeout;
-	
-	import mesh.core.inflection.humanize;
 	
 	import mesh.adaptors.ServiceAdaptor;
 	import mesh.associations.AssociationCollection;
 	import mesh.associations.AssociationProxy;
 	import mesh.associations.Relationship;
+	import mesh.core.inflection.humanize;
+	import mesh.core.reflection.Property;
+	import mesh.core.reflection.className;
+	import mesh.core.reflection.clazz;
+	import mesh.core.reflection.reflect;
 	import mesh.validators.Errors;
 	import mesh.validators.Validator;
 	
 	import mx.events.PropertyChangeEvent;
 	
 	import operations.Operation;
-	
-	import mesh.core.reflection.Property;
-	import mesh.core.reflection.className;
-	import mesh.core.reflection.clazz;
-	import mesh.core.reflection.reflect;
 	
 	/**
 	 * An entity.
@@ -464,16 +463,17 @@ package mesh
 		{
 			_errors = null;
 			
-			var clazz:Class = getQualifiedClassName(this) as Class;
-			while (clazz is Entity) {
-				var validations:Object = clazz["validator"];
+			var clazz:Class = getDefinitionByName(getQualifiedClassName(this)) as Class;
+			while (clazz != Entity) {
+				var validations:Object = clazz["validate"];
 				for (var property:String in validations) {
 					for each (var validation:Object in validations[property]) {
 						var ValidatorClass:Class = validation.validator;
+						validation.property = property;
 						(new ValidatorClass(validation) as Validator).validate(this);
 					}
 				}
-				clazz = getQualifiedSuperclassName(clazz) as Class;
+				clazz = getDefinitionByName(getQualifiedSuperclassName(clazz)) as Class;
 			}
 			return errors.toArray();
 		}

@@ -1,8 +1,9 @@
 package mesh.models
 {
 	import mesh.adaptors.InMemoryAdaptor;
+	import mesh.validators.LengthValidator;
+	import mesh.validators.PresenceValidator;
 	
-	[Validate(properties="addressStreet,addressCity", validator="mesh.validators.LengthValidator", minimum="1")]
 	[ComposedOf(property="address", type="mesh.models.Address", prefix="address", mapping="street,city")]
 	
 	[HasMany(type="mesh.models.Order", property="orders", autoSave="true")]
@@ -12,6 +13,12 @@ package mesh.models
 	{
 		[ServiceAdaptor]
 		public static var adaptor:InMemoryAdaptor = new InMemoryAdaptor(Customer);
+		
+		public static var validate:Object = 
+		{
+			addressStreet: [{validator:PresenceValidator}, {validator:LengthValidator, minimum:2}],
+			addressCity: [{validator:PresenceValidator}, {validator:LengthValidator, minimum:2}]
+		};
 		
 		public function Customer()
 		{

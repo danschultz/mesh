@@ -1,6 +1,9 @@
 package mesh.models
 {
 	import mesh.Entity;
+	import mesh.validators.LengthValidator;
+	import mesh.validators.NumericValidator;
+	import mesh.validators.PresenceValidator;
 	
 	[ComposedOf(property="location", type="mesh.models.Coordinate", mapping="latitude, longitude", bindable="false")]
 	
@@ -8,6 +11,13 @@ package mesh.models
 	
 	public dynamic class Person extends Entity
 	{
+		public static var validate:Object = 
+		{
+			firstName: [{validator:PresenceValidator}, {validator:LengthValidator, minimum:2}],
+			lastName: [{validator:PresenceValidator}, {validator:LengthValidator, minimum:2}],
+			age: [{validator:NumericValidator, greaterThan:0, integer:true}]
+		};
+		
 		public function Person()
 		{
 			super();
@@ -16,7 +26,6 @@ package mesh.models
 		private var _fullName:Name;
 		[Bindable]
 		[ComposedOf(mapping="firstName,lastName")]
-		[Validate(properties="firstName,lastName", validator="mesh.validators.LengthValidator", minimum="1")]
 		public function get fullName():Name
 		{
 			return _fullName;
@@ -28,7 +37,6 @@ package mesh.models
 		
 		private var _age:Number;
 		[Bindable]
-		[Validate(validator="mesh.validators.NumericValidator", between="1..120")]
 		public function get age():Number
 		{
 			return _age;
