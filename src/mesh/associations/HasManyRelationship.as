@@ -1,10 +1,8 @@
 package mesh.associations
 {
+	import mesh.Entity;
 	import mesh.core.inflection.camelize;
 	import mesh.core.inflection.pluralize;
-	
-	import mesh.Entity;
-	
 	import mesh.core.reflection.className;
 
 	/**
@@ -26,6 +24,14 @@ package mesh.associations
 			}
 			
 			super(owner, property, target, options);
+		}
+		
+		/**
+		 * @inheritDoc
+		 */
+		override public function createProxy(entity:Entity):*
+		{
+			return new HasManyAssociation(entity, this);
 		}
 	}
 }

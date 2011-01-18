@@ -8,7 +8,7 @@ package mesh
 	import operations.Operation;
 	import operations.ParallelOperation;
 	import operations.SequentialOperation;
-
+	
 	public class SaveBatch
 	{
 		private var _elements:HashSet = new HashSet();

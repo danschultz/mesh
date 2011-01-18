@@ -6,15 +6,13 @@ package mesh.associations
 	import flash.utils.getDefinitionByName;
 	import flash.utils.getQualifiedClassName;
 	
+	import mesh.Entity;
 	import mesh.core.inflection.camelize;
 	import mesh.core.inflection.humanize;
-	
-	import mesh.Entity;
-	
-	import org.hamcrest.object.hasProperty;
-	
 	import mesh.core.reflection.className;
 	import mesh.core.reflection.newInstance;
+	
+	import org.hamcrest.object.hasProperty;
 
 	/**
 	 * A relationship represents an association between two entities, where the <code>owner</code>
