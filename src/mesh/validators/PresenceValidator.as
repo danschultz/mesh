@@ -1,6 +1,6 @@
 package mesh.validators
 {
-	import utils.isEmpty;
+	import mesh.core.object.isEmpty;
 
 	/**
 	 * The presence validator ensures that a property is populated, that a string is not empty 

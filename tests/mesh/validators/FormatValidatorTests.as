@@ -4,7 +4,7 @@ package mesh.validators
 	import org.flexunit.assertThat;
 	import org.hamcrest.object.equalTo;
 	
-	import reflection.inspect;
+	import mesh.core.object.inspect;
 
 	public class FormatValidatorTests
 	{

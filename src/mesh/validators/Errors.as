@@ -4,7 +4,7 @@ package mesh.validators
 	
 	import flash.utils.flash_proxy;
 	
-	import inflections.humanize;
+	import mesh.core.inflection.humanize;
 	
 	use namespace flash_proxy;
 	

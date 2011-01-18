@@ -11,7 +11,7 @@ package mesh
 	import flash.utils.getQualifiedSuperclassName;
 	import flash.utils.setTimeout;
 	
-	import inflections.humanize;
+	import mesh.core.inflection.humanize;
 	
 	import mesh.adaptors.ServiceAdaptor;
 	import mesh.associations.AssociationCollection;
@@ -24,10 +24,10 @@ package mesh
 	
 	import operations.Operation;
 	
-	import reflection.Property;
-	import reflection.className;
-	import reflection.clazz;
-	import reflection.reflect;
+	import mesh.core.reflection.Property;
+	import mesh.core.reflection.className;
+	import mesh.core.reflection.clazz;
+	import mesh.core.reflection.reflect;
 	
 	/**
 	 * An entity.

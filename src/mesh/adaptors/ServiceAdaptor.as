@@ -7,7 +7,7 @@ package mesh.adaptors
 	
 	import operations.Operation;
 	
-	import reflection.className;
+	import mesh.core.reflection.className;
 	
 	/**
 	 * A service adaptor represents the required strategy for an entity to be persisted and

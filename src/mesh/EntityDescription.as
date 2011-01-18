@@ -19,8 +19,8 @@ package mesh
 	
 	import mx.utils.StringUtil;
 	
-	import reflection.clazz;
-	import reflection.newInstance;
+	import mesh.core.reflection.clazz;
+	import mesh.core.reflection.newInstance;
 
 	public class EntityDescription
 	{

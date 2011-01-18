@@ -19,9 +19,9 @@ package mesh.associations
 	import operations.EmptyOperation;
 	import operations.Operation;
 	
-	import reflection.Type;
-	import reflection.className;
-	import reflection.reflect;
+	import mesh.core.reflection.Type;
+	import mesh.core.reflection.className;
+	import mesh.core.reflection.reflect;
 	
 	use namespace flash_proxy;
 	

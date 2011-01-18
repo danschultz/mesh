@@ -1,6 +1,6 @@
 package mesh
 {
-	import reflection.newInstance;
+	import mesh.core.reflection.newInstance;
 
 	/**
 	 * An aggregate represents a relationship that an entity has with a value object. It

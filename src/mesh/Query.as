@@ -7,7 +7,7 @@ package mesh
 	import operations.Operation;
 	import operations.ResultOperationEvent;
 	
-	import reflection.clazz;
+	import mesh.core.reflection.clazz;
 	
 	public class Query
 	{

@@ -101,7 +101,7 @@ import operations.MethodOperation;
 import operations.Operation;
 import operations.SequentialOperation;
 
-import strings.capitalize;
+import mesh.core.string.capitalize;
 
 class PersistenceCache
 {

@@ -1,11 +1,11 @@
 package mesh.associations
 {
-	import inflections.camelize;
-	import inflections.pluralize;
+	import mesh.core.inflection.camelize;
+	import mesh.core.inflection.pluralize;
 	
 	import mesh.Entity;
 	
-	import reflection.className;
+	import mesh.core.reflection.className;
 
 	/**
 	 * An association that defines a one-to-many relationship with another model. This

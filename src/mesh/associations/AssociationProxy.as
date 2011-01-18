@@ -24,8 +24,8 @@ package mesh.associations
 	import operations.Operation;
 	import operations.ResultOperationEvent;
 	
-	import reflection.className;
-	import reflection.clazz;
+	import mesh.core.reflection.className;
+	import mesh.core.reflection.clazz;
 
 	/**
 	 * An association proxy is a class that contains the references to the objects in

@@ -1,6 +1,6 @@
 package mesh.validators
 {
-	import inflections.humanize;
+	import mesh.core.inflection.humanize;
 
 	/**
 	 * Validates if a property's value is a number and also the bounds of that value. This validator has
