@@ -1,7 +1,5 @@
-package validations
+package mesh.validators
 {
-	import mesh.validators.Errors;
-	import mesh.validators.PresenceValidator;
 	
 	import org.flexunit.assertThat;
 	import org.hamcrest.object.equalTo;

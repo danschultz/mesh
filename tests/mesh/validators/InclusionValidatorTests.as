@@ -1,7 +1,5 @@
-package validations
+package mesh.validators
 {
-	import mesh.validators.Errors;
-	import mesh.validators.ExclusionValidator;
 	
 	import mx.collections.ArrayCollection;
 	
@@ -10,7 +8,7 @@ package validations
 	
 	import reflection.inspect;
 
-	public class ExclusionValidatorTests
+	public class InclusionValidatorTests
 	{
 		[Test]
 		public function testValidate():void
@@ -19,27 +17,27 @@ package validations
 				{
 					object:{str:"Hello", errors:new Errors(null)},
 					options:{property:"str", within:["Hello", "Hi"]},
-					passes:false
+					passes:true
 				},
 				{
 					object:{str:"Hello", errors:new Errors(null)},
 					options:{property:"str", within:["Hi"]},
-					passes:true
-				},
-				{
-					object:{str:"Hello", errors:new Errors(null)},
-					options:{property:"str", within:new ArrayCollection(["Hello", "Hi"])},
 					passes:false
 				},
 				{
 					object:{str:"Hello", errors:new Errors(null)},
-					options:{property:"str", within:new ArrayCollection(["a", "b", "c"])},
+					options:{property:"str", within:new ArrayCollection(["Hello", "Hi"])},
 					passes:true
+				},
+				{
+					object:{str:"Hello", errors:new Errors(null)},
+					options:{property:"str", within:new ArrayCollection(["a", "b"])},
+					passes:false
 				}
 			];
 			
 			for each (var test:Object in tests) {
-				new ExclusionValidator(test.options).validate(test.object);
+				new InclusionValidator(test.options).validate(test.object);
 				assertThat("validation failed for test " + inspect(test.options), test.object.errors.length == 0, equalTo(test.passes));
 			}
 		}
