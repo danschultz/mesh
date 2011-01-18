@@ -1,6 +1,6 @@
 package mesh.validators
 {
-	import collections.ArraySet;
+	
 
 	/**
 	 * A validator base class that will validate a set of properties on the same 
@@ -21,16 +21,11 @@ package mesh.validators
 		/**
 		 * @inheritDoc
 		 */
-		override public function validate(obj:Object):Array
+		override public function validate(obj:Object):void
 		{
-			var errors:Array = [];
 			for each (var property:String in properties) {
-				var error:Object = validateProperty(obj, property, obj[property]);
-				if (error is ValidationError) {
-					errors.push(error);
-				}
+				validateProperty(obj, property, obj[property]);
 			}
-			return errors;
 		}
 		
 		/**
@@ -40,11 +35,10 @@ package mesh.validators
 		 * @param obj The object being validated.
 		 * @param property The property to validate.
 		 * @param value The object's property value.
-		 * @return A <code>ValidationError</code> if the validation fails.
 		 */
-		protected function validateProperty(obj:Object, property:String, value:Object):Object
+		protected function validateProperty(obj:Object, property:String, value:Object):void
 		{
-			return passed();
+			
 		}
 		
 		/**

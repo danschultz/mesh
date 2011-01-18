@@ -127,6 +127,12 @@ package reflection
 					_properties.put(variableXML.@name.toString(), new Property(variableXML, this));
 				}
 				
+				for each (var key:String in _properties.keys()) {
+					if (_properties.grab(key).description.@uri.toString() != "") {
+						_properties.remove(key);
+					}
+				}
+				
 				for each (var parent:Type in parents) {
 					for each (var property:Property in parent.properties) {
 						if (!property.isStatic) {
@@ -156,6 +162,12 @@ package reflection
 				for each (var methodXML:XML in description..method) {
 					if (methodXML.@declaredBy.toString() == name) {
 						_methods.put(methodXML.@name.toString(), new Method(methodXML, this));
+					}
+				}
+				
+				for each (var key:String in _methods.keys()) {
+					if (_methods.grab(key).description.@uri.toString() != "") {
+						_methods.remove(key);
 					}
 				}
 				

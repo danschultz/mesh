@@ -17,6 +17,7 @@ package mesh
 	import mesh.associations.AssociationCollection;
 	import mesh.associations.AssociationProxy;
 	import mesh.associations.Relationship;
+	import mesh.validators.Errors;
 	import mesh.validators.Validator;
 	
 	import mx.events.PropertyChangeEvent;
@@ -461,22 +462,20 @@ package mesh
 		 */
 		public function validate():Array
 		{
-			var results:Array = [];
+			_errors = null;
 			
-			var clazz:Class = getQualifiedClassName(this);
+			var clazz:Class = getQualifiedClassName(this) as Class;
 			while (clazz is Entity) {
 				var validations:Object = clazz["validator"];
 				for (var property:String in validations) {
 					for each (var validation:Object in validations[property]) {
 						var ValidatorClass:Class = validation.validator;
-						results.push( (new ValidatorClass(validation) as Validator).validate(this) );
+						(new ValidatorClass(validation) as Validator).validate(this);
 					}
 				}
-				clazz = getQualifiedSuperclassName(clazz);
+				clazz = getQualifiedSuperclassName(clazz) as Class;
 			}
-			
-			_errors = results;
-			return results;
+			return errors.toArray();
 		}
 		
 		/**
@@ -512,16 +511,19 @@ package mesh
 			return _descriptor;
 		}
 		
-		private var _errors:Array = [];
+		private var _errors:Errors;
 		/**
 		 * A set of <code>ValidationResult</code>s that failed during the last call to 
 		 * <code>validate()</code>.
 		 * 
 		 * @see #validate()
 		 */
-		public function get errors():Array
+		public function get errors():Errors
 		{
-			return _errors.concat();
+			if (_errors == null) {
+				_errors = new Errors(this);
+			}
+			return _errors;
 		}
 		
 		private var _id:*;

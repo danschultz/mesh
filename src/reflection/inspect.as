@@ -13,6 +13,10 @@ package reflection
 	 */
 	public function inspect(obj:Object):String
 	{
+		if (obj == null) {
+			return "null";
+		}
+		
 		if (ObjectUtil.isSimple(obj)) {
 			return ObjectUtil.toString(obj);
 		}

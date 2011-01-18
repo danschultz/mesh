@@ -1,7 +1,5 @@
 package mesh.validators
 {
-	import inflections.humanize;
-
 	/**
 	 * Validates the length of an object, such as the length of string or number of
 	 * elements in an array.
@@ -28,10 +26,10 @@ package mesh.validators
 		
 		private static const MESSAGES:Object = 
 		{
-			length:"{0} must be a length of {1}",
-			minimum:"{0} is too short (minimum is {1})",
-			maximum:"{0} is too long (maximum is {1})"
-		}
+			length:"wrongLength",
+			minimum:"tooShort",
+			maximum:"tooLong"
+		};
 		
 		/**
 		 * @copy Validator#Validator()
@@ -42,6 +40,18 @@ package mesh.validators
 				options.lengthProperty = "length";
 			}
 			
+			if (!options.hasOwnProperty("wrongLength")) {
+				options.wrongLength = "must be a length of {count}";
+			}
+			
+			if (!options.hasOwnProperty("tooShort")) {
+				options.tooShort = "is too short (minimum is {count})";
+			}
+			
+			if (!options.hasOwnProperty("tooLong")) {
+				options.tooLong = "is too long (maximum is {count})";
+			}
+			
 			super(options);
 			populateRangeInOptions("between", "minimum", "maximum");
 		}
@@ -49,19 +59,15 @@ package mesh.validators
 		/**
 		 * @inheritDoc
 		 */
-		override protected function validateProperty(obj:Object, property:String, value:Object):Object
+		override protected function validateProperty(obj:Object, property:String, value:Object):void
 		{
-			value = value[options.lengthProperty];
-			
 			for (var check:String in CHECKS) {
 				if (options.hasOwnProperty(check)) {
-					if (!CHECKS[check](value, options[check])) {
-						return failWithMessage(MESSAGES[check], humanize(property), options[check]);
+					if (!CHECKS[check](value[options.lengthProperty], options[check])) {
+						obj.errors.add(property, options[MESSAGES[check]], {count: options[check]});
 					}
 				}
 			}
-			
-			return passed();
 		}
 	}
 }
