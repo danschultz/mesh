@@ -114,6 +114,16 @@ package mesh.validators
 		}
 		
 		/**
+		 * Returns a comma delimited list of all the errors.
+		 * 
+		 * @return All errors as a string.
+		 */
+		override public function toString():String
+		{
+			return toArray().toString();
+		}
+		
+		/**
 		 * @inheritDoc
 		 */
 		override flash_proxy function getProperty(name:*):*
