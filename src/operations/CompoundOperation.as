@@ -118,7 +118,7 @@ package operations
 		
 		private function handleOperationFault(event:FaultOperationEvent):void
 		{
-			cancel();
+			fault(event.summary, event.detail);
 		}
 		
 		private function handleOperationFinished(event:FinishedOperationEvent):void

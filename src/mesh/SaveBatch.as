@@ -31,7 +31,7 @@ package mesh
 			return this;
 		}
 		
-		public function build():Operation
+		public function build(validate:Boolean = true):Operation
 		{
 			var operation:SequentialOperation = new SequentialOperation();
 			
@@ -46,7 +46,7 @@ package mesh
 					batch = new ParallelOperation();
 				}
 				
-				batch.add(cache.save());
+				batch.add(cache.save(validate));
 				previous = cache;
 			}
 			
@@ -56,9 +56,9 @@ package mesh
 			return operation;
 		}
 		
-		public function save():Operation
+		public function save(validate:Boolean = true):Operation
 		{
-			var operation:Operation = build();
+			var operation:Operation = build(validate);
 			setTimeout(operation.execute, Mesh.DELAY);
 			return operation;
 		}
@@ -94,14 +94,13 @@ import mesh.Entity;
 import mesh.EntityDescription;
 import mesh.associations.BelongsToRelationship;
 import mesh.associations.Relationship;
+import mesh.core.string.capitalize;
 
 import operations.EmptyOperation;
 import operations.FactoryOperation;
 import operations.MethodOperation;
 import operations.Operation;
 import operations.SequentialOperation;
-
-import mesh.core.string.capitalize;
 
 class PersistenceCache
 {
@@ -142,31 +141,39 @@ class PersistenceCache
 		_update.add(entity);
 	}
 	
-	private function createSaveOperation(adaptorFunc:Function, entities:Array, callback:String):Operation
+	private function createSaveOperation(adaptorFunc:Function, entities:Array, callback:String, validate:Boolean):Operation
 	{
 		var before:SequentialOperation = new SequentialOperation();
 		var after:SequentialOperation = new SequentialOperation();
 		for each (var entity:Entity in entities) {
 			before.add( new MethodOperation(entity.callback, "before" + capitalize(callback)) );
+			before.add( new MethodOperation(checkValidations, entity, validate) );
 			after.add( new MethodOperation(entity.callback, "after" + capitalize(callback)) );
 		}
 		
 		return before.then( new FactoryOperation(adaptorFunc, entities) ).then(after);
 	}
 	
-	public function save():Operation
+	public function save(validate:Boolean):Operation
 	{
 		var saveOperation:Operation = new EmptyOperation();
 		if (_create.length > 0) {
-			saveOperation = saveOperation.then( createSaveOperation(_description.adaptor.create, _create.toArray(), "save") );
+			saveOperation = saveOperation.then( createSaveOperation(_description.adaptor.create, _create.toArray(), "save", validate) );
 		}
 		if (_update.length > 0) {
-			saveOperation = saveOperation.then( createSaveOperation(_description.adaptor.update, _update.toArray(), "save") );
+			saveOperation = saveOperation.then( createSaveOperation(_description.adaptor.update, _update.toArray(), "save", validate) );
 		}
 		if (_destroy.length > 0) {
-			saveOperation = saveOperation.then( createSaveOperation(_description.adaptor.destroy, _destroy.toArray(), "destroy") );
+			saveOperation = saveOperation.then( createSaveOperation(_description.adaptor.destroy, _destroy.toArray(), "destroy", false) );
 		}
 		return saveOperation;
+	}
+	
+	private function checkValidations(entity:Entity, validate:Boolean):void
+	{
+		if (validate && entity.isInvalid()) {
+			throw new Error(entity + " has errors");
+		}
 	}
 	
 	private var _depth:int = -1;

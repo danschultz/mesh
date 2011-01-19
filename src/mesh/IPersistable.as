@@ -6,8 +6,6 @@ package mesh
 	{
 		function batch(batch:SaveBatch):void;
 		
-		function createSave():Operation;
-		
-		function save():Operation;
+		function save(validate:Boolean = true):Operation;
 	}
 }

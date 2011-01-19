@@ -21,6 +21,8 @@ package mesh.models
 		public function Person()
 		{
 			super();
+			
+			Coordinate;
 		}
 		
 		private var _fullName:Name;

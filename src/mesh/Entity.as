@@ -268,9 +268,9 @@ package mesh
 			}
 		}
 		
-		public function createSave():Operation
+		public function createSave(validate:Boolean = true):Operation
 		{
-			return new SaveBatch().add(this).build();
+			return new SaveBatch().add(this).build(validate);
 		}
 		
 		/**
@@ -286,9 +286,9 @@ package mesh
 		 * @param validate <code>false</code> if validations should be ignored.
 		 * @return An executing operation, or <code>false</code> if a validation fails.
 		 */
-		public function save():Operation
+		public function save(validate:Boolean = true):Operation
 		{
-			var operation:Operation = createSave();
+			var operation:Operation = createSave(validate);
 			setTimeout(operation.execute, Mesh.DELAY);
 			return operation;
 		}
@@ -459,7 +459,7 @@ package mesh
 		 * @see #isValid()
 		 * @see #errors
 		 */
-		public function validate():Array
+		private function validate():Array
 		{
 			_errors = null;
 			

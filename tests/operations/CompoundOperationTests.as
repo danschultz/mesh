@@ -50,8 +50,8 @@ package operations
 			operation2.mimicResult({}, false);
 			operation3.mimicFault("", "");
 			
-			assertThat(canceledEvent, notNullValue());
-			assertThat(faultEvent, nullValue());
+			assertThat(canceledEvent, nullValue());
+			assertThat(faultEvent, notNullValue());
 			assertThat(finishedEvent.successful, equalTo(false));
 			assertThat(compound.isExecuting, equalTo(false));
 		}

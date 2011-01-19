@@ -16,6 +16,8 @@ package mesh.associations
 	import mesh.IPersistable;
 	import mesh.Mesh;
 	import mesh.SaveBatch;
+	import mesh.core.reflection.className;
+	import mesh.core.reflection.clazz;
 	
 	import mx.events.PropertyChangeEvent;
 	
@@ -23,9 +25,6 @@ package mesh.associations
 	import operations.FinishedOperationEvent;
 	import operations.Operation;
 	import operations.ResultOperationEvent;
-	
-	import mesh.core.reflection.className;
-	import mesh.core.reflection.clazz;
 
 	/**
 	 * An association proxy is a class that contains the references to the objects in
@@ -171,14 +170,14 @@ package mesh.associations
 			
 		}
 		
-		public function createSave():Operation
+		public function createSave(validate:Boolean):Operation
 		{
-			return new SaveBatch().add(this).build();
+			return new SaveBatch().add(this).build(validate);
 		}
 		
-		public function save():Operation
+		public function save(validate:Boolean = true):Operation
 		{
-			var operation:Operation = createSave();
+			var operation:Operation = createSave(validate);
 			setTimeout(operation.execute, Mesh.DELAY);
 			return operation;
 		}
