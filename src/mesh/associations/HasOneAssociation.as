@@ -1,8 +1,7 @@
 package mesh.associations
 {
-	import mesh.core.functions.closure;
-	
 	import mesh.Entity;
+	import mesh.core.functions.closure;
 	
 	public dynamic class HasOneAssociation extends HasAssociation
 	{
@@ -48,22 +47,15 @@ package mesh.associations
 			}
 		}
 		
-		private function replace(newTarget:Entity):void
-		{
-			if (newTarget != null) {
-				newTarget.revive();
-				populateBelongsToAssociation(newTarget);
-				newTarget.afterDestroy(targetDestroyed);
-			}
-			
-			if (_persistedTarget != null && !_persistedTarget.equals(newTarget)) {
-				_persistedTarget.markForRemoval();
-			}
-		}
-		
 		private function targetDestroyed(entity:Entity):void
 		{
-			
+			_persistedTarget = null;
+			target = null;
+		}
+		
+		private function targetSaved(entity:Entity):void
+		{
+			_persistedTarget = entity;
 		}
 		
 		/**
@@ -87,8 +79,20 @@ package mesh.associations
 		}
 		override public function set target(value:*):void
 		{
-			replace(value);
+			if (target != null) {
+				target.removeCallback(targetDestroyed);
+				target.removeCallback(targetSaved);
+			}
+			
 			super.target = value;
+			
+			if (target != null) {
+				target.revive();
+				populateBelongsToAssociation(target);
+				
+				target.afterSave(targetSaved);
+				target.afterDestroy(targetDestroyed);
+			}
 		}
 	}
 }

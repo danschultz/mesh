@@ -3,6 +3,7 @@ package mesh
 	import collections.HashMap;
 	import collections.HashSet;
 	
+	import flash.errors.IllegalOperationError;
 	import flash.utils.setTimeout;
 	
 	import operations.Operation;
@@ -65,16 +66,19 @@ package mesh
 		
 		public function create(entity:Entity):void
 		{
+			throwIfMissingServiceAdaptor(entity);
 			cache(entity).create(entity);
 		}
 		
 		public function destroy(entity:Entity):void
 		{
+			throwIfMissingServiceAdaptor(entity);
 			cache(entity).destroy(entity);
 		}
 		
 		public function update(entity:Entity):void
 		{
+			throwIfMissingServiceAdaptor(entity);
 			cache(entity).update(entity);
 		}
 		
@@ -84,6 +88,13 @@ package mesh
 				_caches.put(entity.adaptor, new PersistenceCache(entity.descriptor));
 			}
 			return _caches.grab(entity.adaptor);
+		}
+		
+		private function throwIfMissingServiceAdaptor(entity:Entity):void
+		{
+			if (entity.adaptor == null) {
+				throw new IllegalOperationError(entity + " is missing a service adaptor.");
+			}
 		}
 	}
 }
