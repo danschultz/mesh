@@ -222,7 +222,10 @@ package mesh
 		 */
 		protected function propertyChanged(property:String, oldValue:Object, newValue:Object):void
 		{
-			_properties.changed(property, oldValue, newValue);
+			// check if the property is ignored.
+			if (!ignoredProperties.contains(property)) {
+				_properties.changed(property, oldValue, newValue);
+			}
 		}
 		
 		/**
@@ -631,6 +634,11 @@ package mesh
 		public function get properties():ISet
 		{
 			return descriptor.properties;
+		}
+		
+		private function get ignoredProperties():ISet
+		{
+			return descriptor.ignoredProperties;
 		}
 		
 		/**

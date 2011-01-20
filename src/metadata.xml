@@ -91,6 +91,20 @@
 	</metadata>
 	
 	<!-- 
+	[Ignore(property="orders")]
+	-->
+	<metadata name="HasMany" description="Add a one-to-many relationship to an entity.">
+		
+		<context name="class">
+			<attribute name="property" type="String"/>
+			<attribute name="properties" type="Array" hint="properties"/>
+		</context>
+		<context name="getter"/>
+		<context name="setter"/>
+		<context name="variable"/>
+	</metadata>
+	
+	<!-- 
 	[VO]
 	-->
 	<metadata name="VO" description="Maps a VO to an entity.">

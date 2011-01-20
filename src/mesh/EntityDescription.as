@@ -42,6 +42,8 @@ package mesh
 		
 		private var _adaptor:ServiceAdaptor;
 		
+		private var _ignoredProperties:HashSet = new HashSet();
+		
 		public function EntityDescription(entityType:Class)
 		{
 			_entityType = entityType;
@@ -51,6 +53,7 @@ package mesh
 			parseAdaptor();
 			parseAggregates();
 			parseFactory();
+			parseIgnore();
 			parseRelationships();
 			parseVOType();
 		}
@@ -168,6 +171,35 @@ package mesh
 			}
 		}
 		
+		private function parseIgnore():void
+		{
+			for each (var ignoreXML:XML in _metadata.(@name == "Ignore")) {
+				var options:Object = {};
+				for each (var argXML:XML in ignoreXML..arg) {
+					options[argXML.@key] = argXML.@value.toString();
+				}
+				
+				if (!options.hasOwnProperty("property") && ["accessor", "variable"].indexOf(ignoreXML.parent().name().toString()) != -1) {
+					options.property = ignoreXML.parent().@name.toString();
+				}
+				
+				options.properties = options.hasOwnProperty("properties") ? StringUtil.trimArrayElements(options.properties, ",").split(",") : [];
+				
+				if (options.hasOwnProperty("property")) {
+					options.properties.push(options.property);
+				}
+				
+				_ignoredProperties.addAll(options.properties);
+			}
+			
+			var parent:Class = parentEntityType;
+			while (parent != null) {
+				var description:EntityDescription = describe(parent);
+				_ignoredProperties.addAll(description.ignoredProperties);
+				parent = description.parentEntityType;
+			}
+		}
+		
 		private function parseRelationships():void
 		{
 			for each (var relationshipXML:XML in _metadata.(@name == "HasOne" || @name == "HasMany" || @name == "BelongsTo")) {
@@ -253,6 +285,11 @@ package mesh
 		public function get entityType():Class
 		{
 			return _entityType;
+		}
+		
+		public function get ignoredProperties():ISet
+		{
+			return _ignoredProperties;
 		}
 		
 		private var _parentEntityType:*;

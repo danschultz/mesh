@@ -159,5 +159,16 @@ package mesh
 			
 			assertThat(_customer.isDirty, equalTo(false));
 		}
+		
+		[Test]
+		public function testSettingIgnoredPropertyDoesNotMarkEntityAsDirty():void
+		{
+			var account:Account = new Account();
+			account.ignoredProperty1 = "1";
+			account.ignoredProperty2 = "2";
+			account.ignoredProperty3 = "3";
+			
+			assertThat(account.hasPropertyChanges, equalTo(false));
+		}
 	}
 }
