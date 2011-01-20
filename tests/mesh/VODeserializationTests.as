@@ -6,7 +6,6 @@ package mesh
 	import org.flexunit.assertThat;
 	import org.hamcrest.object.equalTo;
 	
-	[Ignore]
 	public class VODeserializationTests
 	{
 		private function createAirportVO():AirportVO
@@ -20,6 +19,7 @@ package mesh
 			return vo;
 		}
 		
+		[Ignore]
 		[Test]
 		public function testToVOWithoutOptions():void
 		{

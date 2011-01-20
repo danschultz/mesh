@@ -36,6 +36,7 @@
 
 	<properties>
 		<flex-sdk.version>4.0.0.14159</flex-sdk.version>
+		<flex-mojos.version>3.8</flex-mojos.version>
 	</properties>
 
 	<dependencies>
@@ -74,7 +75,7 @@
 			<plugin>
 				<groupId>org.sonatype.flexmojos</groupId>
 				<artifactId>flexmojos-maven-plugin</artifactId>
-				<version>3.8</version>
+				<version>${flex-mojos.version}</version>
 				<extensions>true</extensions>
 				<dependencies>
 					<dependency>
@@ -86,6 +87,7 @@
 				</dependencies>
 				<executions>
 					<execution>
+						<id>documentation</id>
 						<phase>install</phase>
 						<goals>
 							<goal>asdoc</goal>
@@ -94,6 +96,19 @@
 							<configFiles>
 								<file>asdoc-config.xml</file>
 							</configFiles>
+						</configuration>
+					</execution>
+					<execution>
+						<id>testing</id>
+						<phase>test-compile</phase>
+						<goals>
+							<goal>test-compile</goal>
+						</goals>
+						<configuration>
+							<includeTestFiles>
+								<include>*Test.as</include>
+								<include>*Tests.as</include>
+							</includeTestFiles>
 						</configuration>
 					</execution>
 				</executions>
@@ -109,17 +124,7 @@
 					<includeFiles>
 						<file>src/metadata.xml</file>
 					</includeFiles>
-					<includeTestFiles>
-						<include>*Test.as</include>
-						<include>*Tests.as</include>
-					</includeTestFiles>
 				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.sonatype.flexmojos</groupId>
-				<artifactId>flexmojos-maven-plugin</artifactId>
-				<version>3.8</version>
-				<extensions>true</extensions>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>

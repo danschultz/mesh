@@ -17,7 +17,6 @@ package mesh
 	import org.hamcrest.object.equalTo;
 	import org.hamcrest.object.nullValue;
 
-	[Ignore]
 	public class VOSerializationTests
 	{
 		private function createAirport():Airport
@@ -40,6 +39,7 @@ package mesh
 			return flightPlan;
 		}
 		
+		[Ignore]
 		[Test]
 		public function testToVOWithoutOptions():void
 		{
@@ -54,6 +54,7 @@ package mesh
 			assertThat(vo.longitude, equalTo(airport.longitude));
 		}
 		
+		[Ignore]
 		[Test]
 		public function testToVOInclude():void
 		{
@@ -66,6 +67,7 @@ package mesh
 			assertThat(vo.longitude, equalTo(NaN));
 		}
 		
+		[Ignore]
 		[Test]
 		public function testToVOExclude():void
 		{
@@ -78,6 +80,7 @@ package mesh
 			assertThat(vo.longitude, equalTo(airport.longitude));
 		}
 		
+		[Ignore]
 		[Test]
 		public function testToVOUsesGeneratesVOForRelationships():void
 		{
