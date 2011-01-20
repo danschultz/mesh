@@ -5,10 +5,32 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<name>mesh</name>
+	<description>A model centric persistence framework for Flex.</description>
+	<url>https://github.com/danschultz/mesh</url>
+	<licenses>
+		<license>
+			<name>MIT</name>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
+	<developers>
+		<developer>
+			<name>Dan Schultz</name>
+			<url>http://www.intriguemedia.net</url>
+			<organization>Mixbook</organization>
+			<organizationUrl>http://www.mixbook.com</organizationUrl>
+		</developer>
+	</developers>
+
+	<parent>
+		<groupId>org.sonatype.oss</groupId>
+		<artifactId>oss-parent</artifactId>
+		<version>5</version>
+	</parent>
 
 	<groupId>com.github.danschultz</groupId>
 	<artifactId>mesh</artifactId>
-	<version>1.0-SNAPSHOT</version>
+	<version>0.2.0-SNAPSHOT</version>
 
 	<packaging>swc</packaging>
 
@@ -20,7 +42,7 @@
 		<dependency>
 			<groupId>com.github.danschultz</groupId>
 			<artifactId>as3-collections</artifactId>
-			<version>1.0-SNAPSHOT</version>
+			<version>1.1-SNAPSHOT</version>
 			<type>swc</type>
 		</dependency>
 		<dependency>
@@ -62,6 +84,19 @@
 						<type>pom</type>
 					</dependency>
 				</dependencies>
+				<executions>
+					<execution>
+						<phase>install</phase>
+						<goals>
+							<goal>asdoc</goal>
+						</goals>
+						<configuration>
+							<configFiles>
+								<file>asdoc-config.xml</file>
+							</configFiles>
+						</configuration>
+					</execution>
+				</executions>
 				<configuration>
 					<includeAsClasses>
 						<sources>
@@ -79,6 +114,12 @@
 						<include>*Tests.as</include>
 					</includeTestFiles>
 				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.sonatype.flexmojos</groupId>
+				<artifactId>flexmojos-maven-plugin</artifactId>
+				<version>3.8</version>
+				<extensions>true</extensions>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>

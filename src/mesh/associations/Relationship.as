@@ -12,8 +12,8 @@ package mesh.associations
 	import mesh.core.reflection.className;
 	import mesh.core.reflection.newInstance;
 	
-	import org.hamcrest.object.hasProperty;
-
+	use namespace flash_proxy;
+	
 	/**
 	 * A relationship represents an association between two entities, where the <code>owner</code>
 	 * is the host of the <code>target</code>. Take an example where you have an association

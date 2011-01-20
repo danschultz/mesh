@@ -49,18 +49,18 @@ package mesh
 		[Test(async)]
 		public function testSaveReplacedTarget():void
 		{
+			var assertion:Function = function(event:FinishedOperationEvent, data:Object):void
+			{
+				assertThat(_customer.account.target.isDirty, equalTo(false));
+				assertThat(_customer.account.isDirty, equalTo(false));
+			};
+			assertion = Async.asyncHandler(this, assertion, 200);
+			
 			_customer.account = new Account();
 			var operation:Operation = _customer.account.save();
 			operation.addEventListener(FinishedOperationEvent.FINISHED, function(event:FinishedOperationEvent):void
 			{
 				_customer.account = new Account();
-				
-				var assertion:Function = function(event:FinishedOperationEvent, data:Object):void
-				{
-					assertThat(_customer.account.target.isDirty, equalTo(false));
-					assertThat(_customer.account.isDirty, equalTo(false));
-				};
-				assertion = Async.asyncHandler(this, assertion, 100);
 				
 				var operation:Operation = _customer.account.save();
 				operation.addEventListener(FinishedOperationEvent.FINISHED, assertion);
@@ -74,17 +74,17 @@ package mesh
 		[Test(async)]
 		public function testDestroyingTargetSetsAssociationsTargetToUndefined():void
 		{
+			var assertion:Function = function(event:FinishedOperationEvent, data:Object):void
+			{
+				assertThat(_customer.account.target, nullValue());
+				assertThat(_customer.account.isDirty, equalTo(false));
+			};
+			assertion = Async.asyncHandler(this, assertion, 200);
+			
 			_customer.account = new Account();
 			var operation:Operation = _customer.account.save();
 			operation.addEventListener(FinishedOperationEvent.FINISHED, function(event:FinishedOperationEvent):void
 			{
-				var assertion:Function = function(event:FinishedOperationEvent, data:Object):void
-				{
-					assertThat(_customer.account.target, nullValue());
-					assertThat(_customer.account.isDirty, equalTo(false));
-				};
-				assertion = Async.asyncHandler(this, assertion, 100);
-				
 				var operation:Operation = _customer.account.destroy();
 				operation.addEventListener(FinishedOperationEvent.FINISHED, assertion);
 			});
