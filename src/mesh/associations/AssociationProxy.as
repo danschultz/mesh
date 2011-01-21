@@ -170,7 +170,7 @@ package mesh.associations
 			
 		}
 		
-		public function createSave(validate:Boolean):Operation
+		public function createSave(validate:Boolean = true):Operation
 		{
 			return new SaveBatch().add(this).build(validate);
 		}

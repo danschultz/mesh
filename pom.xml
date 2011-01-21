@@ -87,7 +87,7 @@
 				</dependencies>
 				<executions>
 					<execution>
-						<id>documentation</id>
+						<id>asdoc</id>
 						<phase>install</phase>
 						<goals>
 							<goal>asdoc</goal>
@@ -99,7 +99,7 @@
 						</configuration>
 					</execution>
 					<execution>
-						<id>testing</id>
+						<id>tests</id>
 						<phase>test-compile</phase>
 						<goals>
 							<goal>test-compile</goal>
