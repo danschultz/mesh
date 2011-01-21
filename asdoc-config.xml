@@ -1,5 +1,0 @@
-<flex-config>
-	<themes>
-		<theme>${project.build.outputDirectory}/config-${flex.version}/themes/Spark/spark.css</theme>
-	</themes>
-</flex-config>
