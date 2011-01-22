@@ -3,6 +3,8 @@ Mesh is an open-source persistence framework for [Adobe Flex](http://www.adobe.c
 
 Mesh provides the mechanisms for defining the associations between your models, tracking which objects need to be saved, validating the integrity of your data, and mapping your models to backend services. In addition, Mesh is completely agnostic to the backend service that you use. It can be used with any existing AMF, REST, SOAP service, and hypothetically an AIR application running a SQLite database.
 
+Mesh follows the guidelines of [semantic versioning](http://www.semver.org).
+
 ## Getting Started
 The following resources will help you learn the concepts of Mesh, and how to implement Mesh in your application.
 
