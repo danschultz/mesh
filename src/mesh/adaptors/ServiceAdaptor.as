@@ -4,10 +4,9 @@ package mesh.adaptors
 	
 	import mesh.Entity;
 	import mesh.associations.Relationship;
+	import mesh.core.reflection.className;
 	
 	import operations.Operation;
-	
-	import mesh.core.reflection.className;
 	
 	/**
 	 * A service adaptor represents the required strategy for an entity to be persisted and
@@ -27,6 +26,17 @@ package mesh.adaptors
 		{
 			_entity = entity;
 			_options = options == null ? {} : options;
+		}
+		
+		/**
+		 * Generates an operation to retrieve all entities of a certain type from the backend.
+		 * 
+		 * @param options Any options to query with.
+		 * @return An unexecuted operation.
+		 */
+		public function all(options:Object = null):Operation
+		{
+			throw new IllegalOperationError(className(this) + " does not support retrieval of entities using all()");
 		}
 		
 		/**

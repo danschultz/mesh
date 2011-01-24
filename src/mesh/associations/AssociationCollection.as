@@ -192,7 +192,7 @@ package mesh.associations
 			_originalEntities = new ArrayList(toArray());
 			
 			for each (var entity:Entity in this) {
-				entity.found();
+				entity.callback("afterFind");
 			}
 		}
 		

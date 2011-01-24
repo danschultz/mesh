@@ -3,11 +3,10 @@ package mesh
 	import flash.utils.setTimeout;
 	
 	import mesh.adaptors.ServiceAdaptor;
+	import mesh.core.reflection.clazz;
 	
 	import operations.Operation;
 	import operations.ResultOperationEvent;
-	
-	import mesh.core.reflection.clazz;
 	
 	public class Query
 	{
@@ -26,6 +25,14 @@ package mesh
 				entity = clazz(entity);
 			}
 			return new Query(entity as Class, Entity.adaptorFor(entity));
+		}
+		
+		public function all(options:Object = null):Operation
+		{
+			var operation:Operation = _adaptor.all(options);
+			operation.addEventListener(ResultOperationEvent.RESULT, handleRetrieveResult);
+			setTimeout(operation.execute, Mesh.DELAY);
+			return operation;
 		}
 		
 		public function find(...ids):Operation
@@ -53,7 +60,7 @@ package mesh
 			for (var i:int = 0; i < event.data.length; i++) {
 				var entity:Entity = EntityDescription.describe(_entityType).newEntity(event.data[i]);
 				entity.translateFrom(event.data[i]);
-				entity.found();
+				entity.callback("afterFind");
 				event.data[i] = entity;
 			}
 		}
