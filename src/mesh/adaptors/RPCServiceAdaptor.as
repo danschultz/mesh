@@ -1,6 +1,11 @@
 package mesh.adaptors
 {
+	import mesh.core.reflection.newInstance;
+	
 	import mx.rpc.AbstractService;
+	
+	import operations.Operation;
+	import operations.ServiceOperation;
 	
 	/**
 	 * A service adaptor that uses Flex's <code>AbstractService</code> to perform an entity's
@@ -27,6 +32,16 @@ package mesh.adaptors
 			if (_service.hasOwnProperty("showBusyCursor")) {
 				_service.showBusyCursor = options.hasOwnProperty("showBusyCursor") ? Boolean( options.showBusyCursor ) : false;
 			}
+		}
+		
+		/**
+		 * The first argument is a string representing the service name, 
+		 * 
+		 * @inheritDoc
+		 */
+		override protected function generateOperation(...args):Operation
+		{
+			return newInstance.apply(null, [ServiceOperation, service].concat(args));
 		}
 		
 		private var _service:AbstractService;

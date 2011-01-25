@@ -116,6 +116,17 @@ package mesh.adaptors
 			throw new IllegalOperationError(className(this) + " does not support retrieval of entities using where()");
 		}
 		
+		/**
+		 * Generates an operation that is specific for this service adaptor.
+		 * 
+		 * @param args The args to pass to the constructor of the operation.
+		 * @return A new unexecuted operation.
+		 */
+		protected function generateOperation(...args):Operation
+		{
+			throw new IllegalOperationError(className(this) + " does not support generateOperation()");
+		}
+		
 		private var _entity:Class;
 		/**
 		 * The entity that this service adaptor belongs to.
