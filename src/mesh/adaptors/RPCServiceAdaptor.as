@@ -35,7 +35,8 @@ package mesh.adaptors
 		}
 		
 		/**
-		 * The first argument is a string representing the service name, 
+		 * The first argument is a string representing the name of the service to call. All arguments
+		 * after the name will be passed as arguments to the service operation.
 		 * 
 		 * @inheritDoc
 		 */
