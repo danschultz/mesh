@@ -9,6 +9,7 @@ package mesh.core.number
 	 */
 	public function round(number:Number, precision:int = 0):Number
 	{
-		return number.toFixed(precision < 0 ? 0 : precision) as Number;
+		precision = Math.pow(10, (precision < 0 ? 0 : precision));
+		return Math.round(number * precision) / precision;
 	}
 }
