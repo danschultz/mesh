@@ -2,16 +2,13 @@ package mesh.adaptors
 {
 	import collections.HashMap;
 	
-	import mesh.core.functions.closure;
-	
 	import mesh.Entity;
-	import mesh.associations.Relationship;
+	import mesh.core.functions.closure;
 	
 	import operations.FinishedOperationEvent;
 	import operations.MethodOperation;
 	import operations.Operation;
 	import operations.OperationEvent;
-	import operations.ResultOperationEvent;
 	import operations.SequentialOperation;
 
 	public class InMemoryAdaptor extends ServiceAdaptor
@@ -25,19 +22,6 @@ package mesh.adaptors
 		public function InMemoryAdaptor(entity:Class, options:Object = null)
 		{
 			super(entity, options);
-		}
-		
-		/**
-		 * @inheritDoc
-		 */
-		override public function belongingTo(entity:Entity, relationship:Relationship):Operation
-		{
-			var operation:Operation = Entity.adaptorFor(entity).retrieve({id:entity.id});
-			operation.addEventListener(ResultOperationEvent.RESULT, function(event:ResultOperationEvent):void
-			{
-				event.data = event.data[relationship.property];
-			});
-			return operation;
 		}
 		
 		/**

@@ -1,12 +1,6 @@
 package mesh.associations
 {
-	import collections.HashSet;
-	import collections.ISet;
-	
 	import mesh.Entity;
-	
-	import operations.EmptyOperation;
-	import operations.Operation;
 	
 	public class HasAssociation extends AssociationProxy
 	{

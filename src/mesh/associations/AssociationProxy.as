@@ -15,6 +15,7 @@ package mesh.associations
 	import mesh.Entity;
 	import mesh.IPersistable;
 	import mesh.Mesh;
+	import mesh.Query;
 	import mesh.SaveBatch;
 	import mesh.core.reflection.className;
 	import mesh.core.reflection.clazz;
@@ -129,7 +130,7 @@ package mesh.associations
 		 */
 		public function createLoad():Operation
 		{
-			var operation:Operation = Entity.adaptorFor(relationship.target).belongingTo(owner, relationship);
+			var operation:Operation = createLoadOperation();
 			operation.addEventListener(ResultOperationEvent.RESULT, function(event:ResultOperationEvent):void
 			{
 				target = event.data;
@@ -139,6 +140,17 @@ package mesh.associations
 				callback("afterLoad");
 			});
 			return operation;
+		}
+		
+		/**
+		 * Called by <code>createLoad()</code> to generate a query operation that is specific for this
+		 * association. This method must be overridden and implemented by each association.
+		 * 
+		 * @return An unexecuted operation.
+		 */
+		protected function createLoadOperation():Operation
+		{
+			throw new IllegalOperationError(className(this) + ".createLoadOperation() is not implemented.");
 		}
 		
 		public function loaded():void

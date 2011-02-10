@@ -2,8 +2,6 @@ package mesh.adaptors
 {
 	import flash.errors.IllegalOperationError;
 	
-	import mesh.Entity;
-	import mesh.associations.Relationship;
 	import mesh.core.reflection.className;
 	
 	import operations.Operation;
@@ -37,17 +35,6 @@ package mesh.adaptors
 		public function all(options:Object = null):Operation
 		{
 			throw new IllegalOperationError(className(this) + " does not support retrieval of entities using all()");
-		}
-		
-		/**
-		 * Generates an operation to retrieve the entities belonging to a parent entity.
-		 * 
-		 * @param entity The parent entity to query with.
-		 * @return An unexecuted operation.
-		 */
-		public function belongingTo(entity:Entity, relationship:Relationship):Operation
-		{
-			throw new IllegalOperationError(className(this) + " does not support retrieval of relationship '" + relationship + "'");
 		}
 		
 		/**
