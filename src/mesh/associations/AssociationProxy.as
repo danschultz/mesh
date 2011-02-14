@@ -15,7 +15,6 @@ package mesh.associations
 	import mesh.Entity;
 	import mesh.IPersistable;
 	import mesh.Mesh;
-	import mesh.Query;
 	import mesh.SaveBatch;
 	import mesh.core.reflection.className;
 	import mesh.core.reflection.clazz;

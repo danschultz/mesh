@@ -6,10 +6,12 @@ package mesh.associations
 	import flash.utils.flash_proxy;
 	import flash.utils.setTimeout;
 	
-	import mesh.core.functions.closure;
-	
 	import mesh.Entity;
 	import mesh.Mesh;
+	import mesh.core.functions.closure;
+	import mesh.core.reflection.Type;
+	import mesh.core.reflection.className;
+	import mesh.core.reflection.reflect;
 	
 	import mx.collections.ArrayCollection;
 	import mx.collections.IList;
@@ -18,10 +20,6 @@ package mesh.associations
 	
 	import operations.EmptyOperation;
 	import operations.Operation;
-	
-	import mesh.core.reflection.Type;
-	import mesh.core.reflection.className;
-	import mesh.core.reflection.reflect;
 	
 	use namespace flash_proxy;
 	
@@ -38,6 +36,15 @@ package mesh.associations
 		{
 			super(source, relationship);
 			target = [];
+			
+			afterLoad(function(proxy:AssociationCollection):void
+			{
+				_originalEntities = new ArrayList(toArray());
+				
+				for each (var entity:Entity in proxy) {
+					entity.callback("afterFind");
+				}
+			});
 		}
 		
 		/**
@@ -181,19 +188,6 @@ package mesh.associations
 		public function itemUpdated(item:Object, property:Object = null, oldValue:Object = null, newValue:Object = null):void
 		{
 			target.itemUpdated(item, property, oldValue, newValue);
-		}
-		
-		/**
-		 * @inheritDoc
-		 */
-		override public function loaded():void
-		{
-			super.loaded();
-			_originalEntities = new ArrayList(toArray());
-			
-			for each (var entity:Entity in this) {
-				entity.callback("afterFind");
-			}
 		}
 		
 		private function entityDestroyed(entity:Entity):void

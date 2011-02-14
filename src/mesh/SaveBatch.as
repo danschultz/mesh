@@ -23,12 +23,17 @@ package mesh
 		
 		public function add(...elements):SaveBatch
 		{
-			for each (var element:IPersistable in elements) {
+			for each (var element:* in elements) {
+				if (element is Array) {
+					add.apply(null, element);
+					continue;
+				}
+				
 				if (!_elements.contains(element)) {
 					element.batch(this);
 				}
+				_elements.add(element);
 			}
-			_elements.add(element);
 			return this;
 		}
 		
