@@ -43,7 +43,7 @@ package mesh.adaptors
 	 * @see http://help.adobe.com/en_US/FlashPlatform/reference/actionscript/3/mx/rpc/http/mxml/HTTPMultiService.html HTTPMultiService
 	 * @author Dan Schultz
 	 */
-	public class RESTServiceAdaptor extends RPCServiceAdaptor
+	public class HTTPServiceAdaptor extends RPCServiceAdaptor
 	{
 		private var _service:HTTPMultiService;
 		
@@ -53,7 +53,7 @@ package mesh.adaptors
 		 * @param entity The entity who owns this service adaptor.
 		 * @param options An options hash to configure the adaptor.
 		 */
-		public function RESTServiceAdaptor(entity:Class, options:Object)
+		public function HTTPServiceAdaptor(entity:Class, options:Object)
 		{
 			_service = new HTTPMultiService();
 			super(_service, entity, options);
