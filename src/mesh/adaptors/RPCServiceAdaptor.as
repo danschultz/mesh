@@ -1,5 +1,6 @@
 package mesh.adaptors
 {
+	import mesh.core.object.copy;
 	import mesh.core.reflection.newInstance;
 	
 	import mx.rpc.AbstractService;
@@ -11,7 +12,19 @@ package mesh.adaptors
 	 * A service adaptor that uses Flex's <code>AbstractService</code> to perform an entity's
 	 * persistence.
 	 * 
-	 * @see ServiceAdaptor
+	 * <p>
+	 * Any options that are defined on the <code>[ServiceAdaptor]</code> metadata or passed to 
+	 * the constructor, will tried to be set on the adaptor's service.
+	 * 
+	 * <p>
+	 * <strong>Example:</strong> Setting the busy cursor for the service.
+	 * <pre listing="3.0">
+	 * [ServiceAdaptor(showBusyCursor="true")]
+	 * </pre>
+	 * </p>
+	 * </p>
+	 * 
+	 * @see http://help.adobe.com/en_US/FlashPlatform/reference/actionscript/3/mx/rpc/AbstractService.html AbstractService
 	 * @author Dan Schultz
 	 */
 	public class RPCServiceAdaptor extends ServiceAdaptor
@@ -26,12 +39,8 @@ package mesh.adaptors
 		public function RPCServiceAdaptor(service:AbstractService, entity:Class, options:Object)
 		{
 			super(entity, options);
-			
 			_service = service;
-			
-			if (_service.hasOwnProperty("showBusyCursor")) {
-				_service.showBusyCursor = options.hasOwnProperty("showBusyCursor") ? Boolean( options.showBusyCursor ) : false;
-			}
+			copy(options, service);
 		}
 		
 		/**
