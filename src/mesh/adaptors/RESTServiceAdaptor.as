@@ -56,7 +56,6 @@ package mesh.adaptors
 		public function RESTServiceAdaptor(entity:Class, options:Object)
 		{
 			_service = new HTTPMultiService();
-			_service.operationList = operations;
 			super(_service, entity, options);
 		}
 		
@@ -90,9 +89,9 @@ package mesh.adaptors
 		 * @param options Any options to set on the operation.
 		 * @return A new operation.
 		 */
-		private function createHTTPOperation(name:String, options:Object = null):Operation
+		private function createHTTPOperation(name:String, options:Object = null):mx.rpc.http.Operation
 		{
-			var operation:Operation = new Operation();
+			var operation:mx.rpc.http.Operation = new mx.rpc.http.Operation();
 			operation.name = name;
 			
 			if (options != null) {
