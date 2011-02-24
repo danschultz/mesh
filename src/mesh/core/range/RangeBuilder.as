@@ -1,5 +1,7 @@
 package mesh.core.range
 {
+	import mesh.core.reflection.newInstance;
+
 	public class RangeBuilder
 	{
 		private var _clazz:Class;
@@ -13,12 +15,12 @@ package mesh.core.range
 		
 		public function to(value:*):Range
 		{
-			return new Range(_from, value, false);
+			return newInstance(_clazz, _from, value, false);
 		}
 		
-		public function toButExcluding(value:*):Range
+		public function toButNotIncluding(value:*):Range
 		{
-			return new Range(_from, value, true);
+			return newInstance(_clazz, _from, value, true);
 		}
 	}
 }

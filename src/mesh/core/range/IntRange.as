@@ -1,7 +1,16 @@
 package mesh.core.range
 {
+	/**
+	 * A range for integers.
+	 * 
+	 * @see Range#from()
+	 * @author Dan Schultz
+	 */
 	public class IntRange extends Range
 	{
+		/**
+		 * @copy Range#Range()
+		 */
 		public function IntRange(from:*, to:*, exclusive:Boolean = false)
 		{
 			super(from, to, exclusive);
@@ -28,7 +37,7 @@ package mesh.core.range
 		 */
 		override public function get length():int
 		{
-			return max - min + 1;
+			return max - min + (!isExclusive ? 1 : 0);
 		}
 	}
 }

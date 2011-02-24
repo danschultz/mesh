@@ -15,7 +15,7 @@ package mesh.core.range
 	 * <p>
 	 * Ranges supports iteration through the <code>for each..in</code> syntax.
 	 * 
-	 * <pre listing="3.0">
+	 * <listing version="3.0">
 	 * for each (var num:int in Range.from(5).to(10)) {
 	 * 	trace(num);
 	 * }
@@ -27,7 +27,7 @@ package mesh.core.range
 	 * // 8
 	 * // 9
 	 * // 10
-	 * </pre>
+	 * </listing>
 	 * </p>
 	 * 
 	 * <p>
@@ -45,22 +45,42 @@ package mesh.core.range
 	 */
 	public class Range extends Proxy
 	{
-		private var _isExclusive:Boolean;
-		private var _isDecreasing:Boolean;
-		
+		/**
+		 * Constructor.
+		 * 
+		 * @param from The starting value in the range.
+		 * @param to The ending value in the range.
+		 * @param exclusive If the ending value is not included.
+		 * @throws ArgumentError If the start and end values are not the same type.
+		 */
 		public function Range(from:*, to:*, exclusive:Boolean = false)
 		{
-			var clazz:Class = clazz(to);
-			if (!(from is clazz)) {
+			var type:Class = clazz(to);
+			if (!(from is type)) {
 				throw new ArgumentError("Range values must be the same type.");
 			}
 			
 			_from = from;
 			_to = to;
 			_isExclusive = exclusive;
-			_isDecreasing = from > to;
+			_isReversed = from > to;
 		}
 		
+		/**
+		 * Returns a builder for an integer, string, or date based range depending on the 
+		 * <code>value</code> passed in.
+		 * 
+		 * <p>
+		 * <strong>Example:</strong> Creating a new range.
+		 * <listing version="3.0">
+		 * trace( Range.from(1).to(5) ); // 1..5
+		 * trace( from(1).to(5) ); // 1..5
+		 * </listing>
+		 * </p>
+		 * 
+		 * @param value The range's starting value.
+		 * @return A range builder.
+		 */
 		public static function from(value:*):RangeBuilder
 		{
 			var clazz:Class;
@@ -78,32 +98,60 @@ package mesh.core.range
 			return new RangeBuilder(clazz, value);
 		}
 		
-		public function contains(item:Object):Boolean
+		/**
+		 * Checks if the given value is between <code>from</code> and <code>to</code>, such that
+		 * <code>min <= value <= max</code> or <code>min <= value < max</code> when <code>isExclusive</code>
+		 * is <code>true</code>
+		 * 
+		 * @param value The value to check.
+		 * @return <code>true</code> if the value is covered.
+		 */
+		public function contains(value:Object):Boolean
 		{
 			try {
-				return item >= min && (!_isExclusive ? item <= max : item < max);
+				if (_isReversed) {
+					return (!_isExclusive ? value >= min : value > min) && value <= max;
+				}
+				return value >= min && (!_isExclusive ? value <= max : value < max);
 			} catch (e:Error) {
 				
 			}
 			return false;
 		}
 		
+		/**
+		 * Runs an iteration through each element in the range, and passes in the element to
+		 * the specified block.
+		 * 
+		 * @param block The block executed for each element.
+		 */
 		public function forEach(block:Function):void
 		{
 			step(1, block);
 		}
 		
+		/**
+		 * Iterates over each <em>n</em>th element in the range, and passing that element to
+		 * the given block function.
+		 * 
+		 * @param size The iteration size.
+		 * @param block The block executed for each <em>n</em>th element.
+		 */
 		public function step(size:int, block:Function):void
 		{
 			size = Math.max(1, size);
 			
 			var iterator:RangeIterator = newIterator(size);
 			while (iterator.hasNext()) {
-				block(iterator.value);
-				iterator.next();
+				block(iterator.next());
 			}
 		}
 		
+		/**
+		 * Returns an array of all elements in the range.
+		 * 
+		 * @return An array.
+		 */
 		public function toArray():Array
 		{
 			var result:Array = [];
@@ -114,16 +162,55 @@ package mesh.core.range
 			return result;
 		}
 		
+		/**
+		 * @private
+		 */
 		public function toString():String
 		{
 			return from + ".." + to;
 		}
 		
+		/**
+		 * Called during a reversed iteration of the range to return the next value.
+		 * This method must be overridden by sub-classes.
+		 * 
+		 * <p>
+		 * <strong>Example:</strong> Implementing an iteration for an integer.
+		 * <listing version="3.0">
+		 * override protected function decrease(value:*, size:int):*
+		 * {
+		 * 	return value-size;
+		 * }
+		 * </listing>
+		 * </p>
+		 * 
+		 * @param value The current iteration value.
+		 * @param size The step size of the iteration.
+		 * @return The next value.
+		 */
 		protected function decrease(value:*, size:int):*
 		{
 			throw new IllegalOperationError(getQualifiedClassName(this) + ".decrease() is not implemented.");
 		}
 		
+		/**
+		 * Called during a ascending iteration of the range to return the next value.
+		 * This method must be overridden by sub-classes.
+		 * 
+		 * <p>
+		 * <strong>Example:</strong> Implementing an iteration for an integer.
+		 * <listing version="3.0">
+		 * override protected function increase(value:*, size:int):*
+		 * {
+		 * 	return value+size;
+		 * }
+		 * </listing>
+		 * </p>
+		 * 
+		 * @param value The current iteration value.
+		 * @param size The step size of the iteration.
+		 * @return The next value.
+		 */
 		protected function increase(value:*, size:int):*
 		{
 			throw new IllegalOperationError(getQualifiedClassName(this) + ".increase() is not implemented.");
@@ -154,39 +241,71 @@ package mesh.core.range
 		 */
 		override flash_proxy function nextValue(index:int):*
 		{
-			_iterator.next();
-			return _iterator.value;
+			return _iterator.next();
 		}
 		
 		private function newIterator(size:int):RangeIterator
 		{
-			return new RangeIterator(this, new RangeSequence(from, size, _isDecreasing ? decrease : increase));
+			return new RangeIterator(this, new RangeSequence(from, size, _isReversed ? decrease : increase));
+		}
+		
+		private var _isExclusive:Boolean;
+		/**
+		 * <code>true</code> if the last value in the range is excluded.
+		 */
+		public function get isExclusive():Boolean
+		{
+			return _isExclusive;
+		}
+		
+		private var _isReversed:Boolean;
+		/**
+		 * <code>true</code> if the this range is descending, i.e. <em>from 5 to 1</em> is reversed.
+		 */
+		public function get isReversed():Boolean
+		{
+			return _isReversed;
 		}
 		
 		private var _from:*;
+		/**
+		 * The starting value in the range.
+		 */
 		public function get from():*
 		{
 			return _from;
 		}
 		
 		private var _to:*;
+		/**
+		 * The ending value in the rnage.
+		 */
 		public function get to():*
 		{
 			return _to;
 		}
 		
+		/**
+		 * The minimum value in the range. This property returns the same value whether the range
+		 * is reversed or not.
+		 */
 		public function get min():*
 		{
 			return to < from ? to : from;
 		}
 		
+		/**
+		 * The maximum value in the range. This property returns the same value whether the range
+		 * is reversed or not.
+		 */
 		public function get max():*
 		{
 			return to > from ? to : from;
 		}
 		
 		/**
-		 * @inheritDoc
+		 * The number of elements in the range. Sub-classes must override and implement
+		 * this property.
 		 */
 		public function get length():int
 		{
@@ -215,15 +334,9 @@ class RangeIterator
 	
 	public function next():Object
 	{
-		_value = _sequence.value;
+		var value:Object = _sequence.value;
 		_sequence = _sequence.next();
 		return value;
-	}
-	
-	private var _value:*;
-	public function get value():*
-	{
-		return _value;
 	}
 }
 

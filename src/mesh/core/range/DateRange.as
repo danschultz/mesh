@@ -1,7 +1,16 @@
 package mesh.core.range
 {
+	/**
+	 * A range for dates.
+	 * 
+	 * @see Range#from()
+	 * @author Dan Schultz
+	 */
 	public class DateRange extends Range
 	{
+		/**
+		 * @copy Range#Range()
+		 */
 		public function DateRange(from:*, to:*, exclusive:Boolean=false)
 		{
 			super(from, to, exclusive);
@@ -32,7 +41,7 @@ package mesh.core.range
 		 */
 		override public function get length():int
 		{
-			return (max.time - min.time) / 86400000;
+			return ((max.time - min.time) / 86400000) + (!isExclusive ? 1 : 0);
 		}
 	}
 }
