@@ -118,7 +118,7 @@ package mesh.core.inflection
 			if (rule is String) {
 				_ignored.removeAll([rule, replacement]);
 			}
-			_plurals.push(rule, replacement);
+			_plurals.unshift(rule, replacement);
 		}
 		
 		/**
