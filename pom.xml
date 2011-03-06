@@ -34,7 +34,7 @@
 	<packaging>swc</packaging>
 
 	<properties>
-		<flex-sdk.version>4.0.0.14159</flex-sdk.version>
+		<flex-sdk.version>4.5.0.17689</flex-sdk.version>
 		<flex-mojos.version>3.8</flex-mojos.version>
 		<mesh.namespace>http://github.com/danschultz/mesh</mesh.namespace>
 	</properties>
