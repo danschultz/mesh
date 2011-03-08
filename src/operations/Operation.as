@@ -1,7 +1,10 @@
 package operations
 {
+	import flash.events.Event;
 	import flash.events.EventDispatcher;
 	import flash.utils.getQualifiedClassName;
+	
+	import mx.events.PropertyChangeEvent;
 	
 	/**
 	 * Dispatched when the execution of an operation has been canceled.
@@ -86,13 +89,19 @@ package operations
 			
 		}
 		
+		private function changeState(newState:int):void
+		{
+			_state = newState;
+			dispatchEvent( PropertyChangeEvent.createUpdateEvent(this, null, null, null) );
+		}
+		
 		/**
 		 * Executes the request.
 		 */
 		final public function execute():void
 		{
 			if (isQueued) {
-				_state = EXECUTING;
+				changeState(EXECUTING);
 				fireBeforeExecute();
 				
 				if (isExecuting) {
@@ -178,7 +187,7 @@ package operations
 		final protected function finish(successful:Boolean):void
 		{
 			if (isExecuting) {
-				_state = FINISHED;
+				changeState(FINISHED)
 				progressed(unitsTotal);
 				fireFinished(successful);
 			}
@@ -269,7 +278,7 @@ package operations
 			}
 			progress.complete = 0;
 			_hasErrored = false;
-			_state = QUEUED;
+			changeState(QUEUED);
 		}
 		
 		/**
@@ -348,6 +357,7 @@ package operations
 			return classNameParts.length > 1 ? classNameParts[1] : classNameParts[0];
 		}
 		
+		[Bindable(event="propertyChange")]
 		/**
 		 * Indicates whether the request is currently executing.
 		 */
@@ -356,6 +366,7 @@ package operations
 			return _state == EXECUTING;
 		}
 		
+		[Bindable(event="propertyChange")]
 		/**
 		 * Indicates whether the request is finished, either successfully or unsuccessfully.
 		 */
@@ -364,6 +375,7 @@ package operations
 			return _state == FINISHED;
 		}
 		
+		[Bindable(event="propertyChange")]
 		/**
 		 * Indicates whether the request is idle and ready to be executed.
 		 */
@@ -372,6 +384,7 @@ package operations
 			return _state == QUEUED;
 		}
 		
+		[Bindable(event="propertyChange")]
 		/**
 		 * Indicates whether the request has finished, and hasn't errored.
 		 */
@@ -381,6 +394,7 @@ package operations
 		}
 		
 		private var _hasErrored:Boolean;
+		[Bindable(event="propertyChange")]
 		/**
 		 * <code>true</code> if this operation errored during its execution.
 		 */
@@ -390,6 +404,7 @@ package operations
 		}
 		
 		private var _progress:Progress;
+		[Bindable(event="progress")]
 		/**
 		 * Information about the progress of this operation.
 		 */

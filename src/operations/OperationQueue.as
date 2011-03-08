@@ -116,7 +116,7 @@ package operations
 		
 		private function executeAvailable():void
 		{
-			while (executing.length < _simultaneousCount) {
+			while (next() != null && executing.length < _simultaneousCount) {
 				execute(next());
 			}
 		}
@@ -132,7 +132,7 @@ package operations
 			operation.execute();
 		}
 		
-		private function handleOperationProgress(event:FinishedOperationEvent):void
+		private function handleOperationProgress(event:ProgressOperationEvent):void
 		{
 			
 		}
@@ -155,7 +155,7 @@ package operations
 		 */
 		public function next():Operation
 		{
-			return Operation( queued().getItemAt(0) );
+			return queued().length > 0 ? Operation( queued().getItemAt(0) ) : null;
 		}
 		
 		private var _isRunning:Boolean;
