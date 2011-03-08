@@ -112,16 +112,6 @@
 					<includeFiles>
 						<file>src/metadata.xml</file>
 					</includeFiles>
-					<namespaces>
-						<namespace>
-							<uri>${mesh.namespace}</uri>
-							<manifest>src/manifest.xml</manifest>
-						</namespace>
-					</namespaces>
-					<includeNamespaces>
-						<namespace>${mesh.namespace}</namespace>
-					</includeNamespaces>
-					
 				</configuration>
 			</plugin>
 			<plugin>
