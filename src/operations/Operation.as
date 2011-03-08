@@ -1,7 +1,10 @@
 package operations
 {
+	import flash.events.Event;
 	import flash.events.EventDispatcher;
 	import flash.utils.getQualifiedClassName;
+	
+	import mx.events.PropertyChangeEvent;
 	
 	/**
 	 * Dispatched when the execution of an operation has been canceled.
@@ -17,6 +20,11 @@ package operations
 	 * Dispatched before the execution of an operation is about to start.
 	 */
 	[Event(name="beforeExecute", type="operations.OperationEvent")]
+	
+	/**
+	 * Dispatched when the operation has progressed during its execution.
+	 */
+	[Event(name="progress", type="operations.ProgressOperationEvent")]
 	
 	/**
 	 * Dispatched when either an error or fault has occurred during the execution
@@ -46,6 +54,12 @@ package operations
 	 */
 	public class Operation extends EventDispatcher
 	{
+		private static const QUEUED:int = 0;
+		private static const EXECUTING:int = 1;
+		private static const FINISHED:int = 2;
+		
+		private var _state:int = QUEUED;
+		
 		/**
 		 * Constructor.
 		 */
@@ -75,13 +89,19 @@ package operations
 			
 		}
 		
+		private function changeState(newState:int):void
+		{
+			_state = newState;
+			dispatchEvent( PropertyChangeEvent.createUpdateEvent(this, null, null, null) );
+		}
+		
 		/**
 		 * Executes the request.
 		 */
 		final public function execute():void
 		{
-			if (!isExecuting) {
-				_isExecuting = true;
+			if (isQueued) {
+				changeState(EXECUTING);
 				fireBeforeExecute();
 				
 				if (isExecuting) {
@@ -150,6 +170,7 @@ package operations
 		{
 			if (isExecuting) {
 				fireFault(summary, detail);
+				_hasErrored = true;
 				finish(false);
 			}
 		}
@@ -166,7 +187,8 @@ package operations
 		final protected function finish(successful:Boolean):void
 		{
 			if (isExecuting) {
-				_isExecuting = false;
+				changeState(FINISHED)
+				progressed(unitsTotal);
 				fireFinished(successful);
 			}
 		}
@@ -189,6 +211,13 @@ package operations
 		{
 			if (hasEventListener(OperationEvent.BEFORE_EXECUTE)) {
 				dispatchEvent( new OperationEvent(OperationEvent.BEFORE_EXECUTE) );
+			}
+		}
+		
+		private function fireProgress():void
+		{
+			if (hasEventListener(ProgressOperationEvent.PROGRESS)) {
+				dispatchEvent( new ProgressOperationEvent(ProgressOperationEvent.PROGRESS) );
 			}
 		}
 		
@@ -224,6 +253,32 @@ package operations
 		protected function parseResult(data:Object):Object
 		{
 			return data;
+		}
+		
+		/**
+		 * Called by sub-classes to indicate the progress of the operation.
+		 * 
+		 * @param unitsComplete The number of units completed.
+		 */
+		final protected function progressed(unitsComplete:Number):void
+		{
+			_progress.complete = unitsComplete;
+			fireProgress();
+		}
+		
+		/**
+		 * Resets the operation to its queued state. If the operation is executing, it will be
+		 * canceled. If the operation has finished its errors, result data, and progress will
+		 * be reset.
+		 */
+		final public function reset():void
+		{
+			if (isExecuting) {
+				cancel();
+			}
+			progress.complete = 0;
+			_hasErrored = false;
+			changeState(QUEUED);
 		}
 		
 		/**
@@ -302,13 +357,72 @@ package operations
 			return classNameParts.length > 1 ? classNameParts[1] : classNameParts[0];
 		}
 		
-		private var _isExecuting:Boolean;
+		[Bindable(event="propertyChange")]
 		/**
 		 * Indicates whether the request is currently executing.
 		 */
 		final public function get isExecuting():Boolean
 		{
-			return _isExecuting;
+			return _state == EXECUTING;
+		}
+		
+		[Bindable(event="propertyChange")]
+		/**
+		 * Indicates whether the request is finished, either successfully or unsuccessfully.
+		 */
+		final public function get isFinished():Boolean
+		{
+			return _state == FINISHED;
+		}
+		
+		[Bindable(event="propertyChange")]
+		/**
+		 * Indicates whether the request is idle and ready to be executed.
+		 */
+		final public function get isQueued():Boolean
+		{
+			return _state == QUEUED;
+		}
+		
+		[Bindable(event="propertyChange")]
+		/**
+		 * Indicates whether the request has finished, and hasn't errored.
+		 */
+		final public function get isSuccessful():Boolean
+		{
+			return isFinished && !hasErrored;
+		}
+		
+		private var _hasErrored:Boolean;
+		[Bindable(event="propertyChange")]
+		/**
+		 * <code>true</code> if this operation errored during its execution.
+		 */
+		final public function get hasErrored():Boolean
+		{
+			return _hasErrored;
+		}
+		
+		private var _progress:Progress;
+		[Bindable(event="progress")]
+		/**
+		 * Information about the progress of this operation.
+		 */
+		public function get progress():Progress
+		{
+			if (_progress == null) {
+				_progress = new Progress();
+				_progress.total = unitsTotal;
+			}
+			return _progress;
+		}
+		
+		/**
+		 * The number of units needed to complete this operation.
+		 */
+		protected function get unitsTotal():Number
+		{
+			return 1;
 		}
 	}
 }

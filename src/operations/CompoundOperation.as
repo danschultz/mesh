@@ -133,6 +133,7 @@ package operations
 			
 			_executingOperations.remove(operation);
 			_finishedOperationsCount++;
+			progressed(_finishedOperationsCount);
 			
 			// check to see if all the operations are finished.
 			if (isExecuting && _finishedOperationsCount == _operations.length) {
@@ -197,6 +198,14 @@ package operations
 		protected function get operationSet():HashSet
 		{
 			return _operations;
+		}
+		
+		/**
+		 * @inheritDoc
+		 */
+		override protected function get unitsTotal():Number
+		{
+			return operationSet.length;
 		}
 	}
 }
