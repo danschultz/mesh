@@ -17,6 +17,11 @@ package operations
 		public static const CANCELED:String = "canceled";
 		
 		/**
+		 * The event type for when an operation is queued.
+		 */
+		public static const QUEUED:String = "queued";
+		
+		/**
 		 * The event type before an operation is executed.
 		 */
 		public static const BEFORE_EXECUTE:String = "preExecute";

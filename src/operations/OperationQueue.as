@@ -1,5 +1,6 @@
 package operations
 {
+	import flash.events.Event;
 	import flash.events.EventDispatcher;
 	
 	import mx.collections.ArrayList;
@@ -55,11 +56,12 @@ package operations
 		public function queue(operation:Operation):void
 		{
 			remove(operation);
-			operation.reset();
+			operation.queue();
 			items.addItem(operation);
 			progress.total += operation.progress.total;
-			
 			executeAvailable();
+			
+			operation.addEventListener(OperationEvent.CANCELED, handleOperationCanceled);
 		}
 		
 		/**
@@ -71,6 +73,8 @@ package operations
 		public function remove(operation:Operation):void
 		{
 			if (_items.removeItem(operation)) {
+				operation.removeEventListener(OperationEvent.CANCELED, handleOperationCanceled);
+				
 				if (operation.isFinished) {
 					progress.complete -= operation.progress.complete;
 				}
@@ -109,7 +113,7 @@ package operations
 				_isRunning = false;
 				
 				while (executing.length > 0) {
-					(executing.getItemAt(0) as Operation).reset();
+					(executing.getItemAt(0) as Operation).queue();
 				}
 			}
 		}
@@ -130,6 +134,11 @@ package operations
 			operation.addEventListener(ProgressOperationEvent.PROGRESS, handleOperationProgress);
 			operation.addEventListener(FinishedOperationEvent.FINISHED, handleOperationFinished);
 			operation.execute();
+		}
+		
+		private function handleOperationCanceled(event:OperationEvent):void
+		{
+			remove(event.operation);
 		}
 		
 		private function handleOperationProgress(event:ProgressOperationEvent):void

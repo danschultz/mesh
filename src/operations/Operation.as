@@ -1,6 +1,5 @@
 package operations
 {
-	import flash.events.Event;
 	import flash.events.EventDispatcher;
 	import flash.utils.getQualifiedClassName;
 	
@@ -10,6 +9,11 @@ package operations
 	 * Dispatched when the execution of an operation has been canceled.
 	 */
 	[Event(name="canceled", type="operations.OperationEvent")]
+	
+	/**
+	 * Dispatched when the execution of an operation has been queued.
+	 */
+	[Event(name="queued", type="operations.OperationEvent")]
 	
 	/**
 	 * Dispatched after the execution of an operation has started.
@@ -200,6 +204,13 @@ package operations
 			}
 		}
 		
+		private function fireQueued():void
+		{
+			if (hasEventListener(OperationEvent.QUEUED)) {
+				dispatchEvent( new OperationEvent(OperationEvent.QUEUED) );
+			}
+		}
+		
 		private function fireAfterExecute():void
 		{
 			if (hasEventListener(OperationEvent.AFTER_EXECUTE)) {
@@ -271,14 +282,19 @@ package operations
 		 * canceled. If the operation has finished its errors, result data, and progress will
 		 * be reset.
 		 */
-		final public function reset():void
+		final public function queue():void
 		{
 			if (isExecuting) {
-				cancel();
+				cancelRequest();
 			}
+			
 			progress.complete = 0;
 			_hasErrored = false;
-			changeState(QUEUED);
+			
+			if (!isQueued) {
+				changeState(QUEUED);
+				fireQueued();
+			}
 		}
 		
 		/**
