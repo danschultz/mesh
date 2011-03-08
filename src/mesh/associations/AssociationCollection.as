@@ -1,7 +1,7 @@
 package mesh.associations
 {
-	import collections.ArrayList;
-	import collections.ArraySet;
+	import collections.ArraySequence;
+	import collections.HashSet;
 	
 	import flash.utils.flash_proxy;
 	import flash.utils.setTimeout;
@@ -25,9 +25,9 @@ package mesh.associations
 	
 	public dynamic class AssociationCollection extends AssociationProxy implements IList
 	{
-		private var _originalEntities:ArrayList;
-		private var _mirroredEntities:ArrayList;
-		private var _removedEntities:ArraySet = new ArraySet();
+		private var _originalEntities:ArraySequence;
+		private var _mirroredEntities:ArraySequence;
+		private var _removedEntities:HashSet = new HashSet();
 		
 		/**
 		 * @copy AssociationProxy#AssociationProxy()
@@ -39,7 +39,7 @@ package mesh.associations
 			
 			afterLoad(function(proxy:AssociationCollection):void
 			{
-				_originalEntities = new ArrayList(toArray());
+				_originalEntities = new ArraySequence(toArray());
 				
 				for each (var entity:Entity in proxy) {
 					entity.callback("afterFind");
@@ -157,7 +157,7 @@ package mesh.associations
 			}
 			
 			if (event.kind != CollectionEventKind.UPDATE) {
-				_mirroredEntities = new ArrayList(target.source);
+				_mirroredEntities = new ArraySequence(target.source);
 			}
 			
 			dispatchEvent(event.clone());
@@ -358,7 +358,7 @@ package mesh.associations
 				super.target = new ArrayCollection(value);
 				
 				if (_mirroredEntities == null) {
-					_mirroredEntities = new ArrayList(value);
+					_mirroredEntities = new ArraySequence(value);
 				}
 				
 				target.addEventListener(CollectionEvent.COLLECTION_CHANGE, handleEntitiesCollectionChange);

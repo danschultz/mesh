@@ -1,6 +1,6 @@
 package operations
 {
-	import collections.ArraySet;
+	import collections.HashSet;
 	
 	import flash.errors.IllegalOperationError;
 
@@ -36,7 +36,7 @@ package operations
 	 */
 	public class CompoundOperation extends Operation
 	{
-		private var _executingOperations:ArraySet = new ArraySet();
+		private var _executingOperations:HashSet = new HashSet();
 		
 		/**
 		 * Constructor.
@@ -191,11 +191,11 @@ package operations
 			return _finishedOperationsCount;
 		}
 		
-		private var _operations:ArraySet = new ArraySet();
+		private var _operations:HashSet = new HashSet();
 		/**
 		 * The list of <code>Operation</code>s to be executed.
 		 */
-		protected function get operationSet():ArraySet
+		protected function get operationSet():HashSet
 		{
 			return _operations;
 		}
