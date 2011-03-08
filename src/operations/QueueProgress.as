@@ -30,7 +30,21 @@ package operations
 			for each (var executing:Operation in _queue.executing) {
 				temp += executing.progress.complete;
 			}
-			return super.complete + temp;
+			return confirmed + temp;
 		}
+		
+		private var _confirmed:Number = 0;
+		/**
+		 * The number of units that have been confirmed to be completed.
+		 */
+		public function get confirmed():Number
+		{
+			return _confirmed;
+		}
+		public function set confirmed(value:Number):void
+		{
+			_confirmed = value;
+		}
+
 	}
 }

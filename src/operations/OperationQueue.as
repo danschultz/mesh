@@ -8,6 +8,26 @@ package operations
 	import mx.collections.ListCollectionView;
 	
 	/**
+	 * Dispatched when the queue has started.
+	 */
+	[Event(name="started", type="operations.OperationQueueEvent")]
+	
+	/**
+	 * Dispatched when the queue receives a progress event from one of its operations.
+	 */
+	[Event(name="progress", type="operations.OperationQueueEvent")]
+	
+	/**
+	 * Dispatched when the queue has finished all of its operations.
+	 */
+	[Event(name="idle", type="operations.OperationQueueEvent")]
+	
+	/**
+	 * Dispatched when the queue has been paused.
+	 */
+	[Event(name="paused", type="operations.OperationQueueEvent")]
+	
+	/**
 	 * An <code>OperationQueue</code> manages the execution of a set of <code>Operation</code>s.
 	 * This class allows you to queue operations that are computationally expensive, or take large
 	 * amounts of time, such as uploading.
@@ -45,6 +65,7 @@ package operations
 		{
 			super();
 			_simultaneousCount = simultaneousCount;
+			_progress = new QueueProgress(this);
 		}
 		
 		/**
@@ -62,6 +83,7 @@ package operations
 			executeAvailable();
 			
 			operation.addEventListener(OperationEvent.CANCELED, handleOperationCanceled);
+			fireProgress();
 		}
 		
 		/**
@@ -76,9 +98,10 @@ package operations
 				operation.removeEventListener(OperationEvent.CANCELED, handleOperationCanceled);
 				
 				if (operation.isFinished) {
-					progress.complete -= operation.progress.complete;
+					_progress.confirmed -= operation.progress.complete;
 				}
 				progress.total -= operation.progress.total;
+				fireProgress();
 			}
 		}
 		
@@ -100,6 +123,7 @@ package operations
 		{
 			if (!isRunning) {
 				_isRunning = true;
+				fireStarted();
 				executeAvailable();
 			}
 		}
@@ -115,7 +139,19 @@ package operations
 				while (executing.length > 0) {
 					(executing.getItemAt(0) as Operation).queue();
 				}
+				
+				firePaused();
 			}
+		}
+		
+		/**
+		 * The next operation in the queue to be executed.
+		 * 
+		 * @return A queued operation, or <code>null</code> if the queue is empty.
+		 */
+		public function next():Operation
+		{
+			return queued.length > 0 ? Operation( queued.getItemAt(0) ) : null;
 		}
 		
 		private function executeAvailable():void
@@ -143,28 +179,49 @@ package operations
 		
 		private function handleOperationProgress(event:ProgressOperationEvent):void
 		{
-			
+			fireProgress();
 		}
 		
 		private function handleOperationFinished(event:FinishedOperationEvent):void
 		{
 			if (event.successful) {
-				progress.complete += event.operation.progress.complete;
+				_progress.confirmed += event.operation.progress.complete;
 			}
 			
 			event.operation.removeEventListener(ProgressOperationEvent.PROGRESS, handleOperationProgress);
 			event.operation.removeEventListener(FinishedOperationEvent.FINISHED, handleOperationFinished);
 			executeAvailable();
+			
+			if (executing.length == 0) {
+				fireIdle();
+			}
 		}
 		
-		/**
-		 * The next operation in the queue to be executed.
-		 * 
-		 * @return A queued operation, or <code>null</code> if the queue is empty.
-		 */
-		public function next():Operation
+		private function fireStarted():void
 		{
-			return queued().length > 0 ? Operation( queued().getItemAt(0) ) : null;
+			fireEvent(OperationQueueEvent.STARTED);
+		}
+		
+		private function fireProgress():void
+		{
+			fireEvent(OperationQueueEvent.PROGRESS);
+		}
+		
+		private function firePaused():void
+		{
+			fireEvent(OperationQueueEvent.PAUSED);
+		}
+		
+		private function fireIdle():void
+		{
+			fireEvent(OperationQueueEvent.IDLE);
+		}
+		
+		private function fireEvent(type:String):void
+		{
+			if (hasEventListener(type)) {
+				dispatchEvent( new OperationQueueEvent(type) );
+			}
 		}
 		
 		private var _isRunning:Boolean;
@@ -174,6 +231,14 @@ package operations
 		public function get isRunning():Boolean
 		{
 			return _isRunning;
+		}
+		
+		/**
+		 * <code>true</code> if the queue is running and isn't executing any operations.
+		 */
+		public function get isIdle():Boolean
+		{
+			return isRunning && executing.length == 0;
 		}
 		
 		private var _errored:ListCollectionView;
@@ -214,7 +279,7 @@ package operations
 		/**
 		 * The set of <code>Operation</code>s that are awaiting to be executed.
 		 */
-		public function queued():IList
+		public function get queued():IList
 		{
 			if (_queued == null) {
 				_queued = new ListCollectionView(items);
@@ -259,9 +324,6 @@ package operations
 		 */
 		public function get progress():Progress
 		{
-			if (_progress == null) {
-				_progress = new QueueProgress(this);
-			}
 			return _progress;
 		}
 	}
