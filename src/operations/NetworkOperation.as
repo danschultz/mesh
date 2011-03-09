@@ -106,10 +106,10 @@ package operations
 		/**
 		 * @inheritDoc
 		 */
-		final override public function fault(summary:String, detail:String = ""):void
+		final override public function fault(summary:String, detail:String = "", code:String = ""):void
 		{
 			stopTimeoutTimer();
-			super.fault(summary, detail);
+			super.fault(summary, detail, code);
 		}
 		
 		private function handleAttemptTimerComplete(event:TimerEvent):void

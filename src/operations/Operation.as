@@ -1,6 +1,5 @@
 package operations
 {
-	import flash.events.Event;
 	import flash.events.EventDispatcher;
 	import flash.utils.getQualifiedClassName;
 	
@@ -10,6 +9,11 @@ package operations
 	 * Dispatched when the execution of an operation has been canceled.
 	 */
 	[Event(name="canceled", type="operations.OperationEvent")]
+	
+	/**
+	 * Dispatched when the execution of an operation has been queued.
+	 */
+	[Event(name="queued", type="operations.OperationEvent")]
 	
 	/**
 	 * Dispatched after the execution of an operation has started.
@@ -165,8 +169,9 @@ package operations
 		 * 
 		 * @param summary A simple description of the fault.
 		 * @param detail A more detailed description of the fault.
+		 * @param code A code given to this fault.
 		 */
-		public function fault(summary:String, detail:String = ""):void
+		public function fault(summary:String, detail:String = "", code:String = ""):void
 		{
 			if (isExecuting) {
 				fireFault(summary, detail);
@@ -200,6 +205,13 @@ package operations
 			}
 		}
 		
+		private function fireQueued():void
+		{
+			if (hasEventListener(OperationEvent.QUEUED)) {
+				dispatchEvent( new OperationEvent(OperationEvent.QUEUED) );
+			}
+		}
+		
 		private function fireAfterExecute():void
 		{
 			if (hasEventListener(OperationEvent.AFTER_EXECUTE)) {
@@ -221,10 +233,10 @@ package operations
 			}
 		}
 		
-		private function fireFault(summary:String, detail:String = ""):void
+		private function fireFault(summary:String, detail:String = "", code:String = ""):void
 		{
 			if (hasEventListener(FaultOperationEvent.FAULT)) {
-				dispatchEvent( new FaultOperationEvent(summary, detail) );
+				dispatchEvent( new FaultOperationEvent(summary, detail, code) );
 			}
 		}
 		
@@ -271,14 +283,19 @@ package operations
 		 * canceled. If the operation has finished its errors, result data, and progress will
 		 * be reset.
 		 */
-		final public function reset():void
+		final public function queue():void
 		{
 			if (isExecuting) {
-				cancel();
+				cancelRequest();
 			}
+			
 			progress.complete = 0;
 			_hasErrored = false;
-			changeState(QUEUED);
+			
+			if (!isQueued) {
+				changeState(QUEUED);
+				fireQueued();
+			}
 		}
 		
 		/**

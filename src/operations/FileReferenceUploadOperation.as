@@ -48,6 +48,15 @@ package operations
 		/**
 		 * @inheritDoc
 		 */
+		override protected function cancelRequest():void
+		{
+			super.cancelRequest();
+			_file.cancel();
+		}
+		
+		/**
+		 * @inheritDoc
+		 */
 		override protected function request():void
 		{
 			super.request();

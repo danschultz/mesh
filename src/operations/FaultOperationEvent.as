@@ -13,7 +13,7 @@ package operations
 		/**
 		 * An event type for when an operation has errored or faulted during execution.
 		 */
-		public  static const FAULT:String = "fault";
+		public static const FAULT:String = "fault";
 		
 		/**
 		 * Constructor.
@@ -21,12 +21,13 @@ package operations
 		 * @param summary A simple description of the fault.
 		 * @param detail A detailed description of the fault.
 		 */
-		public function FaultOperationEvent(summary:String, detail:String = "")
+		public function FaultOperationEvent(summary:String, detail:String = "", code:String = "")
 		{
 			super(FAULT);
 			
 			_summary = summary == null ? "" : summary;
 			_detail = detail == null ? "" : detail;
+			_code = code == null ? "" : code;
 		}
 		
 		/**
@@ -53,6 +54,15 @@ package operations
 		public function get detail():String
 		{
 			return _detail;
+		}
+		
+		private var _code:String;
+		/**
+		 * A specific code given to the fault.
+		 */
+		public function get code():String
+		{
+			return _code;
 		}
 	}
 }
