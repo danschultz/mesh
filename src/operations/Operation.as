@@ -169,8 +169,9 @@ package operations
 		 * 
 		 * @param summary A simple description of the fault.
 		 * @param detail A more detailed description of the fault.
+		 * @param code A code given to this fault.
 		 */
-		public function fault(summary:String, detail:String = ""):void
+		public function fault(summary:String, detail:String = "", code:String = ""):void
 		{
 			if (isExecuting) {
 				fireFault(summary, detail);
@@ -232,10 +233,10 @@ package operations
 			}
 		}
 		
-		private function fireFault(summary:String, detail:String = ""):void
+		private function fireFault(summary:String, detail:String = "", code:String = ""):void
 		{
 			if (hasEventListener(FaultOperationEvent.FAULT)) {
-				dispatchEvent( new FaultOperationEvent(summary, detail) );
+				dispatchEvent( new FaultOperationEvent(summary, detail, code) );
 			}
 		}
 		
