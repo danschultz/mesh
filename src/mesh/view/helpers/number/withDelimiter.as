@@ -18,7 +18,7 @@ package mesh.view.helpers.number
 	 * @param options The options to use.
 	 * @return A delimited number as a string.
 	 */
-	public function numberWithDelimiter(number:Number, options:Object = null):String
+	public function withDelimiter(number:Number, options:Object = null):String
 	{
 		options = merge({delimiter:",", separator:"."}, options);
 		

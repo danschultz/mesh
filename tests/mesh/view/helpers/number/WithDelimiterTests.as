@@ -5,7 +5,7 @@ package mesh.view.helpers.number
 	import org.flexunit.assertThat;
 	import org.hamcrest.object.equalTo;
 
-	public class NumberWithDelimiterTests
+	public class WithDelimiterTests
 	{
 		private var _tests:Array;
 		
@@ -25,7 +25,7 @@ package mesh.view.helpers.number
 		public function testNumberWithDelimiter():void
 		{
 			for each (var test:Object in _tests) {
-				assertThat("test failed for number," + test.number + ", with options: " + inspect(test.options), numberWithDelimiter(test.number, test.options), equalTo(test.expected));
+				assertThat("test failed for number," + test.number + ", with options: " + inspect(test.options), withDelimiter(test.number, test.options), equalTo(test.expected));
 			}
 		}
 	}
