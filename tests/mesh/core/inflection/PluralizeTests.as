@@ -20,10 +20,14 @@ package mesh.core.inflection
 				// irregulars
 				{word:"mouse", expected:"mice"},
 				
-				// ignored
+				// uncountables
 				{word:"moose", expected:"moose"},
 				{word:"money", expected:"money"},
-				{word:"deer", expected:"deer"}
+				{word:"deer", expected:"deer"},
+				
+				// already plural
+				{word:"cats", expected:"cats"},
+				{word:"addresses", expected:"addresses"}
 			];
 		}
 		

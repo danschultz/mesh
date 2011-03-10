@@ -55,7 +55,7 @@ package mesh.core.inflection
 				INSTANCE.plural(/([m|l])ouse$/i, '$1ice');
 				INSTANCE.plural(/^(ox)$/i, '$1en');
 				INSTANCE.plural(/(quiz)$/i, '$1zes');
-					
+				
 				INSTANCE.singular(/s$/i, '');
 				INSTANCE.singular(/(n)ews$/i, '$1ews');
 				INSTANCE.singular(/([ti])a$/i, '$1um');
@@ -81,6 +81,7 @@ package mesh.core.inflection
 				INSTANCE.singular(/(matr)ices$/i, '$1ix');
 				INSTANCE.singular(/(quiz)zes$/i, '$1');
 				INSTANCE.singular(/(database)s$/i, '$1');
+				INSTANCE.singular(/ess$/i, 'ess');
 				
 				INSTANCE.irregular('person', 'people');
 				INSTANCE.irregular('man', 'men');
@@ -195,9 +196,8 @@ package mesh.core.inflection
 			}
 			
 			for (var i:int = 0; i < _plurals.length; i = i+2) {
-				var result:String = word.replace(_plurals[i], _plurals[i+1]);
-				if (result != word) {
-					return result;
+				if (new RegExp(_plurals[i]).test(word)) {
+					return word.replace(_plurals[i], _plurals[i+1]);
 				}
 			}
 			
@@ -217,9 +217,8 @@ package mesh.core.inflection
 			}
 			
 			for (var i:int = 0; i < _singulars.length; i = i+2) {
-				var result:String = word.replace(_singulars[i], _singulars[i+1]);
-				if (result != word) {
-					return result;
+				if (new RegExp(_singulars[i]).test(word)) {
+					return word.replace(_singulars[i], _singulars[i+1]);
 				}
 			}
 			
