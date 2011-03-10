@@ -8,7 +8,7 @@ package operations
 
 	/**
 	 * An asynchronous operation that wraps the execution of a Flex RPC service. This operation
-	 * can be used with either <code>HTTPService</code>s or <code>RemoteObject</code>s.
+	 * can be used with either <code>HTTPMultiService</code>s or <code>RemoteObject</code>s.
 	 * 
 	 * @author Dan Schultz
 	 */
@@ -51,7 +51,7 @@ package operations
 		
 		private function handleAsyncTokenFault(event:FaultEvent, token:AsyncToken):void
 		{
-			fault(event.fault.faultString, event.fault.faultDetail);
+			fault(event.fault.faultString, event.fault.faultDetail, event.fault.faultCode);
 		}
 	}
 }
