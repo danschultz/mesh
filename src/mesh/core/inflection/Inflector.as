@@ -82,14 +82,34 @@ package mesh.core.inflection
 				INSTANCE.singular(/(quiz)zes$/i, '$1');
 				INSTANCE.singular(/(database)s$/i, '$1');
 				
-				INSTANCE.irregular('person', 'people')
-				INSTANCE.irregular('man', 'men')
-				INSTANCE.irregular('child', 'children')
-				INSTANCE.irregular('sex', 'sexes')
-				INSTANCE.irregular('move', 'moves')
-				INSTANCE.irregular('cow', 'kine')
+				INSTANCE.irregular('person', 'people');
+				INSTANCE.irregular('man', 'men');
+				INSTANCE.irregular('child', 'children');
+				INSTANCE.irregular('sex', 'sexes');
+				INSTANCE.irregular('move', 'moves');
+				INSTANCE.irregular('cow', 'kine');
+				INSTANCE.irregular('goose', 'geese');
 				
-				INSTANCE.ignore("equipment", "information", "rice", "money", "species", "series", "fish", "sheep", "jeans")
+				INSTANCE.uncountable("equipment");
+				INSTANCE.uncountable("information");
+				INSTANCE.uncountable("rice");
+				INSTANCE.uncountable("money");
+				INSTANCE.uncountable("species");
+				INSTANCE.uncountable("series");
+				INSTANCE.uncountable("jeans");
+				
+				// game animals are normally uncountable
+				INSTANCE.uncountable("deer");
+				INSTANCE.uncountable("moose");
+				INSTANCE.uncountable("sheep");
+				INSTANCE.uncountable("salmon");
+				INSTANCE.uncountable("bison");
+				INSTANCE.uncountable("moose");
+				INSTANCE.uncountable("pike");
+				INSTANCE.uncountable("trout");
+				INSTANCE.uncountable("fish");
+				INSTANCE.uncountable("sheep");
+				INSTANCE.uncountable("swine");
 			}
 			
 			return INSTANCE;
@@ -100,7 +120,7 @@ package mesh.core.inflection
 		 * 
 		 * @param words A set of words.
 		 */
-		public function ignore(... words):void
+		public function uncountable(... words):void
 		{
 			_ignored.addAll(words);
 		}
@@ -134,7 +154,7 @@ package mesh.core.inflection
 			if (rule is String) {
 				_ignored.removeAll([rule, replacement]);
 			}
-			_plurals.push(rule, replacement);
+			_singulars.unshift(rule, replacement);
 		}
 		
 		/**
