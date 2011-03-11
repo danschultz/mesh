@@ -274,7 +274,7 @@ package operations
 		 */
 		final protected function progressed(unitsComplete:Number):void
 		{
-			_progress.complete = unitsComplete;
+			progress.complete = unitsComplete;
 			fireProgress();
 		}
 		
