@@ -88,7 +88,6 @@ package mesh.core.inflection
 				INSTANCE.irregular('child', 'children');
 				INSTANCE.irregular('sex', 'sexes');
 				INSTANCE.irregular('move', 'moves');
-				INSTANCE.irregular('cow', 'kine');
 				INSTANCE.irregular('goose', 'geese');
 				
 				INSTANCE.uncountable("equipment");

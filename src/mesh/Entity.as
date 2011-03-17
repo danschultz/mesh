@@ -27,6 +27,7 @@ package mesh
 	import mx.events.PropertyChangeEvent;
 	
 	import operations.Operation;
+	import operations.ResultOperationEvent;
 	
 	/**
 	 * An entity.
@@ -77,6 +78,9 @@ package mesh
 			addCallback("afterFind", block);
 		}
 		
+		/**
+		 * @copy Callbacks#callback()
+		 */
 		public function callback(method:String):void
 		{
 			_callbacks.callback(method);
@@ -87,6 +91,24 @@ package mesh
 			_callbacks.addCallback(method, block, [this]);
 		}
 		
+		/**
+		 * Reloads the attributes of this entity from the backend.
+		 * 
+		 * @return An executing operation.
+		 */
+		public function reload():Operation
+		{
+			var operation:Operation = Query.entity(this).find([id]);
+			operation.addEventListener(ResultOperationEvent.RESULT, function(event:ResultOperationEvent):void
+			{
+				translateFrom(event.data[0].translateTo());
+			});
+			return operation;
+		}
+		
+		/**
+		 * @copy Callbacks#removeCallback()
+		 */
 		public function removeCallback(block:Function):void
 		{
 			_callbacks.removeCallback(block);
@@ -300,7 +322,7 @@ package mesh
 		 * Adds a callback function that will be executed before a save operation. If this 
 		 * function returns <code>false</code> or throws an error, the save will halt.
 		 * 
-		 * @param callback The callback function.
+		 * @param block The callback function.
 		 */
 		public function beforeSave(block:Function):void
 		{
@@ -310,7 +332,7 @@ package mesh
 		/**
 		 * Adds a callback function that will be executed after a save operation has finished.
 		 * 
-		 * @param callback
+		 * @param block The callback function.
 		 */
 		public function afterSave(block:Function):void
 		{

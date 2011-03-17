@@ -192,6 +192,7 @@ package operations
 			event.operation.removeEventListener(FinishedOperationEvent.FINISHED, handleOperationFinished);
 			executeAvailable();
 			
+			fireProgress();
 			if (executing.length == 0) {
 				fireIdle();
 			}

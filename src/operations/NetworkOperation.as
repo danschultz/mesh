@@ -3,6 +3,7 @@ package operations
 	import flash.errors.IllegalOperationError;
 	import flash.events.TimerEvent;
 	import flash.utils.Timer;
+	import flash.events.Event;
 
 	/**
 	 * A base class for asynchronous operations that make a network connection. Network
@@ -41,7 +42,8 @@ package operations
 			_attemptTimer.addEventListener(TimerEvent.TIMER_COMPLETE, handleAttemptTimerComplete);
 			
 			// sets the attempt count back to 0
-			addEventListener(OperationEvent.BEFORE_EXECUTE, handleOperationExecuted);
+			addEventListener(OperationEvent.BEFORE_EXECUTE, handleBeforeExecute);
+			addEventListener(FinishedOperationEvent.FINISHED, handleFinished);
 		}
 		
 		private function attemptExecution(attempt:int):void
@@ -90,7 +92,6 @@ package operations
 		 */
 		override protected function cancelRequest():void
 		{
-			stopTimeoutTimer();
 			stopAttempt();
 		}
 		
@@ -108,7 +109,6 @@ package operations
 		 */
 		final override public function fault(summary:String, detail:String = "", code:String = ""):void
 		{
-			stopTimeoutTimer();
 			super.fault(summary, detail, code);
 		}
 		
@@ -117,10 +117,15 @@ package operations
 			request();
 		}
 		
-		private function handleOperationExecuted(event:OperationEvent):void
+		private function handleBeforeExecute(event:OperationEvent):void
 		{
 			_attemptsCount = 0;
 			startTimeoutTimer();
+		}
+		
+		private function handleFinished(event:OperationEvent):void
+		{
+			stopTimeoutTimer();
 		}
 		
 		private function handleTimeoutTimerComplete(event:TimerEvent):void
@@ -141,7 +146,6 @@ package operations
 		 */
 		final override protected function result(data:Object):void
 		{
-			stopTimeoutTimer();
 			super.result(data);
 		}
 		

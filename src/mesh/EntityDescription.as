@@ -256,7 +256,7 @@ package mesh
 		
 		public function newEntity(data:Object):Entity
 		{
-			var entity:Entity = factoryMethod == null ? newInstance(entityType) as Entity : entityType[factoryMethod](data);
+			var entity:Entity = factoryMethod == null || entityType[factoryMethod] == null ? newInstance(entityType) as Entity : entityType[factoryMethod](data);
 			return entity;
 		}
 		
