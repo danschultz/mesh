@@ -181,14 +181,9 @@ package mesh.associations
 			
 		}
 		
-		public function createSave(validate:Boolean = true):Operation
-		{
-			return new SaveBatch().add(this).build(validate);
-		}
-		
 		public function save(validate:Boolean = true):Operation
 		{
-			var operation:Operation = createSave(validate);
+			var operation:Operation = new SaveBatch().add(this).build(validate);
 			setTimeout(operation.execute, Mesh.DELAY);
 			return operation;
 		}

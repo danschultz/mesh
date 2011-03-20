@@ -3,6 +3,7 @@ package mesh
 	import mesh.models.Airport;
 	import mesh.models.FlightPlan;
 	
+	import operations.FactoryOperation;
 	import operations.FinishedOperationEvent;
 	import operations.Operation;
 	import operations.ResultOperationEvent;
@@ -38,7 +39,7 @@ package mesh
 			_flightPlan.departing = _reidHillview;
 			_flightPlan.arriving = _sanJose;
 			
-			var operation:Operation = _flightPlan.departing.createSave().then(_flightPlan.arriving.createSave()).then(_flightPlan.createSave());
+			var operation:Operation = new FactoryOperation(_flightPlan.departing.save).then(new FactoryOperation(_flightPlan.arriving.save)).then(new FactoryOperation(_flightPlan.save));
 			Async.proceedOnEvent(this, operation, FinishedOperationEvent.FINISHED);
 			operation.execute();
 		}

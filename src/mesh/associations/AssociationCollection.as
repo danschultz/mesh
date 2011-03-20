@@ -19,6 +19,7 @@ package mesh.associations
 	import mx.events.CollectionEventKind;
 	
 	import operations.EmptyOperation;
+	import operations.FactoryOperation;
 	import operations.Operation;
 	
 	use namespace flash_proxy;
@@ -103,7 +104,7 @@ package mesh.associations
 		{
 			var operation:Operation = new EmptyOperation();
 			if (contains(entity)) {
-				operation = entity.createDestroy();
+				operation = new FactoryOperation(entity.destroy);
 			}
 			setTimeout(operation.execute, Mesh.DELAY);
 			return operation;

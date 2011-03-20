@@ -149,17 +149,6 @@ package mesh
 		}
 		
 		/**
-		 * Creates an operation that when executed will destroy the entity from the backend.
-		 * 
-		 * @return An unexecuted operation.
-		 */
-		public function createDestroy():Operation
-		{
-			markForRemoval();
-			return createSave();
-		}
-		
-		/**
 		 * Executes an operation that will destroy this entity from the backend. If the entity also belongs 
 		 * to any associations, it will be removed from those associations.
 		 * 
@@ -167,7 +156,8 @@ package mesh
 		 */
 		public function destroy():Operation
 		{
-			var operation:Operation = createDestroy();
+			markForRemoval();
+			var operation:Operation = createSave();
 			setTimeout(operation.execute, Mesh.DELAY);
 			return operation;
 		}
@@ -293,7 +283,7 @@ package mesh
 			}
 		}
 		
-		public function createSave(validate:Boolean = true):Operation
+		private function createSave(validate:Boolean = true):Operation
 		{
 			return new SaveBatch().add(this).build(validate);
 		}
