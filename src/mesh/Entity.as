@@ -101,7 +101,7 @@ package mesh
 			var operation:Operation = Query.entity(this).find([id]);
 			operation.addEventListener(ResultOperationEvent.RESULT, function(event:ResultOperationEvent):void
 			{
-				translateFrom(event.data[0].translateTo());
+				translateFrom(event.data.translateTo());
 			});
 			return operation;
 		}

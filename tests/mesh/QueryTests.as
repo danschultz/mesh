@@ -51,7 +51,7 @@ package mesh
 			var operation:Operation = Query.entity(Airport).find(_reidHillview.id);
 			operation.addEventListener(ResultOperationEvent.RESULT, function(event:ResultOperationEvent):void
 			{
-				result = event.data[0];
+				result = event.data;
 			});
 			operation.addEventListener(FinishedOperationEvent.FINISHED, Async.asyncHandler(this, function(event:FinishedOperationEvent, data:Object = null):void
 			{
@@ -67,7 +67,7 @@ package mesh
 			var operation:Operation = Query.entity(Airport).where({id:_sanJose.id});
 			operation.addEventListener(ResultOperationEvent.RESULT, function(event:ResultOperationEvent):void
 			{
-				result = event.data[0];
+				result = event.data;
 			});
 			operation.addEventListener(FinishedOperationEvent.FINISHED, Async.asyncHandler(this, function(event:FinishedOperationEvent, data:Object = null):void
 			{
@@ -83,7 +83,7 @@ package mesh
 			var operation:Operation = Query.entity(FlightPlan).where({id:_flightPlan.id});
 			operation.addEventListener(ResultOperationEvent.RESULT, function(event:ResultOperationEvent):void
 			{
-				result = event.data[0];
+				result = event.data;
 			});
 			operation.addEventListener(FinishedOperationEvent.FINISHED, Async.asyncHandler(this, function(event:FinishedOperationEvent, data:Object = null):void
 			{

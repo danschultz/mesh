@@ -63,6 +63,10 @@ package mesh
 				entity.callback("afterFind");
 				event.data[i] = entity;
 			}
+			
+			if (event.data.length == 1) {
+				event.data = event.data[0];
+			}
 		}
 	}
 }
