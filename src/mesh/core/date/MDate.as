@@ -14,8 +14,8 @@ package mesh.core.date
 	 * <p>
 	 * <strong>Example:</strong> Comparing dates using operators:
 	 * <listing version="3.0">
-	 * var yesterday:BaseDate = Date.today().previousDay();
-	 * var today:BaseDate = Date.today();
+	 * var yesterday:MDate = MDate.today().previousDay();
+	 * var today:MDate = MDate.today();
 	 * trace(today > yesterday); // true
 	 * </listing>
 	 * </p>
@@ -24,7 +24,7 @@ package mesh.core.date
 	 * @see DateTime
 	 * @author Dan Schultz
 	 */
-	public class BaseDate
+	public class MDate
 	{
 		private var _date:Date;
 		
@@ -35,9 +35,9 @@ package mesh.core.date
 		 * @param month The month in the year.
 		 * @param day The day in the month.
 		 */
-		public function BaseDate(year:int, month:int = 1, day:int = 1)
+		public function MDate(year:int, month:int = 1, day:int = 1)
 		{
-			_date = new Date(year, month, day);
+			_date = new Date(year, month-1, day);
 		}
 		
 		/**
@@ -45,10 +45,32 @@ package mesh.core.date
 		 * 
 		 * @return Today's date.
 		 */
-		public static function today():BaseDate
+		public static function today():MDate
 		{
 			var d:Date = new Date();
-			return new BaseDate(d.fullYear, d.month+1, d.date+1);
+			return new MDate(d.fullYear, d.month+1, d.date);
+		}
+		
+		/**
+		 * Returns yesterday's local date.
+		 * 
+		 * @return Yesterday's date.
+		 */
+		public static function yesterday():MDate
+		{
+			var d:Date = new Date();
+			return new MDate(d.fullYear, d.month+1, d.date-1);
+		}
+		
+		/**
+		 * Returns tomorrow's local date.
+		 * 
+		 * @return Tomorrow's date.
+		 */
+		public static function tomorrow():MDate
+		{
+			var d:Date = new Date();
+			return new MDate(d.fullYear, d.month+1, d.date+1);
 		}
 		
 		/**
@@ -63,21 +85,41 @@ package mesh.core.date
 		 * @return A new date.
 		 * @throws ArgumentError If <code>obj</code> cannot be parsed.
 		 */
-		public static function parse(obj:Object):BaseDate
+		public static function parse(obj:*):MDate
 		{
 			if (obj is String) {
 				try {
-					return newInstance(BaseDate, str.split("-"));
+					return newInstance.apply(null, [MDate].concat(obj.split("-")));
 				} catch (e:Error) {
 					
 				}
 			}
 			
 			if (obj is Date) {
-				return new Date(obj.fullYear, obj.month+1, obj.date+1);
+				return new MDate(obj.fullYear, obj.month+1, obj.date);
 			}
 			
-			throw new ArgumentError(clazz(this) + ".parse() cannot parse " + obj);
+			throw new ArgumentError(clazz(MDate) + ".parse() cannot parse " + obj);
+		}
+		
+		/**
+		 * Returns a new date where its properties have changed to the values in the 
+		 * <code>options</code> hash.
+		 * 
+		 * <strong>Example:</strong>
+		 * <listing version="3.0">
+		 * new MDate(2011, 1, 1).change({day:4}); // 2011-1-4
+		 * bew MDate(2011, 1, 1).change({day:12, month:2}); // 2011-2-12
+		 * </listing>
+		 * 
+		 * @param options The options hash.
+		 * @return A new date.
+		 */
+		public function change(options:Object):MDate
+		{
+			return new MDate(options.hasOwnProperty("year") ? options.year : year, 
+							 options.hasOwnProperty("month") ? options.month : month,
+							 options.hasOwnProperty("day") ? options.day : day);
 		}
 		
 		/**
@@ -158,9 +200,9 @@ package mesh.core.date
 		 * @param n The number of days to subtract.
 		 * @return The previous <code>n</code> days as a new date.
 		 */
-		public function previousDay(n:int = 1):BaseDate
+		public function daysAgo(n:int = 1):MDate
 		{
-			return new BaseDate(year, month, day-n);
+			return daysSince(-n);
 		}
 		
 		/**
@@ -170,9 +212,29 @@ package mesh.core.date
 		 * @param n The number of days to add.
 		 * @return The next <code>n</code> days as a new date.
 		 */
-		public function nextDay(n:int = 1):BaseDate
+		public function daysSince(n:int = 1):MDate
 		{
-			return new BaseDate(year, month, day+n);
+			return new MDate(year, month, day+n);
+		}
+		
+		/**
+		 * Returns a new date where the date is a day before this date.
+		 * 
+		 * @return The day before this date.
+		 */
+		public function prevDay():MDate
+		{
+			return daysAgo(1);
+		}
+		
+		/**
+		 * Returns a new date where the date is a day after this date.
+		 * 
+		 * @return The day after this date.
+		 */
+		public function nextDay():MDate
+		{
+			return daysSince(1);
 		}
 		
 		/**
@@ -182,9 +244,9 @@ package mesh.core.date
 		 * @param n The number of months to subtract.
 		 * @return The previous <code>n</code> months as a new date.
 		 */
-		public function previousMonth(n:int = 1):BaseDate
+		public function monthsAgo(n:int = 1):MDate
 		{
-			return new BaseDate(year, month-n, day);
+			return monthsSince(-n);
 		}
 		
 		/**
@@ -194,9 +256,34 @@ package mesh.core.date
 		 * @param n The number of months to subtract.
 		 * @return The next <code>n</code> months as a new date.
 		 */
-		public function nextMonth(n:int = 1):BaseDate
+		public function monthsSince(n:int = 1):MDate
 		{
-			return new BaseDate(year, month+n, day);
+			var m:int = month-1+n;
+			var tempDate:Date = new Date(year, m, day);
+			while (tempDate.month != m) {
+				tempDate.date--;
+			}
+			return new MDate(tempDate.fullYear, tempDate.month+1, tempDate.date);
+		}
+		
+		/**
+		 * Returns a new date where the date is a month before this date.
+		 * 
+		 * @return The month before this date.
+		 */
+		public function prevMonth():MDate
+		{
+			return monthsAgo(1);
+		}
+		
+		/**
+		 * Returns a new date where the date is a month after this date.
+		 * 
+		 * @return The month after this date.
+		 */
+		public function nextMonth():MDate
+		{
+			return monthsSince(1);
 		}
 		
 		/**
@@ -206,9 +293,9 @@ package mesh.core.date
 		 * @param n The number of years to subtract.
 		 * @return The previous <code>n</code> years as a new date.
 		 */
-		public function previousYear(n:int = 1):BaseDate
+		public function yearsAgo(n:int = 1):MDate
 		{
-			return new BaseDate(year-n, month, day);
+			return yearsSince(-n);
 		}
 		
 		/**
@@ -218,9 +305,34 @@ package mesh.core.date
 		 * @param n The number of years to add.
 		 * @return The next <code>n</code> years as a new date.
 		 */
-		public function nextYear(n:int = 1):BaseDate
+		public function yearsSince(n:int = 1):MDate
 		{
-			return new BaseDate(year+n, month, day);
+			var m:int = month-1;
+			var tempDate:Date = new Date(year+n, m, day);
+			while (tempDate.month != m) {
+				tempDate.date--;
+			}
+			return new MDate(tempDate.fullYear, tempDate.month+1, tempDate.date);
+		}
+		
+		/**
+		 * Returns a new date where the date is a year before this date.
+		 * 
+		 * @return The year before this date.
+		 */
+		public function prevYear():MDate
+		{
+			return yearsAgo(1);
+		}
+		
+		/**
+		 * Returns a new date where the date is a year after this date.
+		 * 
+		 * @return The year after this date.
+		 */
+		public function nextYear():MDate
+		{
+			return yearsSince(1);
 		}
 		
 		/**
@@ -230,7 +342,30 @@ package mesh.core.date
 		 */
 		public function toDate():Date
 		{
-			return new Date(valueOf());
+			return new Date(_date.time);
+		}
+		
+		/**
+		 * Returns a new <code>DateTime</code> where the time is the beginning of this date's 
+		 * date. The time zone can either be <code>local</code> time or <code>utc</code> time.
+		 * 
+		 * @return A new date time.
+		 */
+		public function toDateTime(timeZone:String = "local"):DateTime
+		{
+			var offset:Number;
+			switch (timeZone) {
+				case "local":
+					offset = new Date().timezoneOffset;
+					break;
+				case "utc":
+					offset = 0;
+					break;
+				default:
+					throw new ArgumentError("Unrecognized time zone '" + timeZone + "'");
+			}
+			
+			return new DateTime(year, month, day, 0, 0, 0, 0, offset);
 		}
 		
 		/**
@@ -248,7 +383,7 @@ package mesh.core.date
 		 */
 		public function valueOf():Object
 		{
-			return toDate().time;
+			return _date.time;
 		}
 		
 		/**
@@ -256,7 +391,7 @@ package mesh.core.date
 		 */
 		public function get day():int
 		{
-			return _date.date+1;
+			return _date.date;
 		}
 		
 		/**
@@ -264,7 +399,32 @@ package mesh.core.date
 		 */
 		public function get isLeapYear():Boolean
 		{
-			return (year % 400 == 0) || (year % 100 == 0) || (year % 4 == 0);
+			return ((year % 100 != 0) && (year % 4 == 0)) || (year % 400 == 0);
+		}
+		
+		/**
+		 * <code>true</code> if the date resides before today.
+		 */
+		public function get inFuture():Boolean
+		{
+			return this > today();
+		}
+		
+		/**
+		 * <code>true</code> if the date resides before today.
+		 */
+		public function get inPast():Boolean
+		{
+			return this < today();
+		}
+		
+		/**
+		 * <code>true</code> if this date is today.
+		 */
+		public function get isToday():Boolean
+		{
+			var today:MDate = MDate.today();
+			return year == today.year && month == today.month && day == today.day;
 		}
 		
 		/**
