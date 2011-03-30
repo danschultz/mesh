@@ -343,6 +343,10 @@ package mesh.associations
 		}
 		override public function set target(value:*):void
 		{
+			if (value is Entity) {
+				value = [value];
+			}
+			
 			if (value != null && (!(value is Array) && !value.hasOwnProperty("toArray"))) {
 				throw new ArgumentError("AssociationCollection.target must be an Array, have a toArray method, or be null.");
 			}
