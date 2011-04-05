@@ -26,7 +26,15 @@ package mesh.core.date
 	 */
 	public class MDate
 	{
-		private var _date:Date;
+		/**
+		 * Constructor.
+		 * 
+		 * @param epochTime The number of milliseconds since midnight on January 1, 1970 UTC.
+		 */
+		public function MDate(epochTime:Number = 0, offset:Number = 0)
+		{
+			_date = new Date(epochTime);
+		}
 		
 		/**
 		 * Constructor.
@@ -35,9 +43,10 @@ package mesh.core.date
 		 * @param month The month in the year.
 		 * @param day The day in the month.
 		 */
-		public function MDate(year:int, month:int = 1, day:int = 1)
+		public static function create(year:int, month:int = 1, day:int = 1):MDate
 		{
-			_date = new Date(year, month-1, day);
+			var d:Date = new Date(year, month-1, day);
+			return new MDate(d.time);
 		}
 		
 		/**
@@ -47,8 +56,7 @@ package mesh.core.date
 		 */
 		public static function today():MDate
 		{
-			var d:Date = new Date();
-			return new MDate(d.fullYear, d.month+1, d.date);
+			return new MDate(new Date().time);
 		}
 		
 		/**
@@ -58,8 +66,7 @@ package mesh.core.date
 		 */
 		public static function yesterday():MDate
 		{
-			var d:Date = new Date();
-			return new MDate(d.fullYear, d.month+1, d.date-1);
+			return today().prevDay();
 		}
 		
 		/**
@@ -69,8 +76,7 @@ package mesh.core.date
 		 */
 		public static function tomorrow():MDate
 		{
-			var d:Date = new Date();
-			return new MDate(d.fullYear, d.month+1, d.date+1);
+			return today().nextDay();
 		}
 		
 		/**
@@ -89,14 +95,14 @@ package mesh.core.date
 		{
 			if (obj is String) {
 				try {
-					return newInstance.apply(null, [MDate].concat(obj.split("-")));
+					return MDate.create.apply(null, obj.split("-"));
 				} catch (e:Error) {
 					
 				}
 			}
 			
 			if (obj is Date) {
-				return new MDate(obj.fullYear, obj.month+1, obj.date);
+				return new MDate(obj.time);
 			}
 			
 			throw new ArgumentError(clazz(MDate) + ".parse() cannot parse " + obj);
@@ -115,11 +121,11 @@ package mesh.core.date
 		 * @param options The options hash.
 		 * @return A new date.
 		 */
-		public function change(options:Object):MDate
+		public function change(options:Object):*
 		{
-			return new MDate(options.hasOwnProperty("year") ? options.year : year, 
-							 options.hasOwnProperty("month") ? options.month : month,
-							 options.hasOwnProperty("day") ? options.day : day);
+			return MDate.create(options.hasOwnProperty("year") ? options.year : year, 
+								options.hasOwnProperty("month") ? options.month : month,
+								options.hasOwnProperty("day") ? options.day : day);
 		}
 		
 		/**
@@ -200,7 +206,7 @@ package mesh.core.date
 		 * @param n The number of days to subtract.
 		 * @return The previous <code>n</code> days as a new date.
 		 */
-		public function daysAgo(n:int = 1):MDate
+		public function daysAgo(n:int = 1):*
 		{
 			return daysSince(-n);
 		}
@@ -212,9 +218,9 @@ package mesh.core.date
 		 * @param n The number of days to add.
 		 * @return The next <code>n</code> days as a new date.
 		 */
-		public function daysSince(n:int = 1):MDate
+		public function daysSince(n:int = 1):*
 		{
-			return new MDate(year, month, day+n);
+			return newInstance(clazz(this), valueOf() + (n * 86400000));
 		}
 		
 		/**
@@ -222,7 +228,7 @@ package mesh.core.date
 		 * 
 		 * @return The day before this date.
 		 */
-		public function prevDay():MDate
+		public function prevDay():*
 		{
 			return daysAgo(1);
 		}
@@ -232,7 +238,7 @@ package mesh.core.date
 		 * 
 		 * @return The day after this date.
 		 */
-		public function nextDay():MDate
+		public function nextDay():*
 		{
 			return daysSince(1);
 		}
@@ -244,7 +250,7 @@ package mesh.core.date
 		 * @param n The number of months to subtract.
 		 * @return The previous <code>n</code> months as a new date.
 		 */
-		public function monthsAgo(n:int = 1):MDate
+		public function monthsAgo(n:int = 1):*
 		{
 			return monthsSince(-n);
 		}
@@ -256,14 +262,14 @@ package mesh.core.date
 		 * @param n The number of months to subtract.
 		 * @return The next <code>n</code> months as a new date.
 		 */
-		public function monthsSince(n:int = 1):MDate
+		public function monthsSince(n:int = 1):*
 		{
 			var m:int = month-1+n;
 			var tempDate:Date = new Date(year, m, day);
 			while (tempDate.month != m) {
 				tempDate.date--;
 			}
-			return new MDate(tempDate.fullYear, tempDate.month+1, tempDate.date);
+			return newInstance(clazz(this), tempDate.time);
 		}
 		
 		/**
@@ -271,7 +277,7 @@ package mesh.core.date
 		 * 
 		 * @return The month before this date.
 		 */
-		public function prevMonth():MDate
+		public function prevMonth():*
 		{
 			return monthsAgo(1);
 		}
@@ -281,7 +287,7 @@ package mesh.core.date
 		 * 
 		 * @return The month after this date.
 		 */
-		public function nextMonth():MDate
+		public function nextMonth():*
 		{
 			return monthsSince(1);
 		}
@@ -293,7 +299,7 @@ package mesh.core.date
 		 * @param n The number of years to subtract.
 		 * @return The previous <code>n</code> years as a new date.
 		 */
-		public function yearsAgo(n:int = 1):MDate
+		public function yearsAgo(n:int = 1):*
 		{
 			return yearsSince(-n);
 		}
@@ -305,14 +311,14 @@ package mesh.core.date
 		 * @param n The number of years to add.
 		 * @return The next <code>n</code> years as a new date.
 		 */
-		public function yearsSince(n:int = 1):MDate
+		public function yearsSince(n:int = 1):*
 		{
 			var m:int = month-1;
 			var tempDate:Date = new Date(year+n, m, day);
 			while (tempDate.month != m) {
 				tempDate.date--;
 			}
-			return new MDate(tempDate.fullYear, tempDate.month+1, tempDate.date);
+			return newInstance(clazz(this), tempDate.time);
 		}
 		
 		/**
@@ -320,7 +326,7 @@ package mesh.core.date
 		 * 
 		 * @return The year before this date.
 		 */
-		public function prevYear():MDate
+		public function prevYear():*
 		{
 			return yearsAgo(1);
 		}
@@ -330,7 +336,7 @@ package mesh.core.date
 		 * 
 		 * @return The year after this date.
 		 */
-		public function nextYear():MDate
+		public function nextYear():*
 		{
 			return yearsSince(1);
 		}
@@ -384,6 +390,15 @@ package mesh.core.date
 		public function valueOf():Object
 		{
 			return _date.time;
+		}
+		
+		private var _date:Date;
+		/**
+		 * The internal <code>Date</code> used to store this date's values.
+		 */
+		protected function get date():Date
+		{
+			return _date;
 		}
 		
 		/**

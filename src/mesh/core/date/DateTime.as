@@ -7,10 +7,19 @@ package mesh.core.date
 	 */
 	public class DateTime extends MDate
 	{
-		private var _date:Date;
-		
 		/**
 		 * Constructor.
+		 * 
+		 * @param epochTime The number of milliseconds since midnight on January 1, 1970 UTC.
+		 */
+		public function DateTime(epochTime:Number = 0, offset:Number = 0)
+		{
+			super(epochTime);
+			_offset = offset;
+		}
+		
+		/**
+		 * Creates a new date time.
 		 * 
 		 * @param year The year.
 		 * @param month The month of the year, between 1 and 12.
@@ -20,25 +29,17 @@ package mesh.core.date
 		 * @param second The second of the minute
 		 * @param millisecond The millisecond in the second.
 		 * @param offset The timezone offset in minutes.
+		 * @return A new date time.
 		 */
-		public function DateTime(year:int, month:int = 1, day:int = 1, hour:int = 0, minute:int = 0, second:int = 0, millisecond:int = 0, offset:Number = 0)
+		public static function create(year:int, month:int = 1, day:int = 1, hour:int = 0, minute:int = 0, second:int = 0, millisecond:int = 0, offset:Number = 0):DateTime
 		{
-			_date = new Date(Date.UTC(year, month-1, day-1, hour, minute, second, millisecond) + (offset * 60000));
-			super(_date.fullYear, _date.month+1, _date.date);
+			var d:Date = new Date(year, month-1, day, hour, minute, second, millisecond);
 		}
 		
 		public static function now():DateTime
 		{
 			var date:Date = new Date();
-			return new DateTime(date.fullYearUTC, date.monthUTC+1, date.dateUTC+1, date.hoursUTC, date.minutesUTC, date.secondsUTC, date.millisecondsUTC, date.timezoneOffset);
-		}
-		
-		/**
-		 * @inheritDoc
-		 */
-		override public function toDate():Date
-		{
-			return new Date(_date.time);
+			return new DateTime(date.fullYear, date.month-1, date.date, date.hours, date.minutes, date.seconds, date.milliseconds, -date.timezoneOffset);
 		}
 		
 		/**
@@ -46,31 +47,48 @@ package mesh.core.date
 		 */
 		public function get hour():int
 		{
-			return _date.hours;
+			return date.hours;
 		}
 		
 		/**
 		 * The minutes in the hour, between 0 and 59.
 		 */
-		public function get minutes():int
+		public function get minute():int
 		{
-			return _date.minutes;
+			return date.minutes;
 		}
 		
+		private var _offset:int;
 		/**
 		 * The time zone offset in minutes.
 		 */
 		public function get offset():int
 		{
-			return _date.timezoneOffset;
+			return _offset;
 		}
 		
 		/**
-		 * The seconds in the hour, between 0 and 59.
+		 * The seconds in the minute, between 0 and 59.
 		 */
-		public function get seconds():int
+		public function get second():int
 		{
-			return _date.seconds;
+			return date.seconds;
+		}
+		
+		/**
+		 * The millisecond in the second.
+		 */
+		public function get millisecond():int
+		{
+			return date.milliseconds;
+		}
+		
+		/**
+		 * <code>true</code> if this date time has an offset of 0.
+		 */
+		public function get isUTC():Boolean
+		{
+			return offset == 0;
 		}
 	}
 }
