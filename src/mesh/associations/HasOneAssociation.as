@@ -13,7 +13,7 @@ package mesh.associations
 		/**
 		 * @copy HasAssociation#HasAssociation()
 		 */
-		public function HasOneAssociation(owner:Entity, relationship:Relationship)
+		public function HasOneAssociation(owner:Entity, relationship:AssociationDefinition)
 		{
 			super(owner, relationship);
 		}
@@ -24,9 +24,9 @@ package mesh.associations
 		override protected function createLoadOperation():Operation
 		{
 			var options:Object = {};
-			options[camelize(className(relationship.owner), false)] = owner;
+			options[camelize(className(definition.owner), false)] = owner;
 			
-			var operation:Operation = Query.entity(relationship.target).where(options);
+			var operation:Operation = Query.entity(definition.target).where(options);
 			operation.addEventListener(ResultOperationEvent.RESULT, function(event:ResultOperationEvent):void
 			{
 				event.data = event.data[0];

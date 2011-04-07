@@ -12,7 +12,7 @@ package mesh.associations
 		/**
 		 * @copy AssociationCollection#AssociationCollection()
 		 */
-		public function HasManyAssociation(source:Entity, relationship:Relationship)
+		public function HasManyAssociation(source:Entity, relationship:AssociationDefinition)
 		{
 			super(source, relationship);
 		}
@@ -23,9 +23,9 @@ package mesh.associations
 		override protected function createLoadOperation():Operation
 		{
 			var options:Object = {};
-			options[camelize(className(relationship.owner), false)] = owner;
+			options[camelize(className(definition.owner), false)] = owner;
 			
-			return Query.entity(relationship.target).where(options);
+			return Query.entity(definition.target).where(options);
 		}
 		
 		/**

@@ -12,12 +12,12 @@ package mesh.associations
 	 * 
 	 * @author Dan Schultz
 	 */
-	public class HasManyRelationship extends Relationship
+	public class HasManyDefinition extends AssociationDefinition
 	{
 		/**
 		 * @copy Relationship#Relationship()
 		 */
-		public function HasManyRelationship(owner:Class, property:String, target:Class, options:Object)
+		public function HasManyDefinition(owner:Class, property:String, target:Class, options:Object)
 		{
 			if (property == null || property.length == 0) {
 				property = camelize(pluralize(className(target)), false);

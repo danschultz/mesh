@@ -22,7 +22,7 @@ package mesh.associations
 	 * 
 	 * @author Dan Schultz
 	 */
-	public dynamic class Relationship extends Proxy
+	public dynamic class AssociationDefinition extends Proxy
 	{
 		/**
 		 * Constructor.
@@ -32,7 +32,7 @@ package mesh.associations
 		 * @param target The destination of the association.
 		 * @param options A set of options defined for this relationship.
 		 */
-		public function Relationship(owner:Class, property:String, target:Class, options:Object)
+		public function AssociationDefinition(owner:Class, property:String, target:Class, options:Object)
 		{
 			if (property == null || property.length == 0) {
 				throw new ArgumentError("Missing property for '" + humanize(className(this)).toLowerCase() + "' on " + className(owner));
@@ -55,8 +55,8 @@ package mesh.associations
 		 */
 		public function createProxy(entity:Entity):*
 		{
-			var associationClassName:String = getQualifiedClassName(this).replace("Relationship", "Association");
-			var proxy:AssociationProxy = newInstance(getDefinitionByName(associationClassName) as Class, entity, this);
+			var associationClassName:String = getQualifiedClassName(this).replace("Definition", "Association");
+			var proxy:Association = newInstance(getDefinitionByName(associationClassName) as Class, entity, this);
 			if (proxy == null) {
 				throw new IllegalOperationError("Could not find proxy for " + className(this));
 			}
@@ -69,7 +69,7 @@ package mesh.associations
 		 * @param relationship The relationship to check with.
 		 * @return <code>true</code> if the two are equal.
 		 */
-		public function equals(relationship:Relationship):Boolean
+		public function equals(relationship:AssociationDefinition):Boolean
 		{
 			return relationship != null && 
 				   owner == relationship.owner &&
@@ -175,7 +175,7 @@ package mesh.associations
 		{
 			// supports calls like: relationship.isHasOne, or relationship.isHasMany.
 			if (name.toString().indexOf("is") == 0) {
-				return camelize(name.toString().replace("is", ""), false) == className(this).replace(className(Relationship), "");
+				return camelize(name.toString().replace("is", ""), false) == className(this).replace(className(AssociationDefinition), "");
 			}
 			
 			// supports calls like: relationship.hasLazy

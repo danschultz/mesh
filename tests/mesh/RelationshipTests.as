@@ -1,7 +1,7 @@
 package mesh
 {
-	import mesh.associations.HasManyRelationship;
-	import mesh.associations.HasOneRelationship;
+	import mesh.associations.HasManyDefinition;
+	import mesh.associations.HasOneDefinition;
 	import mesh.models.Aircraft;
 	import mesh.models.Airplane;
 	import mesh.models.Customer;
@@ -25,21 +25,21 @@ package mesh
 		public function testRelationshipMetadata():void
 		{
 			var relationships:Array = new Customer().descriptor.relationships.toArray();
-			assertThat(relationships, hasItem(allOf(instanceOf(HasManyRelationship), hasProperty("property", equalTo("orders")))));
+			assertThat(relationships, hasItem(allOf(instanceOf(HasManyDefinition), hasProperty("property", equalTo("orders")))));
 		}
 		
 		[Test]
 		public function testRelationshipMetadataSetsPropertyAsPluralizedType():void
 		{
 			var relationships:Array = new Customer().descriptor.relationships.toArray();
-			assertThat(relationships, hasItem(allOf(instanceOf(HasManyRelationship), hasProperty("property", equalTo("cars")))));
+			assertThat(relationships, hasItem(allOf(instanceOf(HasManyDefinition), hasProperty("property", equalTo("cars")))));
 		}
 		
 		[Test]
 		public function testRelationshipMetadataOnGetterSetsPropertyAsGetter():void
 		{
 			var relationships:Array = new Customer().descriptor.relationships.toArray();
-			assertThat(relationships, hasItem(allOf(instanceOf(HasOneRelationship), hasProperty("property", equalTo("account")))));
+			assertThat(relationships, hasItem(allOf(instanceOf(HasOneDefinition), hasProperty("property", equalTo("account")))));
 		}
 		
 		[Test]

@@ -11,7 +11,7 @@ package mesh.associations
 		/**
 		 * @copy AssociationProxy#AssociationProxy()
 		 */
-		public function BelongsToAssociation(owner:Entity, relationship:Relationship)
+		public function BelongsToAssociation(owner:Entity, relationship:AssociationDefinition)
 		{
 			super(owner, relationship);
 		}
@@ -21,7 +21,7 @@ package mesh.associations
 		 */
 		override protected function createLoadOperation():Operation
 		{
-			var operation:Operation = Query.entity(relationship.target).find(owner[BelongsToRelationship( relationship ).foreignKey]);
+			var operation:Operation = Query.entity(definition.target).find(owner[BelongsToRelationship( definition ).foreignKey]);
 			operation.addEventListener(ResultOperationEvent.RESULT, function(event:ResultOperationEvent):void
 			{
 				event.data = event.data[0];

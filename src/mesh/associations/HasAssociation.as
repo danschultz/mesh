@@ -2,12 +2,12 @@ package mesh.associations
 {
 	import mesh.Entity;
 	
-	public class HasAssociation extends AssociationProxy
+	public class HasAssociation extends Association
 	{
 		/**
 		 * @copy AssociationProxy#AssociationProxy()
 		 */
-		public function HasAssociation(owner:Entity, relationship:Relationship)
+		public function HasAssociation(owner:Entity, relationship:AssociationDefinition)
 		{
 			super(owner, relationship);
 			

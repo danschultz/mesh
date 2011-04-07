@@ -1,26 +1,23 @@
 package mesh
 {
-	import collections.ISet;
-	
+	import flash.errors.IllegalOperationError;
 	import flash.events.Event;
 	import flash.events.EventDispatcher;
 	import flash.events.IEventDispatcher;
 	import flash.utils.Proxy;
-	import flash.utils.flash_proxy;
 	import flash.utils.getDefinitionByName;
 	import flash.utils.getQualifiedClassName;
 	import flash.utils.getQualifiedSuperclassName;
 	import flash.utils.setTimeout;
 	
-	import mesh.adaptors.ServiceAdaptor;
-	import mesh.associations.AssociationCollection;
-	import mesh.associations.AssociationProxy;
-	import mesh.associations.Relationship;
+	import mesh.associations.Association;
+	import mesh.associations.AssociationDefinition;
+	import mesh.associations.HasManyAssociation;
+	import mesh.associations.HasManyDefinition;
+	import mesh.associations.HasOneAssociation;
+	import mesh.associations.HasOneDefinition;
 	import mesh.core.inflection.humanize;
-	import mesh.core.reflection.Property;
-	import mesh.core.reflection.className;
-	import mesh.core.reflection.clazz;
-	import mesh.core.reflection.reflect;
+	import mesh.core.reflection.Type;
 	import mesh.validators.Errors;
 	import mesh.validators.Validator;
 	
@@ -34,10 +31,12 @@ package mesh
 	 * 
 	 * @author Dan Schultz
 	 */
-	public dynamic class Entity extends Proxy implements IEventDispatcher, IPersistable
+	public class Entity extends Proxy implements IEventDispatcher, IPersistable
 	{
 		private var _dispatcher:EventDispatcher;
 		private var _callbacks:Callbacks = new Callbacks();
+		private var _associations:Object = {};
+		private var _changes:Properties = new Properties(this);
 		
 		/**
 		 * Constructor.
@@ -49,33 +48,51 @@ package mesh
 			_dispatcher = new EventDispatcher(this);
 			
 			// add necessary callbacks for find
-			afterFind(function(entity:Entity):void
-			{
-				_properties.clear();
-			});
-			afterFind(function(entity:Entity):void
-			{
-				markNonLazyAssociationsAsLoaded();
-			});
+			afterFind(synced);
+			afterFind(markNonLazyAssociationsAsLoaded);
 			
 			// add necessary callbacks for save
-			afterSave(function(entity:Entity):void
-			{
-				_properties.clear();
-			});
+			beforeSave(validate);
+			afterSave(synced);
 			
 			// add necessary callback for destory
-			afterDestroy(function(entity:Entity):void
-			{
-				_isDestroyed = true;
-			});
+			afterDestroy(destroyed);
 			
 			addEventListener(PropertyChangeEvent.PROPERTY_CHANGE, handlePropertyChange);
 		}
 		
-		public function afterFind(block:Function):void
+		/**
+		 * Returns an association proxy for the given the given property. The proxy that is
+		 * returned is determined by the relationship type. For instance, if the property is
+		 * a has-many relationship, a <code>HasManyAssociation</code> is returned.
+		 * 
+		 * @param property The property of the relationship to get the proxy for.
+		 * @return An association proxy.
+		 */
+		protected function association(property:String):*
 		{
-			addCallback("afterFind", block);
+			if (!_associations.hasOwnProperty(property)) {
+				throw new ArgumentError("Undefined association on property '" + property + "'");
+			}
+			return _associations[property];
+		}
+		
+		protected function associate(property:String, definition:AssociationDefinition):Association
+		{
+			if (!_associations.hasOwnProperty(property)) {
+				_associations[property] = definition.createProxy(this);
+			}
+			return _associations[property];
+		}
+		
+		protected function hasOne(clazz:Class, property:String, options:Object = null):HasOneAssociation
+		{
+			return associate(clazz, property, new HasOneDefinition(reflect.clazz, property, clazz, options));
+		}
+		
+		protected function hasMany(clazz:Class, property:String, options:Object = null):HasManyAssociation
+		{
+			return associate(clazz, property, new HasManyDefinition(reflect.clazz, property, clazz, options));
 		}
 		
 		/**
@@ -88,7 +105,7 @@ package mesh
 		
 		private function addCallback(method:String, block:Function):void
 		{
-			_callbacks.addCallback(method, block, [this]);
+			_callbacks.addCallback(method, block, []);
 		}
 		
 		/**
@@ -107,45 +124,15 @@ package mesh
 		}
 		
 		/**
-		 * @copy Callbacks#removeCallback()
-		 */
-		public function removeCallback(block:Function):void
-		{
-			_callbacks.removeCallback(block);
-		}
-		
-		/**
-		 * Returns an association proxy for the given the given property. The proxy that is
-		 * returned is determined by the relationship type. For instance, if the property is
-		 * a has-many relationship, a <code>HasManyAssociation</code> is returned.
-		 * 
-		 * @param property The property of the relationship to get the proxy for.
-		 * @return An association proxy.
-		 */
-		public function association(property:String):AssociationProxy
-		{
-			if (!_associations.hasOwnProperty(property)) {
-				var relationship:Relationship = descriptor.getRelationshipForProperty(property);
-				if (relationship == null) {
-					throw new ArgumentError("Relationship not defined for '" + property + "'");
-				}
-				_associations[property] = relationship.createProxy(this);
-			}
-			return _associations[property];
-		}
-		
-		/**
 		 * Checks if two entities are equal.  By default, two entities are equal
 		 * when they are of the same type, and their ID's are the same.
 		 * 
 		 * @param entity The entity to check.
 		 * @return <code>true</code> if the entities are equal.
 		 */
-		public function equals(entity:Entity):Boolean
+		public function equals(obj:Object):Boolean
 		{
-			return entity != null && 
-				   (this === entity || (isPersisted && id === entity.id)) && 
-				   clazz(this) == clazz(entity);
+			return obj != null && (this === obj || (obj is Entity && isPersisted && id === obj.id));
 		}
 		
 		/**
@@ -162,20 +149,43 @@ package mesh
 			return operation;
 		}
 		
-		public function beforeDestroy(block:Function):void
+		protected function beforeDestroy(block:Function):void
 		{
 			addCallback("beforeDestroy", block);
 		}
 		
-		public function afterDestroy(block:Function):void
+		/**
+		 * Adds a callback function that will be executed before a save operation. If this 
+		 * function returns <code>false</code> or throws an error, the save will halt.
+		 * 
+		 * @param block The callback function.
+		 */
+		protected function beforeSave(block:Function):void
+		{
+			addCallback("beforeSave", block);
+		}
+		
+		protected function afterDestroy(block:Function):void
 		{
 			addCallback("afterDestroy", block)
 		}
 		
+		protected function afterFind(block:Function):void
+		{
+			addCallback("afterFind", block);
+		}
+		
 		/**
-		 * Called when the entity has been successfully destroyed from its backend service.
+		 * Adds a callback function that will be executed after a save operation has finished.
+		 * 
+		 * @param block The callback function.
 		 */
-		protected function destroyed():void
+		protected function afterSave(block:Function):void
+		{
+			addCallback("afterSave", block);
+		}
+		
+		private function destroyed():void
 		{
 			_isDestroyed = true;
 		}
@@ -236,7 +246,7 @@ package mesh
 		{
 			// check if the property is ignored.
 			if (!ignoredProperties.contains(property)) {
-				_properties.changed(property, oldValue, newValue);
+				_changes.changed(property, oldValue, newValue);
 			}
 		}
 		
@@ -245,7 +255,7 @@ package mesh
 		 */
 		public function revert():void
 		{
-			_properties.revert();
+			_changes.revert();
 		}
 		
 		/**
@@ -276,8 +286,8 @@ package mesh
 				batch.update(this);
 			}
 			
-			for each (var association:AssociationProxy in associations) {
-				if (association.relationship.autoSave) {
+			for each (var association:Association in associations) {
+				if (association.definition.autoSave) {
 					batch.add(association);
 				}
 			}
@@ -308,47 +318,15 @@ package mesh
 			return operation;
 		}
 		
-		/**
-		 * Adds a callback function that will be executed before a save operation. If this 
-		 * function returns <code>false</code> or throws an error, the save will halt.
-		 * 
-		 * @param block The callback function.
-		 */
-		public function beforeSave(block:Function):void
+		private function synced():void
 		{
-			addCallback("beforeSave", block);
-		}
-		
-		/**
-		 * Adds a callback function that will be executed after a save operation has finished.
-		 * 
-		 * @param block The callback function.
-		 */
-		public function afterSave(block:Function):void
-		{
-			addCallback("afterSave", block);
-		}
-		
-		/**
-		 * Marks this entity as being persisted.
-		 */
-		public function persisted():void
-		{
-			_properties.clear();
-		}
-		
-		/**
-		 * Marks this entity as being loaded from its backend service.
-		 */
-		public function found():void
-		{
-			callback("afterFind");
+			_changes.clear();
 		}
 		
 		private function markNonLazyAssociationsAsLoaded():void
 		{
-			for each (var association:AssociationProxy in associations) {
-				if (!association.relationship.isLazy && !association.isLoaded) {
+			for each (var association:Association in associations) {
+				if (!association.definition.isLazy && !association.isLoaded) {
 					association.loaded();
 				}
 			}
@@ -367,53 +345,7 @@ package mesh
 		 */
 		public function toString():String
 		{
-			return humanize(className(this));
-		}
-		
-		public function toJSON(options:Object = null):Object
-		{
-			return null;
-		}
-		
-		public function toXML(options:Object = null):XML
-		{
-			return null;
-		}
-		
-		public function toVO(options:Object = null):Object
-		{
-			var vo:Object = new descriptor.voType();
-			for each (var property:String in properties) {
-				if (options == null || !options.hasOwnProperty("including") || options.including.indexOf(property) != -1) {
-					if (options == null || (!options.hasOwnProperty("excluding") || options.excluding.indexOf(property) == -1)) {
-						var value:Object = descriptor.getRelationshipForProperty(property) != null ? association(property) : this[property];
-						if (value != null && value.hasOwnProperty("toVO")) {
-							// need to pass through the options provided for this property.
-							var propertyOptions:Object = {};
-							
-							if (value is AssociationCollection) {
-								propertyOptions.type = reflect(vo).property(property).type.clazz;
-							}
-							
-							value = value.toVO(propertyOptions);
-						}
-						vo[property] = value;
-					}
-				}
-			}
-			return vo;
-		}
-		
-		public function fromVO(vo:Object, options:Object = null):void
-		{
-			for each (var property:Property in reflect(vo).properties) {
-				var value:Object = this[property];
-				if (value != null && value.hasOwnProperty("fromVO")) {
-					value.fromVO(vo[property]);
-				} else {
-					this[property] = vo[property];
-				}
-			}
+			return humanize(reflect.className);
 		}
 		
 		/**
@@ -444,20 +376,9 @@ package mesh
 		 * @param property The property to retrieve.
 		 * @return The property's previous value.
 		 */
-		public function was(property:String):*
+		public function whatWas(property:String):*
 		{
-			return _properties.oldValueOf(property);
-		}
-		
-		/**
-		 * Returns the mapped instance of the service adaptor for the given entity.
-		 * 
-		 * @param entity The entity to get the service adaptor for.
-		 * @return A service adaptor.
-		 */
-		public static function adaptorFor(entity:Object):ServiceAdaptor
-		{
-			return EntityDescription.describe(entity).adaptor;
+			return _changes.oldValueOf(property);
 		}
 		
 		/**
@@ -476,7 +397,7 @@ package mesh
 		 */
 		private function validate():Array
 		{
-			_errors = null;
+			errors.clear();
 			
 			var clazz:Class = getDefinitionByName(getQualifiedClassName(this)) as Class;
 			while (clazz != Entity) {
@@ -493,37 +414,9 @@ package mesh
 			return errors.toArray();
 		}
 		
-		/**
-		 * The adaptor defined for this entity.
-		 */
-		public function get adaptor():ServiceAdaptor
+		public function adaptor():Class
 		{
-			return descriptor.adaptor;
-		}
-		
-		/**
-		 * The set of associations that belong to this entity.
-		 */
-		public function get associations():Array
-		{
-			var result:Array = [];
-			for each (var relationship:Relationship in descriptor.relationships) {
-				result.push(association(relationship.property));
-			}
-			return result;
-		}
-		
-		private var _descriptor:EntityDescription;
-		/**
-		 * The description that contains the aggregates, relationships, validators and service
-		 * adaptor for this entity.
-		 */
-		public function get descriptor():EntityDescription
-		{
-			if (_descriptor == null) {
-				_descriptor = EntityDescription.describe(this);
-			}
-			return _descriptor;
+			throw new IllegalOperationError(reflect.className + ".adaptor is not implemented.")
 		}
 		
 		private var _errors:Errors;
@@ -594,7 +487,7 @@ package mesh
 		 */
 		public function get hasPropertyChanges():Boolean
 		{
-			return _properties.hasChanges;
+			return _changes.hasChanges;
 		}
 		
 		/**
@@ -602,8 +495,8 @@ package mesh
 		 */
 		public function get hasDirtyAssociations():Boolean
 		{
-			for each (var association:AssociationProxy in associations) {
-				if (association.relationship.autoSave && association.isDirty) {
+			for each (var association:Association in _associations) {
+				if (association.definition.autoSave && association.isDirty) {
 					return true;
 				}
 			}
@@ -638,134 +531,17 @@ package mesh
 			return _isMarkedForRemoval;
 		}
 		
+		private var _reflect:Type;
 		/**
-		 * A set of properties that are accessible on this entity. Properties include any that
-		 * are defined on the entity and its sub-classes, and any properties defined within 
-		 * metadata, such as <code>ComposedOf</code> or <code>HasOne</code>.
+		 * A reflection that contains the properties, methods and metadata defined on this
+		 * entity.
 		 */
-		public function get properties():ISet
+		public function get reflect():Type
 		{
-			return descriptor.properties;
-		}
-		
-		private function get ignoredProperties():ISet
-		{
-			return descriptor.ignoredProperties;
-		}
-		
-		/**
-		 * @private
-		 */
-		override flash_proxy function callProperty(name:*, ...parameters):*
-		{
-			throw new Error("Method '" + name + "' does not exist on " + className(this) + ".");
-		}
-		
-		private var _properties:Properties = new Properties(this);
-		private var _associations:Properties = new Properties(this);
-		/**
-		 * @private
-		 */
-		override flash_proxy function getProperty(name:*):*
-		{
-			// check if the caller wants the association
-			if (descriptor.getRelationshipForProperty(name) != null) {
-				return association(name);
+			if (_reflect == null) {
+				_reflect = Type.reflect(this);
 			}
-			
-			// check if the caller wants the association proxy.
-			if (name.toString().indexOf("Association") > 0) {
-				return association(name.toString().replace("Association", ""));
-			}
-			
-			if (_properties.hasOwnProperty(name)) {
-				return _properties[name];
-			}
-			
-			var aggregate:Aggregate = descriptor.getAggregateForProperty(name);
-			if (aggregate != null && aggregate.property != name.toString()) {
-				return aggregate.getValue(this, name);
-			}
-			
-			if (name.toString().lastIndexOf("Was") == name.toString().length-3) {
-				var property:String = name.toString().substr(0, name.toString().length-3);
-				
-				aggregate = descriptor.getAggregateForProperty(property);
-				if (aggregate != null) {
-					var aggregateValue:Object = _properties.oldValueOf(aggregate.property);
-					if (aggregateValue != null) {
-						return aggregateValue[aggregate.getMappedProperty(property)];
-					}
-				}
-				return was(property);
-			}
-			
-			return undefined;
-		}
-		
-		/**
-		 * @private
-		 */
-		override flash_proxy function hasProperty(name:*):Boolean
-		{
-			return flash_proxy::getProperty(name) !== undefined;
-		}
-		
-		/**
-		 * @private
-		 */
-		override flash_proxy function setProperty(name:*, value:*):void
-		{
-			if (!properties.contains(name.toString())) {
-				throw new ArgumentError(name + " not defined on " + className(this));
-			}
-			
-			if (descriptor.getRelationshipForProperty(name) != null) {
-				association(name).target = value is AssociationProxy ? value.target : value;
-				return;
-			}
-			
-			var oldValue:* = _properties[name];
-			_properties[name] = value;
-			
-			var aggregate:Aggregate = descriptor.getAggregateForProperty(name);
-			if (aggregate != null && aggregate.property != name.toString()) {
-				aggregate.setValue(this, name, value);
-				return;
-			}
-			if (aggregate != null && aggregate.isBindable && aggregate.property == name.toString()) {
-				dispatchEvent(PropertyChangeEvent.createUpdateEvent(this, name.toString(), oldValue, value));
-			}
-		}
-		
-		/**
-		 *  @private
-		 */
-		override flash_proxy function nextName(index:int):String
-		{
-			return _iteratingProperties[index-1];
-		}
-		
-		private var _iteratingProperties:Array;
-		private var _len:int;
-		/**
-		 * @private
-		 */
-		override flash_proxy function nextNameIndex(index:int):int
-		{
-			if (index == 0) {
-				_iteratingProperties = properties.toArray();
-				_len = _iteratingProperties.length;
-			}
-			return index < _len ? index+1 : 0;
-		}
-		
-		/**
-		 * @private
-		 */
-		override flash_proxy function nextValue(index:int):*
-		{
-			return this[_iteratingProperties[index-1]];
+			return _reflect;
 		}
 		
 		/**

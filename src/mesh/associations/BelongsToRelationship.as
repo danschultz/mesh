@@ -7,7 +7,7 @@ package mesh.associations
 	 * 
 	 * @author Dan Schultz
 	 */
-	public class BelongsToRelationship extends HasOneRelationship
+	public class BelongsToRelationship extends HasOneDefinition
 	{
 		/**
 		 * @copy Relationship#Relationship()

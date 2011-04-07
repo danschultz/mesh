@@ -24,7 +24,7 @@ package mesh.associations
 	
 	use namespace flash_proxy;
 	
-	public dynamic class AssociationCollection extends AssociationProxy implements IList
+	public dynamic class AssociationCollection extends Association implements IList
 	{
 		private var _originalEntities:ArraySequence;
 		private var _mirroredEntities:ArraySequence;
@@ -33,7 +33,7 @@ package mesh.associations
 		/**
 		 * @copy AssociationProxy#AssociationProxy()
 		 */
-		public function AssociationCollection(source:Entity, relationship:Relationship)
+		public function AssociationCollection(source:Entity, relationship:AssociationDefinition)
 		{
 			super(source, relationship);
 			target = [];

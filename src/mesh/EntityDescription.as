@@ -13,9 +13,9 @@ package mesh
 	
 	import mesh.adaptors.ServiceAdaptor;
 	import mesh.associations.BelongsToRelationship;
-	import mesh.associations.HasManyRelationship;
-	import mesh.associations.HasOneRelationship;
-	import mesh.associations.Relationship;
+	import mesh.associations.HasManyDefinition;
+	import mesh.associations.HasOneDefinition;
+	import mesh.associations.AssociationDefinition;
 	import mesh.core.reflection.clazz;
 	import mesh.core.reflection.newInstance;
 	
@@ -24,8 +24,8 @@ package mesh
 	public class EntityDescription
 	{
 		private static const RELATIONSHIPS:Object = {
-			HasMany: HasManyRelationship,
-			HasOne: HasOneRelationship,
+			HasMany: HasManyDefinition,
+			HasOne: HasOneDefinition,
 			BelongsTo: BelongsToRelationship
 		};
 		
@@ -85,7 +85,7 @@ package mesh
 		
 		public function addRelationships(...relationships):void
 		{
-			for each (var relationship:Relationship in relationships) {
+			for each (var relationship:AssociationDefinition in relationships) {
 				_relationships.add(relationship);
 				_propertyToRelationship.put(relationship.property, relationship);
 			}
@@ -101,7 +101,7 @@ package mesh
 			return _propertyToAggregate.grab(property);
 		}
 		
-		public function getRelationshipForProperty(property:String):Relationship
+		public function getRelationshipForProperty(property:String):AssociationDefinition
 		{
 			return _propertyToRelationship.grab(property);
 		}
@@ -315,7 +315,7 @@ package mesh
 					_properties.addAll(aggregate.properties);
 				}
 				
-				for each (var relationship:Relationship in relationships) {
+				for each (var relationship:AssociationDefinition in relationships) {
 					_properties.addAll(relationship.properties);
 				}
 				

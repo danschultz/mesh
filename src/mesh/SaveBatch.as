@@ -109,7 +109,7 @@ import collections.HashSet;
 import mesh.Entity;
 import mesh.EntityDescription;
 import mesh.associations.BelongsToRelationship;
-import mesh.associations.Relationship;
+import mesh.associations.AssociationDefinition;
 import mesh.core.string.capitalize;
 
 import operations.EmptyOperation;
@@ -134,7 +134,7 @@ class PersistenceCache
 	private function countLongestParentPath(description:EntityDescription):int
 	{
 		var count:int = 0;
-		for each (var relationship:Relationship in description.relationships) {
+		for each (var relationship:AssociationDefinition in description.relationships) {
 			if (relationship is BelongsToRelationship) {
 				count = Math.max(count, countLongestParentPath(EntityDescription.describe(relationship.target)) + 1);
 			}

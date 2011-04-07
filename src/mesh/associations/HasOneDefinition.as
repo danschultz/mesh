@@ -11,12 +11,12 @@ package mesh.associations
 	 * 
 	 * @author Dan Schultz
 	 */
-	public class HasOneRelationship extends Relationship
+	public class HasOneDefinition extends AssociationDefinition
 	{
 		/**
 		 * @copy Relationship#Relationship()
 		 */
-		public function HasOneRelationship(owner:Class, property:String, target:Class, options:Object)
+		public function HasOneDefinition(owner:Class, property:String, target:Class, options:Object)
 		{
 			if (property == null || property.length == 0) {
 				property = camelize(className(target), false);
