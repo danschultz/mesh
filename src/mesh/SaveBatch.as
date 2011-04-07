@@ -135,7 +135,7 @@ class PersistenceCache
 	{
 		var count:int = 0;
 		for each (var relationship:Relationship in description.relationships) {
-			if (relationship is BelongsToRelationship) {
+			if (relationship is BelongsToRelationship && description.entityType != relationship.target) {
 				count = Math.max(count, countLongestParentPath(EntityDescription.describe(relationship.target)) + 1);
 			}
 		}
@@ -162,7 +162,7 @@ class PersistenceCache
 		var before:SequentialOperation = new SequentialOperation();
 		var after:SequentialOperation = new SequentialOperation();
 		for each (var entity:Entity in entities) {
-			before.add( new MethodOperation(entity.callback, "before" + capitalize(callback)) );
+			//before.add( new MethodOperation(entity.callback, "before" + capitalize(callback)) );
 			before.add( new MethodOperation(checkValidations, entity, validate) );
 			after.add( new MethodOperation(entity.callback, "after" + capitalize(callback)) );
 		}

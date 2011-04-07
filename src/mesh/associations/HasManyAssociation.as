@@ -24,7 +24,7 @@ package mesh.associations
 		{
 			var options:Object = {};
 			options[camelize(className(relationship.owner), false)] = owner;
-			
+			options.method = relationship.method;
 			return Query.entity(relationship.target).where(options);
 		}
 		

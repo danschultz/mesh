@@ -123,6 +123,14 @@ package mesh.associations
 			return false;
 		}
 		
+		/**
+		 * The method on the adaptor to call.
+		 */
+		public function get method():String
+		{
+			return options.method;
+		}
+		
 		private var _options:Object;
 		/**
 		 * A set of options that a client has configured for this relationship.

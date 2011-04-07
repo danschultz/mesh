@@ -21,12 +21,7 @@ package mesh.associations
 		 */
 		override protected function createLoadOperation():Operation
 		{
-			var operation:Operation = Query.entity(relationship.target).find(owner[BelongsToRelationship( relationship ).foreignKey]);
-			operation.addEventListener(ResultOperationEvent.RESULT, function(event:ResultOperationEvent):void
-			{
-				event.data = event.data[0];
-			});
-			return operation;
+			return Query.entity(relationship.target).find(owner[BelongsToRelationship( relationship ).foreignKey]);
 		}
 	}
 }

@@ -52,9 +52,6 @@ package mesh
 			afterFind(function(entity:Entity):void
 			{
 				_properties.clear();
-			});
-			afterFind(function(entity:Entity):void
-			{
 				markNonLazyAssociationsAsLoaded();
 			});
 			
@@ -62,6 +59,7 @@ package mesh
 			afterSave(function(entity:Entity):void
 			{
 				_properties.clear();
+				markNonLazyAssociationsAsLoaded();
 			});
 			
 			// add necessary callback for destory
@@ -508,7 +506,7 @@ package mesh
 		{
 			var result:Array = [];
 			for each (var relationship:Relationship in descriptor.relationships) {
-				result.push(association(relationship.property));
+				result.push(this[relationship.property]);
 			}
 			return result;
 		}

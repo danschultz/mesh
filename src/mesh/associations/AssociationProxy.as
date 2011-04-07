@@ -24,6 +24,7 @@ package mesh.associations
 	import operations.EmptyOperation;
 	import operations.FinishedOperationEvent;
 	import operations.Operation;
+	import operations.OperationEvent;
 	import operations.ResultOperationEvent;
 
 	/**
@@ -116,7 +117,7 @@ package mesh.associations
 		 */
 		final public function load():Operation
 		{
-			var operation:Operation = isLoaded ? new EmptyOperation() : createLoad();
+			var operation:Operation = isLoaded || isLoading ? new EmptyOperation() : createLoad();
 			setTimeout(operation.execute, 50);
 			return operation;
 		}
@@ -133,6 +134,10 @@ package mesh.associations
 			operation.addEventListener(ResultOperationEvent.RESULT, function(event:ResultOperationEvent):void
 			{
 				target = event.data;
+			});
+			operation.addEventListener(OperationEvent.BEFORE_EXECUTE, function(event:OperationEvent):void
+			{
+				callback("beforeLoad");
 			});
 			operation.addEventListener(FinishedOperationEvent.FINISHED, function(event:FinishedOperationEvent):void
 			{

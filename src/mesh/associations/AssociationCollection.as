@@ -9,6 +9,7 @@ package mesh.associations
 	import mesh.Entity;
 	import mesh.Mesh;
 	import mesh.core.functions.closure;
+	import mesh.core.object.copy;
 	import mesh.core.reflection.Type;
 	import mesh.core.reflection.className;
 	import mesh.core.reflection.reflect;
@@ -81,6 +82,26 @@ package mesh.associations
 		}
 		
 		/**
+		 * Returns either a new entity or an array of new entities of the associated type.
+		 * These object will be instantiated from the passed in properties and their relationships
+		 * populated. However, they will not be saved.
+		 * 
+		 * @param properties The properties for each new entity.
+		 * @return Either a new entity, or an array of new entities.
+		 */
+		public function build(...properties):*
+		{
+			var result:Array = [];
+			for each (var property:Object in properties) {
+				var entity:Entity = new relationship.target();
+				copy(property, entity);
+				populateBelongsToAssociation(entity);
+				result.push(entity);
+			}
+			return result.length == 1 ? result.pop() : result;
+		}
+		
+		/**
 		 * Checks if the association has the given entity. This method will only check for entities
 		 * that have already been loaded.
 		 * 
@@ -90,6 +111,19 @@ package mesh.associations
 		public function contains(item:Object):Boolean
 		{
 			return getItemIndex(item) >= 0;
+		}
+		
+		/**
+		 * Creates a new entity of the associated type that is populated with the given properties.
+		 * 
+		 * @param properties The properties to populate the new entity with.
+		 * @return An executing operation that saves the entity to the backend.
+		 */
+		public function create(properties:Object):Operation
+		{
+			var entity:Entity = build(properties);
+			add(entity);
+			return entity.save(true);
 		}
 		
 		/**
@@ -299,6 +333,14 @@ package mesh.associations
 			}
 			
 			return result;
+		}
+		
+		/**
+		 * <code>true</code> if the collection doesn't contain any elements.
+		 */
+		public function get isEmpty():Boolean
+		{
+			return length == 0;
 		}
 		
 		/**
