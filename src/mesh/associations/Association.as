@@ -13,14 +13,13 @@ package mesh.associations
 	import mesh.IPersistable;
 	import mesh.Mesh;
 	import mesh.SaveBatch;
-	import mesh.core.reflection.className;
 	
 	import mx.events.PropertyChangeEvent;
 	
-	import operations.EmptyOperation;
-	import operations.FinishedOperationEvent;
-	import operations.Operation;
-	import operations.ResultOperationEvent;
+	import mesh.operations.EmptyOperation;
+	import mesh.operations.FinishedOperationEvent;
+	import mesh.operations.Operation;
+	import mesh.operations.ResultOperationEvent;
 
 	/**
 	 * An association class is a proxy object that contains the references to the objects in
@@ -43,12 +42,18 @@ package mesh.associations
 		public function Association(owner:Entity, definition:AssociationDefinition)
 		{
 			super();
+			
 			_dispatcher = new EventDispatcher(this);
 			_owner = owner;
 			_definition = definition;
 			
 			beforeLoad(loading);
 			afterLoad(loaded);
+			
+			beforeAdd(populateForeignKey);
+			beforeAdd(reviveEntity);
+			
+			beforeRemove(markEntityForRemoval);
 		}
 		
 		private function addCallback(method:String, block:Function):void
@@ -56,9 +61,29 @@ package mesh.associations
 			_callbacks.addCallback(method, block);
 		}
 		
+		protected function beforeAdd(block:Function):void
+		{
+			addCallback("beforeAdd", block);
+		}
+		
+		protected function beforeRemove(block:Function):void
+		{
+			addCallback("beforeRemove", block);
+		}
+		
 		protected function beforeLoad(block:Function):void
 		{
 			addCallback("beforeLoad", block);
+		}
+		
+		protected function afterAdd(block:Function):void
+		{
+			addCallback("afterAdd", block);
+		}
+		
+		protected function afterRemove(block:Function):void
+		{
+			addCallback("afterRemove", block);
 		}
 		
 		protected function afterLoad(block:Function):void
@@ -66,9 +91,20 @@ package mesh.associations
 			addCallback("afterLoad", block);
 		}
 		
-		public function callback(method:String):void
+		protected function callback(method:String, entity:Entity = null):void
 		{
-			_callbacks.callback(method);
+			if (entity != null) {
+				_callbacks.callback(method, entity);
+			} else {
+				_callbacks.callback(method);
+			}
+		}
+		
+		protected function callbackIfNotNull(method:String, entity:Entity):void
+		{
+			if (entity != null) {
+				callback(method, entity);
+			}
 		}
 		
 		/**
@@ -115,18 +151,18 @@ package mesh.associations
 			}
 		}
 		
-		/**
-		 * Populates the belongs to association on the given entity that represents the inverse
-		 * of this association.
-		 * 
-		 * @param entity The entity to populate.
-		 */
-		protected function populateBelongsToAssociation(entity:Entity):void
+		private function markEntityForRemoval(entity:Entity):void
 		{
-			for each (var association:Association in entity.associations) {
-				if (association is BelongsToAssociation && definition.target == association.definition.owner) {
-					association.target = owner;
-					break;
+			entity.markForRemoval();
+		}
+		
+		private function populateForeignKey(entity:Entity):void
+		{
+			if (definition.hasForeignKey) {
+				if (entity.hasOwnProperty(definition.foreignKey)) {
+					entity[definition.foreignKey] = owner.id;
+				} else {
+					throw new IllegalOperationError("Foreign key '" + definition.foreignKey + "' is not defined on " + entity.reflect.name);
 				}
 			}
 		}
@@ -139,6 +175,11 @@ package mesh.associations
 			
 		}
 		
+		private function reviveEntity(entity:Entity):void
+		{
+			entity.revive();
+		}
+		
 		public function save(validate:Boolean = true):Operation
 		{
 			var operation:Operation = new SaveBatch().add(this).build(validate);
@@ -149,13 +190,6 @@ package mesh.associations
 		public function batch(batch:SaveBatch):void
 		{
 			batch.add.apply(null, dirtyEntities);
-		}
-		
-		private function setBindableProperty(property:String, getter:Function, setter:Function):void
-		{
-			var oldValue:* = getter();
-			setter();
-			dispatchEvent(PropertyChangeEvent.createUpdateEvent(this, property, oldValue, getter()));
 		}
 		
 		/**

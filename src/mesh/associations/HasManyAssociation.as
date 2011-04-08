@@ -5,7 +5,7 @@ package mesh.associations
 	import mesh.core.inflection.camelize;
 	import mesh.core.reflection.className;
 	
-	import operations.Operation;
+	import mesh.operations.Operation;
 	
 	public dynamic class HasManyAssociation extends AssociationCollection
 	{
@@ -26,18 +26,6 @@ package mesh.associations
 			options[camelize(className(definition.owner), false)] = owner;
 			
 			return Query.entity(definition.target).where(options);
-		}
-		
-		/**
-		 * @inheritDoc
-		 */
-		override protected function handleEntitiesAdded(entities:Array):void
-		{
-			super.handleEntitiesAdded(entities);
-			
-			for each (var entity:Entity in entities) {
-				populateBelongsToAssociation(entity);
-			}
 		}
 	}
 }

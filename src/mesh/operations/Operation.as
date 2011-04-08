@@ -1,4 +1,4 @@
-package operations
+package mesh.operations
 {
 	import flash.events.EventDispatcher;
 	import flash.utils.getQualifiedClassName;
@@ -8,46 +8,46 @@ package operations
 	/**
 	 * Dispatched when the execution of an operation has been canceled.
 	 */
-	[Event(name="canceled", type="operations.OperationEvent")]
+	[Event(name="canceled", type="mesh.operations.OperationEvent")]
 	
 	/**
 	 * Dispatched when the execution of an operation has been queued.
 	 */
-	[Event(name="queued", type="operations.OperationEvent")]
+	[Event(name="queued", type="mesh.operations.OperationEvent")]
 	
 	/**
 	 * Dispatched after the execution of an operation has started.
 	 */
-	[Event(name="afterExecute", type="operations.OperationEvent")]
+	[Event(name="afterExecute", type="mesh.operations.OperationEvent")]
 	
 	/**
 	 * Dispatched before the execution of an operation is about to start.
 	 */
-	[Event(name="beforeExecute", type="operations.OperationEvent")]
+	[Event(name="beforeExecute", type="mesh.operations.OperationEvent")]
 	
 	/**
 	 * Dispatched when the operation has progressed during its execution.
 	 */
-	[Event(name="progress", type="operations.ProgressOperationEvent")]
+	[Event(name="progress", type="mesh.operations.ProgressOperationEvent")]
 	
 	/**
 	 * Dispatched when either an error or fault has occurred during the execution
 	 * of an operation.
 	 */
-	[Event(name="fault", type="operations.FaultOperationEvent")]
+	[Event(name="fault", type="mesh.operations.FaultOperationEvent")]
 	
 	/**
 	 * Dispatched when the execution of an operation has finished. Clients can check
 	 * if an operation finished successfully by accessing the events 
 	 * <code>successful</code> property.
 	 */
-	[Event(name="finished", type="operations.FinishedOperationEvent")]
+	[Event(name="finished", type="mesh.operations.FinishedOperationEvent")]
 	
 	/**
 	 * Dispatched a result was received during the execution of an operation. This event
 	 * contains the parsed result data.
 	 */
-	[Event(name="result", type="operations.ResultOperationEvent")]
+	[Event(name="result", type="mesh.operations.ResultOperationEvent")]
 	
 	/**
 	 * The <code>Operation</code> is a base class representing an arbitrary atomic request.

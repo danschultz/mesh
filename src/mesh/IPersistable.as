@@ -1,6 +1,6 @@
 package mesh
 {
-	import operations.Operation;
+	import mesh.operations.Operation;
 
 	public interface IPersistable
 	{

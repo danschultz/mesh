@@ -4,9 +4,9 @@ package mesh
 	import mesh.models.Customer;
 	import mesh.models.Name;
 	
-	import operations.FaultOperationEvent;
-	import operations.FinishedOperationEvent;
-	import operations.Operation;
+	import mesh.operations.FaultOperationEvent;
+	import mesh.operations.FinishedOperationEvent;
+	import mesh.operations.Operation;
 	
 	import org.flexunit.assertThat;
 	import org.flexunit.async.Async;

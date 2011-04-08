@@ -4,6 +4,10 @@ package operations
 	import org.hamcrest.object.equalTo;
 	import org.hamcrest.object.notNullValue;
 	import org.hamcrest.object.nullValue;
+	import mesh.operations.FaultOperationEvent;
+	import mesh.operations.FinishedOperationEvent;
+	import mesh.operations.OperationEvent;
+	import mesh.operations.ResultOperationEvent;
 	
 	public class OperationTests
 	{

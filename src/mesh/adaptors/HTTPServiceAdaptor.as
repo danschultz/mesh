@@ -8,7 +8,7 @@ package mesh.adaptors
 	import mx.rpc.http.HTTPMultiService;
 	import mx.rpc.http.Operation;
 	
-	import operations.Operation;
+	import mesh.operations.Operation;
 	
 	/**
 	 * A service adaptor that uses a <code>HTTPMultiService</code> to perform persistence
@@ -50,13 +50,12 @@ package mesh.adaptors
 		/**
 		 * Constructor.
 		 * 
-		 * @param entity The entity who owns this service adaptor.
 		 * @param options An options hash to configure the adaptor.
 		 */
-		public function HTTPServiceAdaptor(entity:Class, options:Object)
+		public function HTTPServiceAdaptor(options:Object = null)
 		{
 			_service = new HTTPMultiService();
-			super(_service, entity, options);
+			super(_service, options);
 		}
 		
 		/**
@@ -67,7 +66,7 @@ package mesh.adaptors
 		 * 
 		 * @inheritDoc
 		 */
-		override protected function generateOperation(...args):operations.Operation
+		override protected function generateOperation(...args):mesh.operations.Operation
 		{
 			if (_service.operations == null || _service.operations[args[0]] == null) {
 				var operation:mx.rpc.http.Operation = createHTTPOperation(args[0], args[2]);

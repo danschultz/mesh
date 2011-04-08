@@ -6,9 +6,9 @@ package mesh
 	import flash.errors.IllegalOperationError;
 	import flash.utils.setTimeout;
 	
-	import operations.Operation;
-	import operations.ParallelOperation;
-	import operations.SequentialOperation;
+	import mesh.operations.Operation;
+	import mesh.operations.ParallelOperation;
+	import mesh.operations.SequentialOperation;
 	
 	public class SaveBatch
 	{
@@ -112,11 +112,11 @@ import mesh.associations.BelongsToRelationship;
 import mesh.associations.AssociationDefinition;
 import mesh.core.string.capitalize;
 
-import operations.EmptyOperation;
-import operations.FactoryOperation;
-import operations.MethodOperation;
-import operations.Operation;
-import operations.SequentialOperation;
+import mesh.operations.EmptyOperation;
+import mesh.operations.FactoryOperation;
+import mesh.operations.MethodOperation;
+import mesh.operations.Operation;
+import mesh.operations.SequentialOperation;
 
 class PersistenceCache
 {

@@ -23,8 +23,8 @@ package mesh
 	
 	import mx.events.PropertyChangeEvent;
 	
-	import operations.Operation;
-	import operations.ResultOperationEvent;
+	import mesh.operations.Operation;
+	import mesh.operations.ResultOperationEvent;
 	
 	/**
 	 * An entity.
@@ -48,8 +48,8 @@ package mesh
 			_dispatcher = new EventDispatcher(this);
 			
 			// add necessary callbacks for find
-			afterFind(synced);
 			afterFind(markNonLazyAssociationsAsLoaded);
+			afterFind(synced);
 			
 			// add necessary callbacks for save
 			beforeSave(validate);
@@ -244,10 +244,7 @@ package mesh
 		 */
 		protected function propertyChanged(property:String, oldValue:Object, newValue:Object):void
 		{
-			// check if the property is ignored.
-			if (!ignoredProperties.contains(property)) {
-				_changes.changed(property, oldValue, newValue);
-			}
+			_changes.changed(property, oldValue, newValue);
 		}
 		
 		/**

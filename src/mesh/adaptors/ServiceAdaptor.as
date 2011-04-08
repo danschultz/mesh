@@ -4,7 +4,7 @@ package mesh.adaptors
 	
 	import mesh.core.reflection.className;
 	
-	import operations.Operation;
+	import mesh.operations.Operation;
 	
 	/**
 	 * A service adaptor represents the required strategy for an entity to be persisted and
@@ -16,13 +16,9 @@ package mesh.adaptors
 	{
 		/**
 		 * Constructor.
-		 * 
-		 * @param entity The entity for this service adaptor.
-		 * @param options A set of options to configure this service adaptor.
 		 */
-		public function ServiceAdaptor(entity:Class, options:Object = null)
+		public function ServiceAdaptor(options:Object = null)
 		{
-			_entity = entity;
 			_options = options == null ? {} : options;
 		}
 		
@@ -112,15 +108,6 @@ package mesh.adaptors
 		protected function generateOperation(...args):Operation
 		{
 			throw new IllegalOperationError(className(this) + " does not support generateOperation()");
-		}
-		
-		private var _entity:Class;
-		/**
-		 * The entity that this service adaptor belongs to.
-		 */
-		protected function get entity():Class
-		{
-			return _entity;
 		}
 		
 		private var _options:Object;

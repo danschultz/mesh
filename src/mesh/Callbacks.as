@@ -20,10 +20,10 @@ package mesh
 			callbacks(method).add(new Callback(block, args));
 		}
 		
-		public function callback(method:String):void
+		public function callback(method:String, ...args):void
 		{
 			for each (var callback:Callback in callbacks(method)) {
-				callback.execute();
+				callback.execute(args);
 			}
 		}
 		
@@ -62,21 +62,14 @@ package mesh
 class Callback
 {
 	private var _block:Function;
-	private var _args:Array;
 	
-	public function Callback(block:Function, args:Array)
+	public function Callback(block:Function)
 	{
 		_block = block;
-		_args = args;
 	}
 	
-	public function execute():void
+	public function execute(args:Array):void
 	{
-		_block.apply(null, _args);
-	}
-	
-	public function get block():Function
-	{
-		return _block;
+		_block.apply(null, args);
 	}
 }

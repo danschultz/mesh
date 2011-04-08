@@ -1,4 +1,4 @@
-package operations
+package mesh.operations
 {
 	/**
 	 * A type of compound operation that executes all of its operations at the same time.

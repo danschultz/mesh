@@ -3,10 +3,10 @@ package mesh
 	import mesh.models.Airport;
 	import mesh.models.FlightPlan;
 	
-	import operations.FactoryOperation;
-	import operations.FinishedOperationEvent;
-	import operations.Operation;
-	import operations.ResultOperationEvent;
+	import mesh.operations.FactoryOperation;
+	import mesh.operations.FinishedOperationEvent;
+	import mesh.operations.Operation;
+	import mesh.operations.ResultOperationEvent;
 	
 	import org.flexunit.assertThat;
 	import org.flexunit.async.Async;

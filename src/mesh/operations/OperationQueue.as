@@ -1,4 +1,4 @@
-package operations
+package mesh.operations
 {
 	import flash.events.Event;
 	import flash.events.EventDispatcher;
@@ -10,22 +10,22 @@ package operations
 	/**
 	 * Dispatched when the queue has started.
 	 */
-	[Event(name="started", type="operations.OperationQueueEvent")]
+	[Event(name="started", type="mesh.operations.OperationQueueEvent")]
 	
 	/**
 	 * Dispatched when the queue receives a progress event from one of its operations.
 	 */
-	[Event(name="progress", type="operations.OperationQueueEvent")]
+	[Event(name="progress", type="mesh.operations.OperationQueueEvent")]
 	
 	/**
 	 * Dispatched when the queue has finished all of its operations.
 	 */
-	[Event(name="idle", type="operations.OperationQueueEvent")]
+	[Event(name="idle", type="mesh.operations.OperationQueueEvent")]
 	
 	/**
 	 * Dispatched when the queue has been paused.
 	 */
-	[Event(name="paused", type="operations.OperationQueueEvent")]
+	[Event(name="paused", type="mesh.operations.OperationQueueEvent")]
 	
 	/**
 	 * An <code>OperationQueue</code> manages the execution of a set of <code>Operation</code>s.

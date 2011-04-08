@@ -6,10 +6,10 @@ package mesh.adaptors
 	
 	import mesh.Entity;
 	
-	import operations.MethodOperation;
-	import operations.Operation;
-	import operations.OperationEvent;
-	import operations.SequentialOperation;
+	import mesh.operations.MethodOperation;
+	import mesh.operations.Operation;
+	import mesh.operations.OperationEvent;
+	import mesh.operations.SequentialOperation;
 
 	public class MockAdaptor extends ServiceAdaptor
 	{

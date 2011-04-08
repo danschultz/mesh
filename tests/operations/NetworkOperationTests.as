@@ -5,6 +5,10 @@ package operations
 	import org.flexunit.async.Async;
 	import org.hamcrest.object.equalTo;
 	import org.hamcrest.object.notNullValue;
+	import mesh.operations.FaultOperationEvent;
+	import mesh.operations.FinishedOperationEvent;
+	import mesh.operations.NetworkOperation;
+	import mesh.operations.ResultOperationEvent;
 
 	public class NetworkOperationTests
 	{
@@ -105,7 +109,7 @@ package operations
 	}
 }
 
-import operations.NetworkOperation;
+import mesh.operations.NetworkOperation;
 
 class MockNetworkOperation extends NetworkOperation
 {

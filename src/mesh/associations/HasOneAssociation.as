@@ -5,8 +5,7 @@ package mesh.associations
 	import mesh.core.inflection.camelize;
 	import mesh.core.reflection.className;
 	
-	import operations.Operation;
-	import operations.ResultOperationEvent;
+	import mesh.operations.Operation;
 	
 	public dynamic class HasOneAssociation extends HasAssociation
 	{
@@ -25,13 +24,7 @@ package mesh.associations
 		{
 			var options:Object = {};
 			options[camelize(className(definition.owner), false)] = owner;
-			
-			var operation:Operation = Query.entity(definition.target).where(options);
-			operation.addEventListener(ResultOperationEvent.RESULT, function(event:ResultOperationEvent):void
-			{
-				event.data = event.data[0];
-			});
-			return operation;
+			return Query.entity(definition.target).where(options);
 		}
 		
 		/**
@@ -43,11 +36,16 @@ package mesh.associations
 		}
 		override public function set target(value:*):void
 		{
+			value = (value is HasOneAssociation) ? value.target : value;
+			var oldValue:Entity = target;
+			
+			callbackIfNotNull("beforeRemove", oldValue);
+			callbackIfNotNull("beforeAdd", value);
+			
 			super.target = value;
 			
-			if (target != null) {
-				populateBelongsToAssociation(target);
-			}
+			callbackIfNotNull("afterRemove", oldValue);
+			callbackIfNotNull("afterAdd", value);
 		}
 	}
 }

@@ -5,8 +5,8 @@ package mesh.adaptors
 	
 	import mx.rpc.AbstractService;
 	
-	import operations.Operation;
-	import operations.ServiceOperation;
+	import mesh.operations.Operation;
+	import mesh.operations.ServiceOperation;
 	
 	/**
 	 * A service adaptor that uses Flex's <code>AbstractService</code> to perform an entity's
@@ -33,12 +33,11 @@ package mesh.adaptors
 		 * Constructor.
 		 * 
 		 * @param service The service for this adaptor.
-		 * @param entity The entity who owns this service adaptor.
 		 * @param options An options hash to configure the adaptor.
 		 */
-		public function RPCServiceAdaptor(service:AbstractService, entity:Class, options:Object)
+		public function RPCServiceAdaptor(service:AbstractService, options:Object = null)
 		{
-			super(entity, options);
+			super(options);
 			_service = service;
 			copy(options, service);
 		}

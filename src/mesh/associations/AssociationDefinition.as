@@ -112,6 +112,17 @@ package mesh.associations
 		}
 		
 		/**
+		 * The name of the foreign key property.
+		 */
+		public function get foreignKey():String
+		{
+			if (options.hasOwnProperty("foreignKey")) {
+				return options.foreignKey;
+			}
+			return null;
+		}
+		
+		/**
 		 * <code>true</code> if this relationship is lazy, and its data is not loaded when
 		 * the owner is loaded.
 		 */

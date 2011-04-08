@@ -18,9 +18,9 @@ package mesh.associations
 	import mx.events.CollectionEvent;
 	import mx.events.CollectionEventKind;
 	
-	import operations.EmptyOperation;
-	import operations.FactoryOperation;
-	import operations.Operation;
+	import mesh.operations.EmptyOperation;
+	import mesh.operations.FactoryOperation;
+	import mesh.operations.Operation;
 	
 	use namespace flash_proxy;
 	
@@ -69,7 +69,7 @@ package mesh.associations
 		 */
 		public function addItem(item:Object):void
 		{
-			target.addItem(item);
+			addItemAt(item, length);
 		}
 		
 		/**
@@ -77,6 +77,7 @@ package mesh.associations
 		 */
 		public function addItemAt(item:Object, index:int):void
 		{
+			callbackIfNotNull("beforeAdd", item);
 			target.addItemAt(item, index);
 		}
 		
@@ -241,6 +242,7 @@ package mesh.associations
 		 */
 		public function removeItemAt(index:int):Object
 		{
+			callbackIfNotNull("beforeRemove", getItemAt(index) as Entity);
 			return target.removeItemAt(index);
 		}
 		

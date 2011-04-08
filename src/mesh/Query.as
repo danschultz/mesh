@@ -5,8 +5,8 @@ package mesh
 	import mesh.adaptors.ServiceAdaptor;
 	import mesh.core.reflection.clazz;
 	
-	import operations.Operation;
-	import operations.ResultOperationEvent;
+	import mesh.operations.Operation;
+	import mesh.operations.ResultOperationEvent;
 	
 	public class Query
 	{

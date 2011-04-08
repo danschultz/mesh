@@ -24,12 +24,11 @@ package mesh.adaptors
 		/**
 		 * Constructor.
 		 * 
-		 * @param entity The entity who owns this service adaptor.
 		 * @param options An options hash to configure the adaptor.
 		 */
-		public function AMFServiceAdaptor(entity:Class, options:Object)
+		public function AMFServiceAdaptor(options:Object = null)
 		{
-			super(new RemoteObject(), entity, options);
+			super(new RemoteObject(), options);
 		}
 	}
 }

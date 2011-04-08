@@ -1,4 +1,4 @@
-package operations
+package mesh.operations
 {
 	import flash.errors.IllegalOperationError;
 	import flash.events.TimerEvent;
@@ -223,7 +223,7 @@ package operations
 	}
 }
 
-import operations.NetworkOperation;
+import mesh.operations.NetworkOperation;
 
 class Timeout
 {

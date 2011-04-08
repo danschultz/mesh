@@ -5,11 +5,11 @@ package mesh.adaptors
 	import mesh.Entity;
 	import mesh.core.functions.closure;
 	
-	import operations.FinishedOperationEvent;
-	import operations.MethodOperation;
-	import operations.Operation;
-	import operations.OperationEvent;
-	import operations.SequentialOperation;
+	import mesh.operations.FinishedOperationEvent;
+	import mesh.operations.MethodOperation;
+	import mesh.operations.Operation;
+	import mesh.operations.OperationEvent;
+	import mesh.operations.SequentialOperation;
 
 	public class InMemoryAdaptor extends ServiceAdaptor
 	{
@@ -19,9 +19,9 @@ package mesh.adaptors
 		/**
 		 * @copy ServiceAdaptor#ServiceAdaptor()
 		 */
-		public function InMemoryAdaptor(entity:Class, options:Object = null)
+		public function InMemoryAdaptor(options:Object = null)
 		{
-			super(entity, options);
+			super(options);
 		}
 		
 		/**

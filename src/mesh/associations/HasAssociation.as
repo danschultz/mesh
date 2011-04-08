@@ -10,15 +10,6 @@ package mesh.associations
 		public function HasAssociation(owner:Entity, relationship:AssociationDefinition)
 		{
 			super(owner, relationship);
-			
-			afterLoad(function(proxy:HasAssociation):void
-			{
-				_persistedTarget = target;
-				
-				if (target != null) {
-					target.callback("afterFind");
-				}
-			});
 		}
 		
 		/**

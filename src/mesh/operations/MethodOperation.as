@@ -1,4 +1,4 @@
-package operations
+package mesh.operations
 {
 	/**
 	 * An synchronous operation that calls a method on an object. The data returned

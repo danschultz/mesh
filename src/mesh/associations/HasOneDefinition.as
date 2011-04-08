@@ -18,10 +18,6 @@ package mesh.associations
 		 */
 		public function HasOneDefinition(owner:Class, property:String, target:Class, options:Object)
 		{
-			if (property == null || property.length == 0) {
-				property = camelize(className(target), false);
-			}
-			
 			super(owner, property, target, options);
 		}
 		
@@ -31,25 +27,6 @@ package mesh.associations
 		override public function createProxy(entity:Entity):*
 		{
 			return new HasOneAssociation(entity, this);
-		}
-		
-		/**
-		 * The name of the foreign key property.
-		 */
-		public function get foreignKey():String
-		{
-			if (options.hasOwnProperty("foreignKey")) {
-				return options.foreignKey;
-			}
-			return property + "Id";
-		}
-		
-		/**
-		 * @inheritDoc
-		 */
-		override public function get properties():Array
-		{
-			return super.properties.concat(foreignKey);
 		}
 	}
 }

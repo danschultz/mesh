@@ -1,5 +1,7 @@
 package operations
 {
+	import mesh.operations.Operation;
+
 	public class MockOperation extends Operation
 	{
 		public function MockOperation()
