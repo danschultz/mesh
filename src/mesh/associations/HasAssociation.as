@@ -15,14 +15,6 @@ package mesh.associations
 		/**
 		 * @inheritDoc
 		 */
-		override public function fromVO(vo:Object, options:Object = null):void
-		{
-			target = createEntityFromVOMapping(vo, options);
-		}
-		
-		/**
-		 * @inheritDoc
-		 */
 		override public function revert():void
 		{
 			target = _persistedTarget;

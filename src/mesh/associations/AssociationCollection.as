@@ -10,17 +10,15 @@ package mesh.associations
 	import mesh.Mesh;
 	import mesh.core.functions.closure;
 	import mesh.core.reflection.Type;
-	import mesh.core.reflection.className;
 	import mesh.core.reflection.reflect;
+	import mesh.operations.EmptyOperation;
+	import mesh.operations.FactoryOperation;
+	import mesh.operations.Operation;
 	
 	import mx.collections.ArrayCollection;
 	import mx.collections.IList;
 	import mx.events.CollectionEvent;
 	import mx.events.CollectionEventKind;
-	
-	import mesh.operations.EmptyOperation;
-	import mesh.operations.FactoryOperation;
-	import mesh.operations.Operation;
 	
 	use namespace flash_proxy;
 	
@@ -109,22 +107,6 @@ package mesh.associations
 			}
 			setTimeout(operation.execute, Mesh.DELAY);
 			return operation;
-		}
-		
-		/**
-		 * @inheritDoc
-		 */
-		override public function fromVO(vo:Object, options:Object = null):void
-		{
-			if (!(vo is Array) && !(vo is IList)) {
-				throw new ArgumentError("Expected an Array or IList, but got a " + className(vo));
-			}
-			
-			var items:Array = [];
-			for each (var item:Object in vo) {
-				items.push(createEntityFromVOMapping(item, options));
-			}
-			target = items;
 		}
 		
 		/**

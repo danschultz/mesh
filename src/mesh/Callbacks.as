@@ -15,25 +15,15 @@ package mesh
 			
 		}
 		
-		public function addCallback(method:String, block:Function, args:Array):void
+		public function addCallback(method:String, block:Function):void
 		{
-			callbacks(method).add(new Callback(block, args));
+			callbacks(method).add(new Callback(block));
 		}
 		
 		public function callback(method:String, ...args):void
 		{
 			for each (var callback:Callback in callbacks(method)) {
 				callback.execute(args);
-			}
-		}
-		
-		public function removeCallback(block:Function):void
-		{
-			for each (var list:ArrayList in _callbacks.values()) {
-				list.removeAll(list.where(function(callback:Callback):Boolean
-				{
-					return callback.block == block;
-				}));
 			}
 		}
 		
