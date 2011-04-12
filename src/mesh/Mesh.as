@@ -1,5 +1,7 @@
 package mesh
 {
+	import mesh.services.Services;
+
 	/**
 	 * A class that defines the globals used by Mesh.
 	 * 
@@ -12,6 +14,8 @@ package mesh
 		 * This delay lets clients add event listeners to operations before they're executed. Otherwise,
 		 * some operations might execute and finish before the event listeners are added.
 		 */
-		public static var DELAY:int = 50;
+		public static const DELAY:int = 50;
+		
+		public static var services:Services = new Services();
 	}
 }

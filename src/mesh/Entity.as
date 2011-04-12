@@ -1,14 +1,7 @@
 package mesh
 {
 	import flash.errors.IllegalOperationError;
-	import flash.events.Event;
 	import flash.events.EventDispatcher;
-	import flash.events.IEventDispatcher;
-	import flash.utils.Proxy;
-	import flash.utils.getDefinitionByName;
-	import flash.utils.getQualifiedClassName;
-	import flash.utils.getQualifiedSuperclassName;
-	import flash.utils.setTimeout;
 	
 	import mesh.associations.Association;
 	import mesh.associations.AssociationDefinition;
@@ -18,22 +11,21 @@ package mesh
 	import mesh.associations.HasOneDefinition;
 	import mesh.core.inflection.humanize;
 	import mesh.core.reflection.Type;
+	import mesh.operations.Operation;
+	import mesh.operations.ResultOperationEvent;
+	import mesh.services.Service;
 	import mesh.validators.Errors;
 	import mesh.validators.Validator;
 	
 	import mx.events.PropertyChangeEvent;
-	
-	import mesh.operations.Operation;
-	import mesh.operations.ResultOperationEvent;
 	
 	/**
 	 * An entity.
 	 * 
 	 * @author Dan Schultz
 	 */
-	public class Entity extends Proxy implements IEventDispatcher, IPersistable
+	public class Entity extends EventDispatcher
 	{
-		private var _dispatcher:EventDispatcher;
 		private var _callbacks:Callbacks = new Callbacks();
 		private var _associations:Object = {};
 		private var _changes:Properties = new Properties(this);
@@ -44,8 +36,6 @@ package mesh
 		public function Entity()
 		{
 			super();
-			
-			_dispatcher = new EventDispatcher(this);
 			
 			// add necessary callbacks for find
 			afterFind(markNonLazyAssociationsAsLoaded);
@@ -143,10 +133,8 @@ package mesh
 		 */
 		public function destroy():Operation
 		{
-			markForRemoval();
-			var operation:Operation = createSave();
-			setTimeout(operation.execute, Mesh.DELAY);
-			return operation;
+			service.destroy(this);
+			return service.save(this);
 		}
 		
 		protected function beforeDestroy(block:Function):void
@@ -271,31 +259,6 @@ package mesh
 		}
 		
 		/**
-		 * @inheritDoc
-		 */
-		public function batch(batch:SaveBatch):void
-		{
-			if (isMarkedForRemoval) {
-				batch.destroy(this);
-			} else if (isNew) {
-				batch.create(this);
-			} else if (hasPropertyChanges) {
-				batch.update(this);
-			}
-			
-			for each (var association:Association in associations) {
-				if (association.definition.autoSave) {
-					batch.add(association);
-				}
-			}
-		}
-		
-		private function createSave(validate:Boolean = true):Operation
-		{
-			return new SaveBatch().add(this).build(validate);
-		}
-		
-		/**
 		 * Saves the entity by executing either a create or update operation on the entity's 
 		 * service.
 		 * 
@@ -310,9 +273,7 @@ package mesh
 		 */
 		public function save(validate:Boolean = true):Operation
 		{
-			var operation:Operation = createSave(validate);
-			setTimeout(operation.execute, Mesh.DELAY);
-			return operation;
+			return service.save(this);
 		}
 		
 		private function synced():void
@@ -340,7 +301,7 @@ package mesh
 		/**
 		 * @private
 		 */
-		public function toString():String
+		override public function toString():String
 		{
 			return humanize(reflect.className);
 		}
@@ -396,8 +357,7 @@ package mesh
 		{
 			errors.clear();
 			
-			var clazz:Class = getDefinitionByName(getQualifiedClassName(this)) as Class;
-			while (clazz != Entity) {
+			for (var reflection:Type = reflect; reflection != null && reflection.clazz != Entity; reflection = reflection.parent) {
 				var validations:Object = clazz["validate"];
 				for (var property:String in validations) {
 					for each (var validation:Object in validations[property]) {
@@ -406,14 +366,8 @@ package mesh
 						(new ValidatorClass(validation) as Validator).validate(this);
 					}
 				}
-				clazz = getDefinitionByName(getQualifiedSuperclassName(clazz)) as Class;
 			}
 			return errors.toArray();
-		}
-		
-		public function adaptor():Class
-		{
-			throw new IllegalOperationError(reflect.className + ".adaptor is not implemented.")
 		}
 		
 		private var _errors:Errors;
@@ -542,43 +496,11 @@ package mesh
 		}
 		
 		/**
-		 * @inheritDoc
+		 * The service attached to this entity.
 		 */
-		public function addEventListener(type:String, listener:Function, useCapture:Boolean = false, priority:int = 0, useWeakReference:Boolean = false):void
+		public function get service():Service
 		{
-			_dispatcher.addEventListener(type, listener, useCapture, priority, useWeakReference);
-		}
-		
-		/**
-		 * @inheritDoc
-		 */
-		public function dispatchEvent(event:Event):Boolean
-		{
-			return _dispatcher.dispatchEvent(event);
-		}
-		
-		/**
-		 * @inheritDoc
-		 */
-		public function hasEventListener(type:String):Boolean
-		{
-			return _dispatcher.hasEventListener(type);
-		}
-		
-		/**
-		 * @inheritDoc
-		 */
-		public function removeEventListener(type:String, listener:Function, useCapture:Boolean = false):void
-		{
-			_dispatcher.removeEventListener(type, listener, useCapture);
-		}
-		
-		/**
-		 * @inheritDoc
-		 */
-		public function willTrigger(type:String):Boolean
-		{
-			return _dispatcher.willTrigger(type);
+			throw new IllegalOperationError(reflect.className + ".service is not implemented.");
 		}
 	}
 }

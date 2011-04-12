@@ -134,6 +134,14 @@ package mesh.associations
 			return false;
 		}
 		
+		public function get load():Function
+		{
+			if (options.hasOwnProperty("load")) {
+				return options.load;
+			}
+			return null;
+		}
+		
 		private var _options:Object;
 		/**
 		 * A set of options that a client has configured for this relationship.

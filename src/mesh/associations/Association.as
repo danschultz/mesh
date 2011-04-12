@@ -10,16 +10,14 @@ package mesh.associations
 	
 	import mesh.Callbacks;
 	import mesh.Entity;
-	import mesh.IPersistable;
 	import mesh.Mesh;
-	import mesh.SaveBatch;
-	
-	import mx.events.PropertyChangeEvent;
-	
 	import mesh.operations.EmptyOperation;
 	import mesh.operations.FinishedOperationEvent;
 	import mesh.operations.Operation;
+	import mesh.operations.OperationEvent;
 	import mesh.operations.ResultOperationEvent;
+	
+	import mx.events.PropertyChangeEvent;
 
 	/**
 	 * An association class is a proxy object that contains the references to the objects in
@@ -28,7 +26,7 @@ package mesh.associations
 	 * 
 	 * @author Dan Schultz
 	 */
-	public dynamic class Association extends Proxy implements IEventDispatcher, IPersistable
+	public dynamic class Association extends Proxy implements IEventDispatcher
 	{
 		private var _dispatcher:EventDispatcher;
 		private var _callbacks:Callbacks = new Callbacks();
@@ -121,7 +119,11 @@ package mesh.associations
 		
 		private function createLoad():Operation
 		{
-			var operation:Operation = createLoadOperation();
+			var operation:Operation = definition.hasLoad ? definition.load() : createLoadOperation();
+			operation.addEventListener(OperationEvent.BEFORE_EXECUTE, function(event:OperationEvent):void
+			{
+				callback("beforeLoad");
+			});
 			operation.addEventListener(ResultOperationEvent.RESULT, function(event:ResultOperationEvent):void
 			{
 				target = event.data;
@@ -131,6 +133,11 @@ package mesh.associations
 				callback("afterLoad");
 			});
 			return operation;
+		}
+		
+		protected function createLoadOperation():Operation
+		{
+			throw new IllegalOperationError("Load function not defined for association " + owner.reflect.className + "." + definition.property);
 		}
 		
 		private function loading():void
@@ -182,14 +189,7 @@ package mesh.associations
 		
 		public function save(validate:Boolean = true):Operation
 		{
-			var operation:Operation = new SaveBatch().add(this).build(validate);
-			setTimeout(operation.execute, Mesh.DELAY);
-			return operation;
-		}
-		
-		public function batch(batch:SaveBatch):void
-		{
-			batch.add.apply(null, dirtyEntities);
+			return new EmptyOperation();
 		}
 		
 		/**

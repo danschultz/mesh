@@ -67,17 +67,6 @@ package mesh.adaptors
 		}
 		
 		/**
-		 * Generates an operation to retrieve with a given set of options from the backend.
-		 * 
-		 * @param options The options used to query and retrieve the entity.
-		 * @return An unexecuted operation.
-		 */
-		public function retrieve(options:Object):Operation
-		{
-			throw new IllegalOperationError(className(this) + " does not support retrieval of entities");
-		}
-		
-		/**
 		 * Generates an operation to update an entity and its properties in the backend.
 		 * 
 		 * @param entities The list of entities to update.

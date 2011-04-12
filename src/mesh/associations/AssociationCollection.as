@@ -75,7 +75,7 @@ package mesh.associations
 		 */
 		public function addItemAt(item:Object, index:int):void
 		{
-			callbackIfNotNull("beforeAdd", item);
+			callbackIfNotNull("beforeAdd", Entity( item ));
 			target.addItemAt(item, index);
 		}
 		
@@ -152,8 +152,7 @@ package mesh.associations
 			_removedEntities.removeAll(entities);
 			
 			for each (var entity:Entity in entities) {
-				entity.afterDestroy(entityDestroyed);
-				entity.revive();
+				callbackIfNotNull("afterAdd", entity);
 			}
 		}
 		
@@ -162,7 +161,7 @@ package mesh.associations
 			_removedEntities.addAll(entities);
 			
 			for each (var entity:Entity in entities) {
-				entity.markForRemoval();
+				callbackIfNotNull("afterRemove", entity);
 			}
 		}
 		
@@ -172,13 +171,6 @@ package mesh.associations
 		public function itemUpdated(item:Object, property:Object = null, oldValue:Object = null, newValue:Object = null):void
 		{
 			target.itemUpdated(item, property, oldValue, newValue);
-		}
-		
-		private function entityDestroyed(entity:Entity):void
-		{
-			remove(entity);
-			_removedEntities.remove(entity);
-			entity.removeCallback(entityDestroyed);
 		}
 		
 		/**
@@ -224,7 +216,7 @@ package mesh.associations
 		 */
 		public function removeItemAt(index:int):Object
 		{
-			callbackIfNotNull("beforeRemove", getItemAt(index) as Entity);
+			callbackIfNotNull("beforeRemove", Entity( getItemAt(index) ));
 			return target.removeItemAt(index);
 		}
 		
@@ -256,33 +248,6 @@ package mesh.associations
 		public function toArray():Array
 		{
 			return target.toArray();
-		}
-		
-		/**
-		 * Returns an array that contains the VO's for the entities of this collection.
-		 * 
-		 * @param options Any options.
-		 * @return An array of VO's.
-		 */
-		public function toVO(options:Object = null):Object
-		{
-			var result:Array = [];
-			for each (var entity:Entity in this) {
-				result.push(entity.toVO(options));
-			}
-			
-			if (options.hasOwnProperty("type")) {
-				var type:Type = reflect(options.type);
-				if (type.isA(ArrayCollection)) {
-					return new ArrayCollection(result);
-				} else if (type.isA(Array)) {
-					return result;
-				} else {
-					throw new ArgumentError("Type must be an Array or ArrayCollection, but was " + type)
-				}
-			}
-			
-			return result;
 		}
 		
 		/**

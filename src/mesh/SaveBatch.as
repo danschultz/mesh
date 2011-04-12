@@ -1,5 +1,28 @@
 package mesh
 {
+	import collections.HashSet;
+	
+	import mesh.operations.Operation;
+
+	public class SaveBatch
+	{
+		private var _registeredEntities:HashSet = new HashSet();
+		
+		public function SaveBatch()
+		{
+			
+		}
+		
+		public function register(entities:Array):void
+		{
+			_registeredEntities.addAll(entities);
+		}
+	}
+}
+
+/*
+package mesh
+{
 	import collections.HashMap;
 	import collections.HashSet;
 	
@@ -207,3 +230,4 @@ class PersistenceCache
 		return _depth;
 	}
 }
+*/
