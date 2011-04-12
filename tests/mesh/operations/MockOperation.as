@@ -1,6 +1,5 @@
-package operations
+package mesh.operations
 {
-	import mesh.operations.Operation;
 
 	public class MockOperation extends Operation
 	{

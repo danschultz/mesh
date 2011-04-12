@@ -1,13 +1,9 @@
-package operations
+package mesh.operations
 {
 	import org.flexunit.assertThat;
 	import org.hamcrest.object.equalTo;
 	import org.hamcrest.object.notNullValue;
 	import org.hamcrest.object.nullValue;
-	import mesh.operations.CompoundOperation;
-	import mesh.operations.FaultOperationEvent;
-	import mesh.operations.FinishedOperationEvent;
-	import mesh.operations.OperationEvent;
 
 	public class CompoundOperationTests
 	{
