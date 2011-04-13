@@ -1,5 +1,7 @@
 package mesh.associations
 {
+	import flash.utils.flash_proxy;
+	
 	import mesh.Entity;
 	
 	public dynamic class HasOneAssociation extends HasAssociation
@@ -15,19 +17,19 @@ package mesh.associations
 		/**
 		 * @inheritDoc
 		 */
-		override public function get target():*
+		override flash_proxy function get object():*
 		{
-			return super.target;
+			return super.flash_proxy::object;
 		}
-		override public function set target(value:*):void
+		override flash_proxy function set object(value:*):void
 		{
-			value = (value is HasOneAssociation) ? value.target : value;
-			var oldValue:Entity = target;
+			value = (value is HasOneAssociation) ? value.flash_proxy::object : value;
+			var oldValue:Entity = flash_proxy::object;
 			
 			callbackIfNotNull("beforeRemove", oldValue);
 			callbackIfNotNull("beforeAdd", value);
 			
-			super.target = value;
+			super.flash_proxy::object = value;
 			
 			callbackIfNotNull("afterRemove", oldValue);
 			callbackIfNotNull("afterAdd", value);

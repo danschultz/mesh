@@ -1,16 +1,13 @@
 package mesh.associations
 {
 	import flash.errors.IllegalOperationError;
-	import flash.events.Event;
-	import flash.events.EventDispatcher;
-	import flash.events.IEventDispatcher;
-	import flash.utils.Proxy;
 	import flash.utils.flash_proxy;
 	import flash.utils.setTimeout;
 	
 	import mesh.Callbacks;
 	import mesh.Entity;
 	import mesh.Mesh;
+	import mesh.core.proxy.DataProxy;
 	import mesh.operations.EmptyOperation;
 	import mesh.operations.FinishedOperationEvent;
 	import mesh.operations.Operation;
@@ -22,13 +19,12 @@ package mesh.associations
 	/**
 	 * An association class is a proxy object that contains the references to the objects in
 	 * a relationship, where the <em>owner</em> represents the object hosting the association, 
-	 * and the <em>target</em> is the actual associated object.
+	 * and the <em>object</em> is the actual associated object.
 	 * 
 	 * @author Dan Schultz
 	 */
-	public dynamic class Association extends Proxy implements IEventDispatcher
+	public dynamic class Association extends DataProxy
 	{
-		private var _dispatcher:EventDispatcher;
 		private var _callbacks:Callbacks = new Callbacks();
 		
 		/**
@@ -41,7 +37,6 @@ package mesh.associations
 		{
 			super();
 			
-			_dispatcher = new EventDispatcher(this);
 			_owner = owner;
 			_definition = definition;
 			
@@ -106,7 +101,7 @@ package mesh.associations
 		}
 		
 		/**
-		 * Executes an operation that will load the target for this association.
+		 * Executes an operation that will load the object for this association.
 		 * 
 		 * @return An executing operation.
 		 */
@@ -126,7 +121,7 @@ package mesh.associations
 			});
 			operation.addEventListener(ResultOperationEvent.RESULT, function(event:ResultOperationEvent):void
 			{
-				target = event.data;
+				flash_proxy::object = event.data;
 			});
 			operation.addEventListener(FinishedOperationEvent.FINISHED, function(event:FinishedOperationEvent):void
 			{
@@ -175,7 +170,7 @@ package mesh.associations
 		}
 		
 		/**
-		 * Changes the state of the target for this association back to what it was at the last save.
+		 * Changes the state of the object for this association back to what it was at the last save.
 		 */
 		public function revert():void
 		{
@@ -232,7 +227,7 @@ package mesh.associations
 		/**
 		 * The relationship model that this association represents.
 		 */
-		public function get definition():AssociationDefinition
+		protected function get definition():AssociationDefinition
 		{
 			return _definition;
 		}
@@ -244,105 +239,6 @@ package mesh.associations
 		protected function get owner():Entity
 		{
 			return _owner;
-		}
-		
-		private var _target:*;
-		[Bindable]
-		/**
-		 * The instance of the the child for the association.
-		 */
-		public function get target():*
-		{
-			return _target;
-		}
-		public function set target(value:*):void
-		{
-			_target = value;
-		}
-		
-		/**
-		 * @inheritDoc
-		 */
-		override flash_proxy function callProperty(name:*, ...parameters):*
-		{
-			if (target != null) {
-				return target[name].apply(null, parameters);
-			}
-			return undefined;
-		}
-		
-		/**
-		 * @inheritDoc
-		 */
-		override flash_proxy function getProperty(name:*):*
-		{
-			if (target != null) {
-				return target[name];
-			}
-			return undefined;
-		}
-		
-		/**
-		 * @inheritDoc
-		 */
-		override flash_proxy function hasProperty(name:*):Boolean
-		{
-			try {
-				return flash_proxy::getProperty(name) !== undefined;
-			} catch (e:Error) {
-				
-			}
-			return false;
-		}
-		
-		/**
-		 * @inheritDoc
-		 */
-		override flash_proxy function setProperty(name:*, value:*):void
-		{
-			if (target != null) {
-				target[name] = value;
-			}
-		}
-		
-		/**
-		 * @inheritDoc
-		 */
-		public function addEventListener(type:String, listener:Function, useCapture:Boolean = false, priority:int = 0, useWeakReference:Boolean = false):void
-		{
-			_dispatcher.addEventListener(type, listener, useCapture, priority, useWeakReference);
-		}
-		
-		/**
-		 * @inheritDoc
-		 */
-		public function dispatchEvent(event:Event):Boolean
-		{
-			return _dispatcher.dispatchEvent(event);
-		}
-		
-		/**
-		 * @inheritDoc
-		 */
-		public function hasEventListener(type:String):Boolean
-		{
-			return _dispatcher.hasEventListener(type);
-		}
-		
-		/**
-		 * @inheritDoc
-		 */
-		public function removeEventListener(type:String, listener:Function, useCapture:Boolean = false):void
-		{
-			_dispatcher.removeEventListener(type, listener, useCapture);
-		}
-		
-		/**
-		 * @inheritDoc
-		 */
-		public function willTrigger(type:String):Boolean
-		{
-			return _dispatcher.willTrigger(type);
 		}
 	}
 }

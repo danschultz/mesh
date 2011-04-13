@@ -1,5 +1,7 @@
 package mesh.associations
 {
+	import flash.utils.flash_proxy;
+	
 	import mesh.Entity;
 	
 	public class HasAssociation extends Association
@@ -17,17 +19,17 @@ package mesh.associations
 		 */
 		override public function revert():void
 		{
-			target = _persistedTarget;
+			flash_proxy::object = _persistedTarget;
 			
-			if (target != null) {
-				target.revert();
+			if (flash_proxy::object != null) {
+				flash_proxy::object.revert();
 			}
 		}
 		
 		private function targetDestroyed(entity:Entity):void
 		{
 			_persistedTarget = null;
-			target = null;
+			flash_proxy::object = null;
 		}
 		
 		private function targetSaved(entity:Entity):void
@@ -40,7 +42,7 @@ package mesh.associations
 		 */
 		override protected function get dirtyEntities():Array
 		{
-			return [_persistedTarget, target].filter(function(entity:Entity, ...args):Boolean
+			return [_persistedTarget, flash_proxy::object].filter(function(entity:Entity, ...args):Boolean
 			{
 				return entity != null && entity.isDirty;
 			});
@@ -50,24 +52,24 @@ package mesh.associations
 		/**
 		 * @inheritDoc
 		 */
-		override public function get target():*
+		override flash_proxy function get object():*
 		{
-			return super.target;
+			return super.flash_proxy::object;
 		}
-		override public function set target(value:*):void
+		override flash_proxy function set object(value:*):void
 		{
-			if (target != null) {
-				target.removeCallback(targetDestroyed);
-				target.removeCallback(targetSaved);
+			if (flash_proxy::object != null) {
+				flash_proxy::object.removeCallback(targetDestroyed);
+				flash_proxy::object.removeCallback(targetSaved);
 			}
 			
-			super.target = value;
+			super.flash_proxy::object = value;
 			
-			if (target != null) {
-				target.revive();
+			if (flash_proxy::object != null) {
+				flash_proxy::object.revive();
 				
-				target.afterSave(targetSaved);
-				target.afterDestroy(targetDestroyed);
+				flash_proxy::object.afterSave(targetSaved);
+				flash_proxy::object.afterDestroy(targetDestroyed);
 			}
 		}
 	}

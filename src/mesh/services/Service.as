@@ -3,17 +3,11 @@ package mesh.services
 	import collections.HashSet;
 	
 	import flash.errors.IllegalOperationError;
-	import flash.utils.setTimeout;
 	
 	import mesh.Entity;
-	import mesh.Mesh;
 	import mesh.adaptors.ServiceAdaptor;
 	import mesh.core.array.flatten;
 	import mesh.core.reflection.Type;
-	import mesh.core.string.capitalize;
-	import mesh.operations.EmptyOperation;
-	import mesh.operations.FactoryOperation;
-	import mesh.operations.Operation;
 
 	/**
 	 * The <code>Service</code> class is a layer between the application and the backend. Its
@@ -40,38 +34,9 @@ package mesh.services
 		 * @param options Any options to query with.
 		 * @return An unexecuted operation.
 		 */
-		public function all(options:Object = null):Operation
+		public function all(options:Object = null):ListQuery
 		{
 			throw new IllegalOperationError(reflect.name + " does not support retrieval of entities using all()");
-		}
-		
-		private function createOperation(entities:Array, factory:Function, callback:String):Operation
-		{
-			callback = capitalize(callback);
-			
-			var before:Operation = new EmptyOperation();
-			var after:Operation = new EmptyOperation();
-			for each (var entity:Entity in entities) {
-				before = before.then(new FactoryOperation(entity.callback, "before" + callback));
-				after = after.then(new FactoryOperation(entity.callback, "after" + callback));
-			}
-			
-			return before.then(factory(entities)).then(after);
-		}
-		
-		protected function createDestroy(entities:Array):Operation
-		{
-			throw new IllegalOperationError(reflect.name + " does not support destruction of entities.");
-		}
-		
-		protected function createInsert(entities:Array):Operation
-		{
-			throw new IllegalOperationError(reflect.name + " does not support insertion of entities.");
-		}
-		
-		protected function createUpdate(entities:Array):Operation
-		{
-			throw new IllegalOperationError(reflect.name + " does not support updating of entities.");
 		}
 		
 		/**
@@ -79,13 +44,9 @@ package mesh.services
 		 * 
 		 * @param entities The entities to destroy.
 		 */
-		public function destroy(entities:Object):void
+		public function destroy(entities:Object):DestroyRequest
 		{
-			for each (var entity:Entity in flatten(entities)) {
-				if (_registered.contains(entity)) {
-					entity.markForRemoval();
-				}
-			}
+			return new DestroyRequest(pendingDestroy(flatten(entities)));
 		}
 		
 		/**
@@ -94,7 +55,7 @@ package mesh.services
 		 * @param ids The IDs of the objects to retrieve.
 		 * @return An unexecuted operation.
 		 */
-		public function find(ids:Array):Operation
+		public function find(ids:Array):Query
 		{
 			throw new IllegalOperationError(reflect.name + " does not support retrieval of entities using find()");
 		}
@@ -123,39 +84,16 @@ package mesh.services
 			});
 		}
 		
-		/**
-		 * Registers the given entities to this service. If the entity is new, it will be created
-		 * on this service's next save. Otherwise, if the entity is persisted, it will be updated.
-		 * 
-		 * @param entities The list of entities to create and register.
-		 */
-		public function register(entities:Object):void
-		{
-			_registered.addAll(flatten(entities));
-		}
-		
-		public function save(entities:Object, validate:Boolean = true):Operation
+		public function save(entities:Object, validate:Boolean = true):Request
 		{
 			var toSave:Array = flatten(entities);
 			var toInsert:Array = pendingCreate(toSave);
 			var toUpdate:Array = pendingUpdate(toSave);
-			var toDestroy:Array = pendingDestroy(toSave);
 			
-			var operation:Operation = new EmptyOperation();
-			if (toInsert.length > 0) {
-				operation = operation.then(createOperation(toInsert, createInsert, "save"));
-			}
-			if (toUpdate.length > 0) {
-				operation = operation.then(createOperation(toUpdate, createUpdate, "save"));
-			}
-			if (toDestroy.length > 0) {
-				operation = operation.then(createOperation(toDestroy, createDestroy, "destroy"));
-			}
-			setTimeout(operation.execute, Mesh.DELAY);
-			return operation;
+			return new CreateRequest(toInsert, validate).then(new UpdateRequest(toUpdate, validate));
 		}
 		
-		public function saveAll(validate:Boolean = true):Operation
+		public function saveAll(validate:Boolean = true):PersistRequest
 		{
 			return save(_registered.toArray(), validate);
 		}
@@ -166,7 +104,7 @@ package mesh.services
 		 * @param options The options to limit the retrieval.
 		 * @return An unexecuted operation.
 		 */
-		public function where(options:Object):Operation
+		public function where(options:Object):ListQuery
 		{
 			throw new IllegalOperationError(reflect.name + " does not support retrieval of entities using where()");
 		}

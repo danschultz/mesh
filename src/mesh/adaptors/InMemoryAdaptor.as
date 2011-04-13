@@ -4,7 +4,6 @@ package mesh.adaptors
 	
 	import mesh.Entity;
 	import mesh.core.functions.closure;
-	
 	import mesh.operations.FinishedOperationEvent;
 	import mesh.operations.MethodOperation;
 	import mesh.operations.Operation;
@@ -67,14 +66,6 @@ package mesh.adaptors
 				sequence.add(operation);
 			}));
 			return sequence;
-		}
-		
-		/**
-		 * @inheritDoc
-		 */
-		override public function retrieve(options:Object):Operation
-		{
-			return new MethodOperation(_entities.grab, options.id);
 		}
 		
 		/**

@@ -45,7 +45,7 @@ package mesh
 			beforeSave(validate);
 			afterSave(synced);
 			
-			// add necessary callback for destory
+			// add necessary callback for destroy
 			afterDestroy(destroyed);
 			
 			addEventListener(PropertyChangeEvent.PROPERTY_CHANGE, handlePropertyChange);
@@ -67,7 +67,7 @@ package mesh
 			return _associations[property];
 		}
 		
-		protected function associate(property:String, definition:AssociationDefinition):Association
+		protected function associate(property:String, definition:AssociationDefinition):*
 		{
 			if (!_associations.hasOwnProperty(property)) {
 				_associations[property] = definition.createProxy(this);
@@ -75,14 +75,14 @@ package mesh
 			return _associations[property];
 		}
 		
-		protected function hasOne(clazz:Class, property:String, options:Object = null):HasOneAssociation
+		protected function hasOne(property:String, clazz:Class, options:Object = null):HasOneAssociation
 		{
-			return associate(clazz, property, new HasOneDefinition(reflect.clazz, property, clazz, options));
+			return associate(property, new HasOneDefinition(reflect.clazz, property, clazz, options));
 		}
 		
-		protected function hasMany(clazz:Class, property:String, options:Object = null):HasManyAssociation
+		protected function hasMany(property:String, clazz:Class, options:Object = null):HasManyAssociation
 		{
-			return associate(clazz, property, new HasManyDefinition(reflect.clazz, property, clazz, options));
+			return associate(property, new HasManyDefinition(reflect.clazz, property, clazz, options));
 		}
 		
 		/**
@@ -95,7 +95,7 @@ package mesh
 		
 		private function addCallback(method:String, block:Function):void
 		{
-			_callbacks.addCallback(method, block, []);
+			_callbacks.addCallback(method, block);
 		}
 		
 		/**
@@ -105,7 +105,7 @@ package mesh
 		 */
 		public function reload():Operation
 		{
-			var operation:Operation = Query.entity(this).find([id]);
+			var operation:Operation = service.find([id]);
 			operation.addEventListener(ResultOperationEvent.RESULT, function(event:ResultOperationEvent):void
 			{
 				translateFrom(event.data.translateTo());
@@ -283,7 +283,7 @@ package mesh
 		
 		private function markNonLazyAssociationsAsLoaded():void
 		{
-			for each (var association:Association in associations) {
+			for each (var association:Association in _associations) {
 				if (!association.definition.isLazy && !association.isLoaded) {
 					association.loaded();
 				}
@@ -358,7 +358,7 @@ package mesh
 			errors.clear();
 			
 			for (var reflection:Type = reflect; reflection != null && reflection.clazz != Entity; reflection = reflection.parent) {
-				var validations:Object = clazz["validate"];
+				var validations:Object = reflection.clazz["validate"];
 				for (var property:String in validations) {
 					for each (var validation:Object in validations[property]) {
 						var ValidatorClass:Class = validation.validator;
