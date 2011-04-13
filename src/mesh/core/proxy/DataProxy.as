@@ -15,17 +15,18 @@ package mesh.core.proxy
 	 * 
 	 * @author Dan Schultz
 	 */
-	public class DataProxy extends Proxy implements IEventDispatcher
+	public dynamic class DataProxy extends Proxy implements IEventDispatcher
 	{
 		private var _dispatcher:EventDispatcher;
 		
 		/**
 		 * Constructor.
 		 */
-		public function DataProxy()
+		public function DataProxy(object:Object = null)
 		{
 			super();
 			_dispatcher = new EventDispatcher(this);
+			flash_proxy::object = object;
 		}
 		
 		/**
