@@ -1,31 +1,26 @@
 package mesh.models
 {
-	import mesh.Entity;
-	import mesh.adaptors.InMemoryAdaptor;
+	import flash.utils.flash_proxy;
 	
-	[Ignore(properties="ignoredProperty2, ignoredProperty3")]
-	[BelongsTo(type="mesh.models.Customer")]
-	public dynamic class Account extends Entity
+	import mesh.Entity;
+	import mesh.associations.HasOneAssociation;
+	
+	public class Account extends Entity
 	{
-		[ServiceAdaptor]
-		public static var adaptor:InMemoryAdaptor;
-		
-		[Bindable]
-		public var number:String;
-		
-		[Ignore]
-		[Bindable]
-		public var ignoredProperty1:String;
-		
-		[Bindable]
-		public var ignoredProperty2:String;
-		
-		[Bindable]
-		public var ignoredProperty3:String;
+		[Bindable] public var number:String;
 		
 		public function Account()
 		{
 			super();
+		}
+		
+		public function get customer():HasOneAssociation
+		{
+			return hasOne("customer", Customer);
+		}
+		public function set customer(value:HasOneAssociation):void
+		{
+			customer.flash_proxy::object = value;
 		}
 	}
 }

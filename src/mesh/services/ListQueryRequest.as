@@ -3,7 +3,6 @@ package mesh.services
 	import flash.utils.flash_proxy;
 	
 	import mesh.adaptors.ServiceAdaptor;
-	import mesh.operations.Operation;
 	
 	import mx.collections.ArrayList;
 	import mx.collections.IList;

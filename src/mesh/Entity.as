@@ -10,6 +10,7 @@ package mesh
 	import mesh.associations.HasOneAssociation;
 	import mesh.associations.HasOneDefinition;
 	import mesh.core.inflection.humanize;
+	import mesh.core.object.copy;
 	import mesh.core.reflection.Type;
 	import mesh.operations.Operation;
 	import mesh.services.DestroyRequest;
@@ -34,9 +35,10 @@ package mesh
 		/**
 		 * Constructor.
 		 */
-		public function Entity()
+		public function Entity(properties:Object = null)
 		{
 			super();
+			copy(properties, this);
 			
 			// add necessary callbacks for find
 			afterFind(markNonLazyAssociationsAsLoaded);
@@ -68,22 +70,22 @@ package mesh
 			return _associations[property];
 		}
 		
-		protected function associate(property:String, definition:AssociationDefinition):*
+		protected function associate(property:String, association:Association):*
 		{
 			if (!_associations.hasOwnProperty(property)) {
-				_associations[property] = definition.createProxy(this);
+				_associations[property] = association;
 			}
 			return _associations[property];
 		}
 		
 		protected function hasOne(property:String, clazz:Class, options:Object = null):HasOneAssociation
 		{
-			return associate(property, new HasOneDefinition(reflect.clazz, property, clazz, options));
+			return associate(property, new HasOneDefinition(reflect.clazz, property, clazz, options).createProxy(this));
 		}
 		
 		protected function hasMany(property:String, clazz:Class, options:Object = null):HasManyAssociation
 		{
-			return associate(property, new HasManyDefinition(reflect.clazz, property, clazz, options));
+			return associate(property, new HasManyDefinition(reflect.clazz, property, clazz, options).createProxy(this));
 		}
 		
 		/**

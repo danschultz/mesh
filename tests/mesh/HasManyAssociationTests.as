@@ -1,5 +1,7 @@
 package mesh
 {
+	import flash.utils.flash_proxy;
+	
 	import mesh.models.Customer;
 	import mesh.models.Order;
 	
@@ -9,13 +11,13 @@ package mesh
 	public class HasManyAssociationTests
 	{
 		[Test]
-		public function testBelongsToIsPopulated():void
+		public function testPopulateInverseRelationships():void
 		{
 			var order:Order = new Order();
 			var customer:Customer = new Customer();
 			customer.orders.addItem(order);
 			
-			assertThat(order.customer.target, equalTo(customer));
+			assertThat(order.customer.flash_proxy::object, equalTo(customer));
 		}
 	}
 }

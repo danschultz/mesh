@@ -1,42 +1,43 @@
 package mesh.models
 {
-	import mesh.adaptors.InMemoryAdaptor;
+	import flash.utils.flash_proxy;
+	
+	import mesh.associations.HasManyAssociation;
+	import mesh.associations.HasOneAssociation;
 	import mesh.validators.LengthValidator;
 	import mesh.validators.PresenceValidator;
 	
-	[ComposedOf(property="address", type="mesh.models.Address", prefix="address", mapping="street,city")]
-	
-	[HasMany(type="mesh.models.Order", property="orders", autoSave="true")]
-	[HasMany(type="mesh.models.Car")]
-	
-	public dynamic class Customer extends Person
+	public class Customer extends Person
 	{
-		[ServiceAdaptor]
-		public static var adaptor:InMemoryAdaptor = new InMemoryAdaptor(Customer);
-		
 		public static var validate:Object = 
 		{
 			addressStreet: [{validator:PresenceValidator}, {validator:LengthValidator, minimum:2}],
 			addressCity: [{validator:PresenceValidator}, {validator:LengthValidator, minimum:2}]
 		};
 		
+		[Bindable] public var address:Address;
+		
 		public function Customer()
 		{
 			super();
-			
-			Order;
-			Car;
-			Account;
 		}
 		
-		[HasOne(type="mesh.models.Account")]
-		public function get account():*
+		public function get account():HasOneAssociation
 		{
-			return association("account");
+			return hasOne("account", Account);
 		}
-		public function set account(value:*):void
+		public function set account(value:HasOneAssociation):void
 		{
-			association("account").target = value;
+			account.flash_proxy::object = value;
+		}
+		
+		public function get orders():HasManyAssociation
+		{
+			return hasMany("orders", Order);
+		}
+		public function set orders(value:HasManyAssociation):void
+		{
+			orders.flash_proxy::object = value;
 		}
 	}
 }

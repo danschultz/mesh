@@ -1,6 +1,5 @@
 package mesh
 {
-	import mesh.models.Account;
 	import mesh.models.Address;
 	import mesh.models.Customer;
 	import mesh.models.Name;
@@ -8,7 +7,6 @@ package mesh
 	
 	import org.flexunit.assertThat;
 	import org.hamcrest.object.equalTo;
-	import org.hamcrest.object.notNullValue;
 
 	public class DirtyTests
 	{
@@ -17,56 +15,27 @@ package mesh
 		[Before]
 		public function setup():void
 		{
+			// this should return a customer from a test file
 			_customer = new Customer();
-			_customer.id = 1;
-			_customer.fullName = new Name("John", "Doe");
-			_customer.address = new Address("2306 Zanker Rd", "San Jose");
 			_customer.age = 21;
-			
-			var order:Order = new Order();
-			order.id = 1;
-			_customer.orders.addItem(order);
-			
-			var account:Account = new Account();
-			account.id = 1;
-			_customer.account = account;
-			
-			_customer.found();
+			_customer.name = new Name("John", "Doe");
+			_customer.callback("afterFind");
 		}
 		
 		[Test]
-		public function testPropertyWasReturnsUndefinedAfterSave():void
+		public function testWhatWas():void
 		{
-			_customer.firstName = "Jane";
-			_customer.persisted();
-			assertThat(_customer.firstNameWas === undefined, equalTo(true));
-		}
-		
-		[Test]
-		public function testPropertyWasValueWithDefinedProperty():void
-		{
-			var oldFirstName:String = _customer.firstName;
-			_customer.firstName = "Jane";
-			assertThat(oldFirstName, notNullValue());
-			assertThat(_customer.firstNameWas, equalTo(oldFirstName));
-		}
-		
-		[Test]
-		public function testPropertyWasValueWithDefinedBindableProperty():void
-		{
-			var oldAge:Number = _customer.age;
+			var oldAge:int = _customer.age;
 			_customer.age++;
-			assertThat(oldAge, notNullValue());
-			assertThat(_customer.ageWas, equalTo(oldAge));
+			assertThat(_customer.age, equalTo(oldAge));
 		}
 		
 		[Test]
-		public function testPropertyWasValueWithDynamicProperty():void
+		public function testWhatWasReturnsSavedValueAfterSave():void
 		{
-			var oldAddressStreet:String = _customer.addressStreet;
-			_customer.addressStreet = "1 Infinite Loop";
-			assertThat(oldAddressStreet, notNullValue());
-			assertThat(_customer.addressStreetWas, equalTo(oldAddressStreet));
+			var newAge:int = ++_customer.age;
+			_customer.callback("afterSave");
+			assertThat(_customer.whatWas("age"), equalTo(newAge));
 		}
 		
 		[Test]
@@ -79,17 +48,15 @@ package mesh
 		[Test]
 		public function testIsDirtyWhenPropertyChanges():void
 		{
-			_customer.address = new Address("1 Infinite Loop", "Cupertino");
+			_customer.name = new Name("Jimmy", "Paige");
 			assertThat(_customer.isDirty, equalTo(true));
 		}
 		
 		[Test]
 		public function testIsNotDirtyWhenReverted():void
 		{
-			_customer.age = 10;
-			_customer.firstName = "Jane";
-			_customer.address = new Address("1 Infinite Loop", "Cupertino");
-			
+			_customer.age++;
+			_customer.name = new Name("Jimmy", "Paige");
 			_customer.revert();
 			assertThat(_customer.isDirty, equalTo(false));
 		}
@@ -131,44 +98,16 @@ package mesh
 		[Test]
 		public function testIsDirtyWhenHasPropertyChangesAndIsPersisted():void
 		{
-			var order:Order = new Order();
-			order.id = 1;
-			order.found();
-			
-			order.total = 10;
-			assertThat(order.isDirty, equalTo(true));
+			_customer.age++;
+			assertThat(_customer.isDirty, equalTo(true));
 		}
 		
 		[Test]
 		public function testIsDirtyWhenMarkedForRemovalAndIsPersisted():void
 		{
-			var order:Order = new Order();
-			order.id = 1;
-			order.found();
-			
-			order.markForRemoval();
-			assertThat(order.isDirty, equalTo(true));
-		}
-		
-		[Test]
-		public function testIsNotDirtyWhenDestroyedAndHasDirtyAssociations():void
-		{
-			var order:Order = new Order();
-			_customer.orders.addItem(order);
-			_customer.callback("afterDestroy");
-			
-			assertThat(_customer.isDirty, equalTo(false));
-		}
-		
-		[Test]
-		public function testSettingIgnoredPropertyDoesNotMarkEntityAsDirty():void
-		{
-			var account:Account = new Account();
-			account.ignoredProperty1 = "1";
-			account.ignoredProperty2 = "2";
-			account.ignoredProperty3 = "3";
-			
-			assertThat(account.hasPropertyChanges, equalTo(false));
+			_customer.id = 1;
+			_customer.markForRemoval();
+			assertThat(_customer.isDirty, equalTo(true));
 		}
 	}
 }

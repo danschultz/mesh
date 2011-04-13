@@ -34,7 +34,7 @@ package mesh.services
 		 * @param options Any options to query with.
 		 * @return An unexecuted operation.
 		 */
-		public function all(options:Object = null):ListQueryRequest
+		public function all():ListQueryRequest
 		{
 			throw new IllegalOperationError(reflect.name + " does not support retrieval of entities using all()");
 		}
@@ -125,7 +125,7 @@ package mesh.services
 		 * @param options The options to limit the retrieval.
 		 * @return An unexecuted operation.
 		 */
-		public function where(options:Object):ListQueryRequest
+		public function where():ListQueryRequest
 		{
 			throw new IllegalOperationError(reflect.name + " does not support retrieval of entities using where().");
 		}

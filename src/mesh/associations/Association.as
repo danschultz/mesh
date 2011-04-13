@@ -8,11 +8,13 @@ package mesh.associations
 	import mesh.Entity;
 	import mesh.Mesh;
 	import mesh.core.proxy.DataProxy;
+	import mesh.core.reflection.Type;
 	import mesh.operations.EmptyOperation;
 	import mesh.operations.FinishedOperationEvent;
 	import mesh.operations.Operation;
 	import mesh.operations.OperationEvent;
 	import mesh.operations.ResultOperationEvent;
+	import mesh.services.Request;
 	
 	import mx.events.PropertyChangeEvent;
 
@@ -84,7 +86,7 @@ package mesh.associations
 			addCallback("afterLoad", block);
 		}
 		
-		protected function callback(method:String, entity:Entity = null):void
+		public function callback(method:String, entity:Entity = null):void
 		{
 			if (entity != null) {
 				_callbacks.callback(method, entity);
@@ -182,9 +184,9 @@ package mesh.associations
 			entity.revive();
 		}
 		
-		public function save(validate:Boolean = true):Operation
+		public function save():Request
 		{
-			return new EmptyOperation();
+			throw new IllegalOperationError(reflect.name + ".save() is not implemented.");
 		}
 		
 		/**
@@ -239,6 +241,18 @@ package mesh.associations
 		protected function get owner():Entity
 		{
 			return _owner;
+		}
+		
+		private var _reflect:Type;
+		/**
+		 * A reflection on this object.
+		 */
+		protected function get reflect():Type
+		{
+			if (_reflect == null) {
+				_reflect = Type.reflect(this);
+			}
+			return _reflect;
 		}
 	}
 }

@@ -1,5 +1,7 @@
 package mesh
 {
+	import flash.utils.flash_proxy;
+	
 	import mesh.associations.AssociationCollection;
 	import mesh.models.Address;
 	import mesh.models.Customer;
@@ -35,8 +37,8 @@ package mesh
 			order.shippingAddress = address;
 			target.push(order);
 			
-			_collection.target = target;
-			_collection.loaded();
+			_collection.flash_proxy::object = target;
+			_collection.callback("afterLoad");
 		}
 		
 		[Test]

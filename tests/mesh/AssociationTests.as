@@ -1,11 +1,11 @@
 package mesh
 {
-	import mesh.associations.AssociationCollection;
+	import mesh.associations.HasManyAssociation;
+	import mesh.associations.HasOneAssociation;
 	import mesh.models.Customer;
 	
 	import org.flexunit.assertThat;
 	import org.hamcrest.core.isA;
-	import org.hamcrest.core.not;
 
 	public class AssociationTests
 	{
@@ -18,16 +18,15 @@ package mesh
 		}
 		
 		[Test]
-		public function testHasManyRelationshipReturnsAssociationCollectionProxy():void
+		public function testHasManyAssociationReturnsHasMany():void
 		{
-			assertThat(_customer.orders, isA(AssociationCollection));
-			assertThat(_customer.ordersAssociation, isA(AssociationCollection));
+			assertThat(_customer.orders, isA(HasManyAssociation));
 		}
 		
 		[Test]
-		public function testHasOneRelationshipReturnsHasOneAssociationProxy():void
+		public function testHasOneAssociationReturnsHasOne():void
 		{
-			
+			assertThat(_customer.account, isA(HasOneAssociation));
 		}
 	}
 }
