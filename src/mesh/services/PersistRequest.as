@@ -1,21 +1,22 @@
 package mesh.services
 {
 	import mesh.adaptors.ServiceAdaptor;
-	import mesh.operations.Operation;
 	
-	public class PersistRequest extends Request
+	public class PersistRequest extends OperationRequest
 	{
+		private var _adaptor:ServiceAdaptor;
 		private var _entities:Array;
 		
 		public function PersistRequest(entities:Array, adaptor:ServiceAdaptor, block:Function)
 		{
-			super(adaptor, block);
+			super(block);
+			_adaptor = adaptor;
 			_entities = entities;
 		}
 		
-		override protected function executeBlock(block:Function, adaptor:ServiceAdaptor):Operation
+		override protected function blockArgs():Array
 		{
-			return block(adaptor, _entities);
+			return [_adaptor, _entities];
 		}
 	}
 }

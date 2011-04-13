@@ -70,7 +70,7 @@ package mesh.services
 			throw new IllegalOperationError(reflect.name + " does not support retrieval of entities using find().");
 		}
 		
-		public function insert(entities:Object):CreateRequest
+		public function insert(entities:Object):InsertRequest
 		{
 			throw new IllegalOperationError(reflect.name + " does not support insertion of entities.");
 		}

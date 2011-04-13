@@ -4,6 +4,8 @@ package mesh.associations
 	
 	import mesh.Entity;
 	
+	use namespace flash_proxy;
+	
 	public dynamic class HasOneAssociation extends HasAssociation
 	{
 		/**

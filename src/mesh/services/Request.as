@@ -14,63 +14,48 @@ package mesh.services
 	public class Request extends DataProxy
 	{
 		private var _block:Function;
-		private var _adaptor:ServiceAdaptor;
 		private var _handler:Object;
-		private var _operation:Operation;
 		
-		public function Request(adaptor:ServiceAdaptor, block:Function)
+		public function Request(block:Function)
 		{
 			super();
-			_adaptor = adaptor;
 			_block = block;
 		}
 		
-		private function handleFault(event:FaultOperationEvent):void
+		public function fault(fault:Object):void
 		{
-			_handler.fault(new Fault(event.code, event.summary, event.detail));
+			_handler.fault(fault);
 		}
 		
-		private function handleResult(event:ResultOperationEvent):void
+		public function result(data:Object):void
 		{
-			flash_proxy::object = _handler.parse(event.data);
+			flash_proxy::object = _handler.parse(data);
 		}
 		
-		private function handleFinished(event:FinishedOperationEvent):void
+		public function finished():void
 		{
-			if (event.successful) {
-				_handler.success();
-			}
+			_handler.success();
 		}
 		
-		protected function executeBlock(block:Function, adaptor:ServiceAdaptor):Operation
+		public function then(request:Request):Request
 		{
-			return block(adaptor);
+			return new CompoundRequest([this, request]);
 		}
 		
 		public function execute(handler:Object = null):void
 		{
 			_handler = handler != null ? handler : new DefaultHandler();
-			
-			if (_operation == null) {
-				_operation = executeBlock(_block, _adaptor);
-				_operation.addEventListener(ResultOperationEvent.RESULT, handleFault, false, 0, true);
-				_operation.addEventListener(FaultOperationEvent.FAULT, handleResult, false, 0, true);
-				_operation.addEventListener(FinishedOperationEvent.FINISHED, handleFinished, false, 0, true);
-			}
-			
-			if (!_operation.isExecuting) {
-				_operation.execute();
-			}
+			executeBlock(_block);
 		}
 		
-		public function during(request:Request):Request
+		protected function blockArgs():Array
 		{
-			return new CompoundRequest();
+			return [];
 		}
 		
-		public function then(request:Request):Request
+		protected function executeBlock(block:Function):void
 		{
-			return new CompoundRequest();
+			block.apply(null, blockArgs());
 		}
 	}
 }

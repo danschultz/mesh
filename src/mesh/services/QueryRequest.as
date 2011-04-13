@@ -3,13 +3,19 @@ package mesh.services
 	import mesh.adaptors.ServiceAdaptor;
 	import mesh.operations.Operation;
 
-	public class QueryRequest extends Request
+	public class QueryRequest extends OperationRequest
 	{
-		private var _operation:Operation;
+		private var _adaptor:ServiceAdaptor;
 		
 		public function QueryRequest(adaptor:ServiceAdaptor, block:Function)
 		{
-			super(adaptor, block);
+			super(block);
+			_adaptor = adaptor;
+		}
+		
+		override protected function blockArgs():Array
+		{
+			return [_adaptor];
 		}
 	}
 }

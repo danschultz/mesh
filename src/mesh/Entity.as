@@ -12,7 +12,8 @@ package mesh
 	import mesh.core.inflection.humanize;
 	import mesh.core.reflection.Type;
 	import mesh.operations.Operation;
-	import mesh.operations.ResultOperationEvent;
+	import mesh.services.DestroyRequest;
+	import mesh.services.Request;
 	import mesh.services.Service;
 	import mesh.validators.Errors;
 	import mesh.validators.Validator;
@@ -105,12 +106,7 @@ package mesh
 		 */
 		public function reload():Operation
 		{
-			var operation:Operation = service.find([id]);
-			operation.addEventListener(ResultOperationEvent.RESULT, function(event:ResultOperationEvent):void
-			{
-				translateFrom(event.data.translateTo());
-			});
-			return operation;
+			return null;
 		}
 		
 		/**
@@ -131,10 +127,9 @@ package mesh
 		 * 
 		 * @return An executing operation.
 		 */
-		public function destroy():Operation
+		public function destroy():DestroyRequest
 		{
-			service.destroy(this);
-			return service.save(this);
+			return service.destroy(this);
 		}
 		
 		protected function beforeDestroy(block:Function):void
@@ -262,16 +257,9 @@ package mesh
 		 * Saves the entity by executing either a create or update operation on the entity's 
 		 * service.
 		 * 
-		 * <p>
-		 * By default, save will always run the entity's validations. Clients can bypass this
-		 * functionality by passing <code>false</code>. If any validation fails, save will 
-		 * return <code>false</code>. Otherwise, an executed <code>Operation</code> is returned.
-		 * </p>
-		 * 
-		 * @param validate <code>false</code> if validations should be ignored.
 		 * @return An executing operation, or <code>false</code> if a validation fails.
 		 */
-		public function save(validate:Boolean = true):Operation
+		public function save():Request
 		{
 			return service.save(this);
 		}

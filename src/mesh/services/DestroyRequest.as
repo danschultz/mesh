@@ -1,5 +1,6 @@
 package mesh.services
 {
+	import mesh.adaptors.ServiceAdaptor;
 	import mesh.operations.Operation;
 	
 	public class DestroyRequest extends PersistRequest

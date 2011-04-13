@@ -2,19 +2,22 @@ package mesh.services
 {
 	import flash.utils.flash_proxy;
 	
+	import mesh.adaptors.ServiceAdaptor;
 	import mesh.operations.Operation;
 	
 	import mx.collections.ArrayList;
 	import mx.collections.IList;
 	import mx.events.CollectionEvent;
-
+	
+	use namespace flash_proxy;
+	
 	public class ListQueryRequest extends QueryRequest implements IList
 	{
 		private var _list:ArrayList;
 		
-		public function ListQueryRequest(operation:Operation)
+		public function ListQueryRequest(adaptor:ServiceAdaptor, block:Function)
 		{
-			super(operation);
+			super(adaptor, block);
 			
 			_list = new ArrayList();
 			_list.addEventListener(CollectionEvent.COLLECTION_CHANGE, function(event:CollectionEvent):void
@@ -64,7 +67,7 @@ package mesh.services
 		 */
 		public function getItemIndex(item:Object):int
 		{
-			return flash_proxy::Object.getItemIndex(item);
+			return flash_proxy::object.getItemIndex(item);
 		}
 		
 		/**
@@ -103,14 +106,6 @@ package mesh.services
 		override flash_proxy function nextValue(index:int):*
 		{
 			return _iteratingItems[index-1];
-		}
-		
-		/**
-		 * @copy #removeItem()
-		 */
-		public function remove(item:Object):void
-		{
-			removeItem(item);
 		}
 		
 		/**
@@ -170,11 +165,11 @@ package mesh.services
 		/**
 		 * @inheritDoc
 		 */
-		override flash_proxy function get object():Object
+		override flash_proxy function get object():*
 		{
 			return super.flash_proxy::object;
 		}
-		override flash_proxy function set object(value:Object):void
+		override flash_proxy function set object(value:*):void
 		{
 			if (value != null && value.hasOwnProperty("toArray")) {
 				value = value.toArray();

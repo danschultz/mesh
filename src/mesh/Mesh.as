@@ -1,7 +1,5 @@
 package mesh
 {
-	import mesh.services.Services;
-
 	/**
 	 * A class that defines the globals used by Mesh.
 	 * 
@@ -16,6 +14,6 @@ package mesh
 		 */
 		public static const DELAY:int = 50;
 		
-		public static var services:Services = new Services();
+		//public static var services:Services = new Services();
 	}
 }

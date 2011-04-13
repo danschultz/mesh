@@ -33,8 +33,8 @@ package mesh.core.proxy
 		 */
 		override flash_proxy function callProperty(name:*, ...parameters):*
 		{
-			if (data != null) {
-				return data[name].apply(null, parameters);
+			if (flash_proxy::object != null) {
+				return flash_proxy::object[name].apply(null, parameters);
 			}
 			return undefined;
 		}
@@ -44,8 +44,8 @@ package mesh.core.proxy
 		 */
 		override flash_proxy function getProperty(name:*):*
 		{
-			if (data != null) {
-				return data[name];
+			if (flash_proxy::object != null) {
+				return flash_proxy::object[name];
 			}
 			return undefined;
 		}
@@ -73,21 +73,21 @@ package mesh.core.proxy
 		 */
 		override flash_proxy function setProperty(name:*, value:*):void
 		{
-			if (data != null) {
-				data[name] = value;
+			if (flash_proxy::object != null) {
+				flash_proxy::object[name] = value;
 			}
 		}
 		
-		private var _object:Object;
+		private var _object:*;
 		[Bindable]
 		/**
 		 * The object being proxied.
 		 */
-		flash_proxy function get object():Object
+		flash_proxy function get object():*
 		{
 			return _object;
 		}
-		flash_proxy function set object(value:Object):void
+		flash_proxy function set object(value:*):void
 		{
 			if (_object is IEventDispatcher) {
 				(_object as IEventDispatcher).removeEventListener(PropertyChangeEvent.PROPERTY_CHANGE, handlePropertyChange);
