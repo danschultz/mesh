@@ -4,9 +4,9 @@ package mesh.services
 	
 	public class DestroyRequest extends PersistRequest
 	{
-		public function DestroyRequest(operation:Operation)
+		public function DestroyRequest(entities:Array, adaptor:ServiceAdaptor, block:Function)
 		{
-			super(operation);
+			super(entities, adaptor, block);
 		}
 	}
 }

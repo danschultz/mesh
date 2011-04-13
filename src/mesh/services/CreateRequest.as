@@ -4,9 +4,9 @@ package mesh.services
 	
 	public class CreateRequest extends PersistRequest
 	{
-		public function CreateRequest(operation:Operation, validate:Boolean)
+		public function CreateRequest(entities:Array, adaptor:ServiceAdaptor, block:Function)
 		{
-			super(operation, validate);
+			super(entities, adaptor, block);
 		}
 	}
 }

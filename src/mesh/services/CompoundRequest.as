@@ -4,16 +4,9 @@ package mesh.services
 	
 	public class CompoundRequest extends Request
 	{
-		private var _operation:Operation;
-		
-		public function CompoundRequest(operation:Operation)
+		public function CompoundRequest()
 		{
-			super(operation);
-		}
-		
-		public function then(request:Request):CompoundRequest
-		{
-			
+			super();
 		}
 	}
 }

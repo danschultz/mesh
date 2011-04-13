@@ -8,11 +8,11 @@ package mesh.services
 	import mx.collections.IList;
 	import mx.events.CollectionEvent;
 
-	public class ListQuery extends Query implements IList
+	public class ListQueryRequest extends QueryRequest implements IList
 	{
 		private var _list:ArrayList;
 		
-		public function ListQuery(operation:Operation)
+		public function ListQueryRequest(operation:Operation)
 		{
 			super(operation);
 			

@@ -34,9 +34,19 @@ package mesh.services
 		 * @param options Any options to query with.
 		 * @return An unexecuted operation.
 		 */
-		public function all(options:Object = null):ListQuery
+		public function all(options:Object = null):ListQueryRequest
 		{
 			throw new IllegalOperationError(reflect.name + " does not support retrieval of entities using all()");
+		}
+		
+		public function create(clazz:Class):*
+		{
+			if (clazz is Entity) {
+				var instance:Entity = new clazz();
+				register(instance);
+				return instance;
+			}
+			throw new ArgumentError("Expected class to be an Entity");
 		}
 		
 		/**
@@ -46,7 +56,7 @@ package mesh.services
 		 */
 		public function destroy(entities:Object):DestroyRequest
 		{
-			return new DestroyRequest(pendingDestroy(flatten(entities)));
+			throw new IllegalOperationError(reflect.name + " does not support retrieval destruction entities.");
 		}
 		
 		/**
@@ -55,9 +65,14 @@ package mesh.services
 		 * @param ids The IDs of the objects to retrieve.
 		 * @return An unexecuted operation.
 		 */
-		public function find(ids:Array):Query
+		public function find(ids:Array):QueryRequest
 		{
-			throw new IllegalOperationError(reflect.name + " does not support retrieval of entities using find()");
+			throw new IllegalOperationError(reflect.name + " does not support retrieval of entities using find().");
+		}
+		
+		public function insert(entities:Object):CreateRequest
+		{
+			throw new IllegalOperationError(reflect.name + " does not support insertion of entities.");
 		}
 		
 		private function pendingCreate(entities:Array):Array
@@ -84,18 +99,24 @@ package mesh.services
 			});
 		}
 		
-		public function save(entities:Object, validate:Boolean = true):Request
+		public function register(entities:Object):void
 		{
-			var toSave:Array = flatten(entities);
-			var toInsert:Array = pendingCreate(toSave);
-			var toUpdate:Array = pendingUpdate(toSave);
-			
-			return new CreateRequest(toInsert, validate).then(new UpdateRequest(toUpdate, validate));
+			_registered.addAll(flatten(entities));
 		}
 		
-		public function saveAll(validate:Boolean = true):PersistRequest
+		public function save(entities:Object):Request
 		{
-			return save(_registered.toArray(), validate);
+			return insert(entities).then(update(entities));
+		}
+		
+		public function saveAll():Request
+		{
+			return save(_registered.toArray());
+		}
+		
+		public function update(entities:Object):UpdateRequest
+		{
+			throw new IllegalOperationError(reflect.name + " does not support updating of entities.");
 		}
 		
 		/**
@@ -104,9 +125,9 @@ package mesh.services
 		 * @param options The options to limit the retrieval.
 		 * @return An unexecuted operation.
 		 */
-		public function where(options:Object):ListQuery
+		public function where(options:Object):ListQueryRequest
 		{
-			throw new IllegalOperationError(reflect.name + " does not support retrieval of entities using where()");
+			throw new IllegalOperationError(reflect.name + " does not support retrieval of entities using where().");
 		}
 		
 		private var _adaptor:ServiceAdaptor;

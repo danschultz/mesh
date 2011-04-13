@@ -1,15 +1,21 @@
 package mesh.services
 {
+	import mesh.adaptors.ServiceAdaptor;
 	import mesh.operations.Operation;
 	
 	public class PersistRequest extends Request
 	{
-		private var _validate:Boolean;
+		private var _entities:Array;
 		
-		public function PersistRequest(operation:Operation, validate:Boolean)
+		public function PersistRequest(entities:Array, adaptor:ServiceAdaptor, block:Function)
 		{
-			super(operation);
-			_validate = validate;
+			super(adaptor, block);
+			_entities = entities;
+		}
+		
+		override protected function executeBlock(block:Function, adaptor:ServiceAdaptor):Operation
+		{
+			return block(adaptor, _entities);
 		}
 	}
 }
