@@ -15,11 +15,19 @@ package mesh.core.object
 			var mockWithFunction:MockClass = new MockClass();
 			mockWithFunction.function2 = function():void {};
 			
+			var mock:MockClass = new MockClass();
+			mock.value1 = "value1";
+			mock.value2 = "value2";
+			
 			_tests = [
 				{to:new MockClass(), from:{value1:"value1", value2:"value2"}, expected:{value1:"value1", value2:"value2"}},
 				{to:new MockClass(), from:{value1:"value1", value2:"value2", value10:"value10"}, expected:{value1:"value1", value2:"value2"}},
 				{to:mockWithFunction, from:{value1:"value1", value2:"value2", function2:func}, expected:{value1:"value1", value2:"value2", function2:func}},
-				{to:new MockClass(), from:{value1:"value1", value2:"value2"}, options:{ignore:["value1"]}, expected:{value1:null, value2:"value2"}}
+				{to:new MockClass(), from:{value1:"value1", value2:"value2"}, options:{excludes:["value1"]}, expected:{value1:null, value2:"value2"}},
+				{to:{}, from:{value1:"value1", value2:"value2"}, expected:{value1:"value1", value2:"value2"}},
+				{to:{}, from:mock, options:{includes:["value1", "value2"]}, expected:{value1:"value1", value2:"value2"}},
+				{to:{}, from:mock, options:{includes:["value1", "value2"]}, expected:{value1:"value1", value2:"value2"}},
+				{to:{}, from:mock, options:{includes:["value1", "value2"], excludes:["value2"]}, expected:{value1:"value1", value2:null}},
 			];
 		}
 		
@@ -30,7 +38,7 @@ package mesh.core.object
 				copy(test.from, test.to, test.options);
 				
 				for (var key:String in test.expected) {
-					assertThat("Test failed with 'from' " + inspect(test.from), test.to[key], equalTo(test.expected[key]));
+					assertThat(test.to[key], equalTo(test.expected[key]));
 				}
 			}
 		}
