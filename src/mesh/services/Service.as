@@ -158,7 +158,7 @@ package mesh.services
 		/**
 		 * A reflection object for this service.
 		 */
-		public function get reflect():Type
+		protected function get reflect():Type
 		{
 			if (_reflect == null) {
 				_reflect = Type.reflect(this);

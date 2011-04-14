@@ -1,6 +1,5 @@
 package mesh
 {
-	import mesh.models.Address;
 	import mesh.models.Customer;
 	import mesh.models.Name;
 	import mesh.models.Order;
@@ -17,8 +16,14 @@ package mesh
 		{
 			// this should return a customer from a test file
 			_customer = new Customer();
+			_customer.id = 1;
 			_customer.age = 21;
 			_customer.name = new Name("John", "Doe");
+			
+			var order:Order = new Order();
+			order.id = 1;
+			_customer.orders.add(order);
+			
 			_customer.callback("afterFind");
 		}
 		
@@ -41,7 +46,7 @@ package mesh
 		[Test]
 		public function testDirtyUsesEqualsOnValueObjects():void
 		{
-			_customer.name = new Name("Jimmy", "Paige");
+			_customer.name = new Name(_customer.name.firstName, _customer.name.lastName);
 			assertThat(_customer.isDirty, equalTo(false));
 		}
 		
@@ -62,7 +67,7 @@ package mesh
 		}
 		
 		[Test]
-		public function testIsNotDirtyWhenAssociationsReverted():void
+		public function testAssociationIsNotDirtyWhenReverted():void
 		{
 			_customer.orders.getItemAt(0).total = 10;
 			_customer.orders.revert();
@@ -70,7 +75,7 @@ package mesh
 		}
 		
 		[Test]
-		public function testIsNotDirtyWhenRemovedAssociationIsNotPersisted():void
+		public function testAssociationIsNotDirtyWhenRemovedItemIsNotPersisted():void
 		{
 			var order:Order = new Order();
 			order.total = 20;

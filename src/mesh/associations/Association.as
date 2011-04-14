@@ -17,6 +17,8 @@ package mesh.associations
 	import mesh.services.Request;
 	
 	import mx.events.PropertyChangeEvent;
+	
+	use namespace flash_proxy;
 
 	/**
 	 * An association class is a proxy object that contains the references to the objects in
@@ -229,7 +231,7 @@ package mesh.associations
 		/**
 		 * The relationship model that this association represents.
 		 */
-		protected function get definition():AssociationDefinition
+		flash_proxy function get definition():AssociationDefinition
 		{
 			return _definition;
 		}
