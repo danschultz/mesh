@@ -4,7 +4,7 @@ package mesh.services
 	{
 		private var _service:Service;
 		
-		public function QueryRequest(block:Function)
+		public function QueryRequest(service:Service, block:Function)
 		{
 			super(block);
 			_service = service;

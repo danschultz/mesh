@@ -48,11 +48,6 @@ package mesh.services
 			throw new ArgumentError("Expected class to be an Entity");
 		}
 		
-		protected function createQuery(block:Function):QueryRequest
-		{
-			return new QueryRequest(block);
-		}
-		
 		/**
 		 * Marks the given entities to be destroyed the next time this service is saved.
 		 * 

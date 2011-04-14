@@ -33,15 +33,7 @@ package mesh.associations
 		{
 			super(source, relationship);
 			flash_proxy::object = [];
-			
-			afterLoad(function(proxy:AssociationCollection):void
-			{
-				_originalEntities = new ArraySequence(toArray());
-				
-				for each (var entity:Entity in proxy) {
-					entity.callback("afterFind");
-				}
-			});
+			afterLoad(loaded);
 		}
 		
 		/**
@@ -169,6 +161,15 @@ package mesh.associations
 		public function itemUpdated(item:Object, property:Object = null, oldValue:Object = null, newValue:Object = null):void
 		{
 			flash_proxy::object.itemUpdated(item, property, oldValue, newValue);
+		}
+		
+		private function loaded():void
+		{
+			_originalEntities = new ArraySequence(toArray());
+			
+			for each (var entity:Entity in this) {
+				entity.callback("afterFind");
+			}
 		}
 		
 		/**

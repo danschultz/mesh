@@ -4,7 +4,6 @@ package mesh
 	import flash.events.EventDispatcher;
 	
 	import mesh.associations.Association;
-	import mesh.associations.AssociationDefinition;
 	import mesh.associations.HasManyAssociation;
 	import mesh.associations.HasManyDefinition;
 	import mesh.associations.HasOneAssociation;
@@ -29,16 +28,17 @@ package mesh
 	public class Entity extends EventDispatcher
 	{
 		private var _callbacks:Callbacks = new Callbacks();
+		private var _observers:Callbacks = new Callbacks();
 		private var _associations:Object = {};
 		private var _changes:Properties = new Properties(this);
 		
 		/**
 		 * Constructor.
 		 */
-		public function Entity(properties:Object = null)
+		public function Entity(values:Object = null)
 		{
 			super();
-			copy(properties, this);
+			copy(values, this);
 			
 			// add necessary callbacks for find
 			afterFind(markNonLazyAssociationsAsLoaded);
@@ -52,6 +52,16 @@ package mesh
 			afterDestroy(destroyed);
 			
 			addEventListener(PropertyChangeEvent.PROPERTY_CHANGE, handlePropertyChange);
+		}
+		
+		public function addObserver(method:String, block:Function):void
+		{
+			_observers.addCallback(method, block);
+		}
+		
+		public function removeObserver(method:String, block:Function):void
+		{
+			_observers.removeCallback(method, block);
 		}
 		
 		/**
@@ -94,6 +104,7 @@ package mesh
 		public function callback(method:String):void
 		{
 			_callbacks.callback(method);
+			_observers.callback(method, this);
 		}
 		
 		private function addCallback(method:String, block:Function):void
@@ -134,7 +145,7 @@ package mesh
 			return service.destroy(this);
 		}
 		
-		protected function beforeDestroy(block:Function):void
+		public function beforeDestroy(block:Function):void
 		{
 			addCallback("beforeDestroy", block);
 		}
@@ -145,17 +156,17 @@ package mesh
 		 * 
 		 * @param block The callback function.
 		 */
-		protected function beforeSave(block:Function):void
+		public function beforeSave(block:Function):void
 		{
 			addCallback("beforeSave", block);
 		}
 		
-		protected function afterDestroy(block:Function):void
+		public function afterDestroy(block:Function):void
 		{
 			addCallback("afterDestroy", block)
 		}
 		
-		protected function afterFind(block:Function):void
+		public function afterFind(block:Function):void
 		{
 			addCallback("afterFind", block);
 		}
@@ -165,7 +176,7 @@ package mesh
 		 * 
 		 * @param block The callback function.
 		 */
-		protected function afterSave(block:Function):void
+		public function afterSave(block:Function):void
 		{
 			addCallback("afterSave", block);
 		}

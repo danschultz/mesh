@@ -61,8 +61,8 @@ package mesh.associations
 		override flash_proxy function set object(value:*):void
 		{
 			if (flash_proxy::object != null) {
-				flash_proxy::object.removeCallback(targetDestroyed);
-				flash_proxy::object.removeCallback(targetSaved);
+				flash_proxy::object.removeObserver("afterDestroy", targetDestroyed);
+				flash_proxy::object.removeObserver("afterSave", targetSaved);
 			}
 			
 			super.flash_proxy::object = value;
@@ -70,8 +70,8 @@ package mesh.associations
 			if (flash_proxy::object != null) {
 				flash_proxy::object.revive();
 				
-				flash_proxy::object.afterSave(targetSaved);
-				flash_proxy::object.afterDestroy(targetDestroyed);
+				flash_proxy::object.addObserver("afterSave", targetSaved);
+				flash_proxy::object.addObserver("afterDestroy", targetDestroyed);
 			}
 		}
 	}

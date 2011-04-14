@@ -47,7 +47,7 @@ package mesh.services
 		 * 
 		 * @inheritDoc
 		 */
-		public function createOperation(...args):Operation
+		override public function createOperation(...args):Operation
 		{
 			return newInstance.apply(null, [ServiceOperation, service].concat(args));
 		}
