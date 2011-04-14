@@ -1,13 +1,11 @@
 package mesh.services
 {
-	import mesh.adaptors.ServiceAdaptor;
 	import mesh.operations.FaultOperationEvent;
 	import mesh.operations.FinishedOperationEvent;
 	import mesh.operations.Operation;
 	import mesh.operations.ResultOperationEvent;
 	
 	import mx.rpc.Fault;
-	import mx.rpc.events.FaultEvent;
 	
 	public class OperationRequest extends Request
 	{
@@ -31,7 +29,7 @@ package mesh.services
 		private function handleFinished(event:FinishedOperationEvent):void
 		{
 			if (event.successful) {
-				finished();
+				success();
 			}
 		}
 		

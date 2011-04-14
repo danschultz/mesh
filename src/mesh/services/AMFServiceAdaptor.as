@@ -1,4 +1,4 @@
-package mesh.adaptors
+package mesh.services
 {
 	import mx.rpc.remoting.RemoteObject;
 	

@@ -17,7 +17,7 @@ package mesh.associations
 		/**
 		 * @copy Relationship#Relationship()
 		 */
-		public function HasManyDefinition(owner:Class, property:String, target:Class, options:Object)
+		public function HasManyDefinition(owner:Class, property:String, target:Class, options:Object = null)
 		{
 			if (property == null || property.length == 0) {
 				property = camelize(pluralize(className(target)), false);

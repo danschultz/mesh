@@ -17,9 +17,9 @@ package mesh.models
 		[Bindable] public var age:Number;
 		[Bindable] public var name:Name;
 		
-		public function Person()
+		public function Person(properties:Object = null)
 		{
-			super();
+			super(properties);
 		}
 	}
 }

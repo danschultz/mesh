@@ -27,7 +27,7 @@ package mesh
 		{
 			var oldAge:int = _customer.age;
 			_customer.age++;
-			assertThat(_customer.age, equalTo(oldAge));
+			assertThat(_customer.whatWas("age"), equalTo(oldAge));
 		}
 		
 		[Test]
@@ -41,7 +41,7 @@ package mesh
 		[Test]
 		public function testDirtyUsesEqualsOnValueObjects():void
 		{
-			_customer.address = new Address("2306 Zanker Rd", "San Jose");
+			_customer.name = new Name("Jimmy", "Paige");
 			assertThat(_customer.isDirty, equalTo(false));
 		}
 		

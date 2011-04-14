@@ -10,9 +10,9 @@ package mesh.models
 		[Bindable] public var shippingAddress:Address;
 		[Bindable] public var total:Number;
 		
-		public function Order()
+		public function Order(properties:Object = null)
 		{
-			super();
+			super(properties);
 		}
 		
 		public function get customer():HasOneAssociation

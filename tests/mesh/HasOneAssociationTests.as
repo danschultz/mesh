@@ -26,7 +26,7 @@ package mesh
 			account.number = "000-001";
 			account.callback("afterDestroy");
 			
-			_customer.flash_proxy::account = account;
+			_customer.account.flash_proxy::object = account;
 			assertThat(_customer.account.isDirty, equalTo(true));
 		}
 		
@@ -38,7 +38,7 @@ package mesh
 			account.number = "000-001";
 			account.callback("afterDestroy");
 			
-			_customer.flash_proxy::account = account;
+			_customer.account.flash_proxy::object = account;
 			assertThat(account.isNew, equalTo(true));
 			assertThat(account.isDirty, equalTo(true));
 		}
@@ -47,7 +47,7 @@ package mesh
 		public function testInverseRelationshipPopulated():void
 		{
 			var account:Account = new Account();
-			_customer.flash_proxy::account = account;
+			_customer.account.flash_proxy::object = account;
 			
 			assertThat(account.customer.flash_proxy::object, equalTo(_customer));
 		}

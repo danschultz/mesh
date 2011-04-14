@@ -5,7 +5,6 @@ package mesh.services
 	import flash.errors.IllegalOperationError;
 	
 	import mesh.Entity;
-	import mesh.adaptors.ServiceAdaptor;
 	import mesh.core.array.flatten;
 	import mesh.core.reflection.Type;
 
@@ -49,6 +48,11 @@ package mesh.services
 			throw new ArgumentError("Expected class to be an Entity");
 		}
 		
+		protected function createQuery(block:Function):QueryRequest
+		{
+			return new QueryRequest(block);
+		}
+		
 		/**
 		 * Marks the given entities to be destroyed the next time this service is saved.
 		 * 
@@ -65,9 +69,20 @@ package mesh.services
 		 * @param ids The IDs of the objects to retrieve.
 		 * @return An unexecuted operation.
 		 */
-		public function find(ids:Array):QueryRequest
+		public function find(...ids):QueryRequest
 		{
-			throw new IllegalOperationError(reflect.name + " does not support retrieval of entities using find().");
+			ids = flatten(ids);
+			return ids.length == 1 ? findOne(ids[0]) : findMany(ids);
+		}
+		
+		public function findOne(id:*):QueryRequest
+		{
+			throw new IllegalOperationError(reflect.name + " does not support retrieval of entities using findOne().");
+		}
+		
+		public function findMany(...ids):QueryRequest
+		{
+			throw new IllegalOperationError(reflect.name + " does not support retrieval of entities using findMany().");
 		}
 		
 		public function insert(entities:Object):InsertRequest

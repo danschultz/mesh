@@ -17,9 +17,9 @@ package mesh.models
 		
 		[Bindable] public var address:Address;
 		
-		public function Customer()
+		public function Customer(properties:Object = null)
 		{
-			super();
+			super(properties);
 		}
 		
 		public function get account():HasOneAssociation

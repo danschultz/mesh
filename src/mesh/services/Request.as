@@ -2,14 +2,7 @@ package mesh.services
 {
 	import flash.utils.flash_proxy;
 	
-	import mesh.adaptors.ServiceAdaptor;
 	import mesh.core.proxy.DataProxy;
-	import mesh.operations.FaultOperationEvent;
-	import mesh.operations.FinishedOperationEvent;
-	import mesh.operations.Operation;
-	import mesh.operations.ResultOperationEvent;
-	
-	import mx.rpc.Fault;
 	
 	public class Request extends DataProxy
 	{
@@ -22,17 +15,17 @@ package mesh.services
 			_block = block;
 		}
 		
-		public function fault(fault:Object):void
+		protected function fault(fault:Object):void
 		{
 			_handler.fault(fault);
 		}
 		
-		public function result(data:Object):void
+		protected function result(data:Object):void
 		{
-			flash_proxy::object = _handler.parse(data);
+			flash_proxy::object = data;
 		}
 		
-		public function finished():void
+		protected function success():void
 		{
 			_handler.success();
 		}
@@ -45,6 +38,15 @@ package mesh.services
 		public function execute(handler:Object = null):void
 		{
 			_handler = handler != null ? handler : new DefaultHandler();
+			
+			if (!_handler.hasOwnProperty("fault")) {
+				_handler.fault = function(fault:Object):void {};
+			}
+			
+			if (!_handler.hasOwnProperty("success")) {
+				_handler.success = function():void {};
+			}
+			
 			executeBlock(_block);
 		}
 		
@@ -60,18 +62,13 @@ package mesh.services
 	}
 }
 
-import mx.rpc.Fault;
+
 
 class DefaultHandler
 {
-	public function fault(fault:Fault):void
+	public function fault(fault:Object):void
 	{
 		
-	}
-	
-	public function parse(data:Object):Object
-	{
-		return data;
 	}
 	
 	public function success():void

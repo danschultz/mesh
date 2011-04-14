@@ -32,12 +32,13 @@ package mesh.associations
 		 * @param target The destination of the association.
 		 * @param options A set of options defined for this relationship.
 		 */
-		public function AssociationDefinition(owner:Class, property:String, target:Class, options:Object)
+		public function AssociationDefinition(owner:Class, property:String, target:Class, options:Object = null)
 		{
 			if (property == null || property.length == 0) {
 				throw new ArgumentError("Missing property for '" + humanize(className(this)).toLowerCase() + "' on " + className(owner));
 			}
 			
+			options = options != null ? options : {};
 			if (options.hasOwnProperty("isLazy")) {
 				options.lazy = options.isLazy;
 			}

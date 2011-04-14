@@ -42,7 +42,7 @@ package mesh.services
 			if (_index++ < _requests.length) {
 				executeRequest(_requests[_index]);
 			} else {
-				finished();
+				success();
 			}
 		}
 	}

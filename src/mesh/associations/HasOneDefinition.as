@@ -16,7 +16,7 @@ package mesh.associations
 		/**
 		 * @copy Relationship#Relationship()
 		 */
-		public function HasOneDefinition(owner:Class, property:String, target:Class, options:Object)
+		public function HasOneDefinition(owner:Class, property:String, target:Class, options:Object = null)
 		{
 			super(owner, property, target, options);
 		}

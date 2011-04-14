@@ -1,12 +1,11 @@
-package mesh.adaptors
+package mesh.services
 {
 	import mesh.core.object.copy;
 	import mesh.core.reflection.newInstance;
-	
-	import mx.rpc.AbstractService;
-	
 	import mesh.operations.Operation;
 	import mesh.operations.ServiceOperation;
+	
+	import mx.rpc.AbstractService;
 	
 	/**
 	 * A service adaptor that uses Flex's <code>AbstractService</code> to perform an entity's
@@ -48,7 +47,7 @@ package mesh.adaptors
 		 * 
 		 * @inheritDoc
 		 */
-		override protected function generateOperation(...args):Operation
+		public function createOperation(...args):Operation
 		{
 			return newInstance.apply(null, [ServiceOperation, service].concat(args));
 		}

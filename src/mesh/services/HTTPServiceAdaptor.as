@@ -1,14 +1,10 @@
-package mesh.adaptors
+package mesh.services
 {
-	import flash.errors.IllegalOperationError;
-	import flash.utils.getQualifiedClassName;
-	
 	import mesh.core.object.copy;
+	import mesh.operations.Operation;
 	
 	import mx.rpc.http.HTTPMultiService;
 	import mx.rpc.http.Operation;
-	
-	import mesh.operations.Operation;
 	
 	/**
 	 * A service adaptor that uses a <code>HTTPMultiService</code> to perform persistence
@@ -66,7 +62,7 @@ package mesh.adaptors
 		 * 
 		 * @inheritDoc
 		 */
-		override protected function generateOperation(...args):mesh.operations.Operation
+		override public function createOperation(...args):mesh.operations.Operation
 		{
 			if (_service.operations == null || _service.operations[args[0]] == null) {
 				var operation:mx.rpc.http.Operation = createHTTPOperation(args[0], args[2]);
@@ -77,7 +73,7 @@ package mesh.adaptors
 				args = args.slice(0, 2);
 			}
 			
-			return super.generateOperation.apply(null, args);
+			return super.createOperation.apply(null, args);
 		}
 		
 		/**

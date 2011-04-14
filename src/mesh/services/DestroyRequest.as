@@ -1,13 +1,10 @@
 package mesh.services
 {
-	import mesh.adaptors.ServiceAdaptor;
-	import mesh.operations.Operation;
-	
 	public class DestroyRequest extends PersistRequest
 	{
-		public function DestroyRequest(entities:Array, adaptor:ServiceAdaptor, block:Function)
+		public function DestroyRequest(entities:Array, block:Function)
 		{
-			super(entities, adaptor, block);
+			super(entities, block);
 		}
 	}
 }

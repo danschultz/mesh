@@ -2,8 +2,6 @@ package mesh.services
 {
 	import flash.utils.flash_proxy;
 	
-	import mesh.adaptors.ServiceAdaptor;
-	
 	import mx.collections.ArrayList;
 	import mx.collections.IList;
 	import mx.events.CollectionEvent;
@@ -14,9 +12,9 @@ package mesh.services
 	{
 		private var _list:ArrayList;
 		
-		public function ListQueryRequest(adaptor:ServiceAdaptor, block:Function)
+		public function ListQueryRequest(service:Service, block:Function)
 		{
-			super(adaptor, block);
+			super(service, block);
 			
 			_list = new ArrayList();
 			_list.addEventListener(CollectionEvent.COLLECTION_CHANGE, function(event:CollectionEvent):void

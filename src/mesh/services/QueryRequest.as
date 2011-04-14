@@ -1,21 +1,19 @@
 package mesh.services
 {
-	import mesh.adaptors.ServiceAdaptor;
-	import mesh.operations.Operation;
-
 	public class QueryRequest extends OperationRequest
 	{
-		private var _adaptor:ServiceAdaptor;
+		private var _service:Service;
 		
-		public function QueryRequest(adaptor:ServiceAdaptor, block:Function)
+		public function QueryRequest(block:Function)
 		{
 			super(block);
-			_adaptor = adaptor;
+			_service = service;
 		}
 		
-		override protected function blockArgs():Array
+		override protected function result(data:Object):void
 		{
-			return [_adaptor];
+			_service.register(data);
+			super.result(data);
 		}
 	}
 }
