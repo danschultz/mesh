@@ -15,7 +15,6 @@ package mesh.models
 		};
 		
 		[Bindable] public var address:Address;
-		public var accountId:int;
 		
 		public function Customer(properties:Object = null)
 		{
@@ -28,6 +27,8 @@ package mesh.models
 			copy(this, result, {includes:["address"]});
 			return result;
 		}
+		
+		public var accountId:int;
 		
 		public function get account():HasOneAssociation
 		{

@@ -2,18 +2,11 @@ package mesh.associations
 {
 	import flash.errors.IllegalOperationError;
 	import flash.utils.flash_proxy;
-	import flash.utils.setTimeout;
 	
 	import mesh.Callbacks;
 	import mesh.Entity;
-	import mesh.Mesh;
 	import mesh.core.proxy.DataProxy;
 	import mesh.core.reflection.Type;
-	import mesh.operations.EmptyOperation;
-	import mesh.operations.FinishedOperationEvent;
-	import mesh.operations.Operation;
-	import mesh.operations.OperationEvent;
-	import mesh.operations.ResultOperationEvent;
 	import mesh.services.Request;
 	
 	import mx.events.PropertyChangeEvent;
@@ -102,37 +95,27 @@ package mesh.associations
 			}
 		}
 		
+		private var _loadRequest:Request;
 		/**
 		 * Executes an operation that will load the object for this association.
 		 * 
 		 * @return An executing operation.
 		 */
-		final public function load():Operation
+		public function load():Request
 		{
-			var operation:Operation = (isLoaded || isLoading) ? new EmptyOperation() : createLoad();
-			setTimeout(operation.execute, Mesh.DELAY);
-			return operation;
-		}
-		
-		private function createLoad():Operation
-		{
-			var operation:Operation = definition.hasLoad ? definition.load() : createLoadOperation();
-			operation.addEventListener(OperationEvent.BEFORE_EXECUTE, function(event:OperationEvent):void
-			{
+			if (isLoading) {
+				return _loadRequest;
+			}
+			
+			if (!isLoaded) {
 				callback("beforeLoad");
-			});
-			operation.addEventListener(ResultOperationEvent.RESULT, function(event:ResultOperationEvent):void
-			{
-				flash_proxy::object = event.data;
-			});
-			operation.addEventListener(FinishedOperationEvent.FINISHED, function(event:FinishedOperationEvent):void
-			{
-				callback("afterLoad");
-			});
-			return operation;
+				return definition.hasLoadRequest ? definition.loadRequest() : createLoadRequest();
+			}
+			
+			return new Request(function():void {});
 		}
 		
-		protected function createLoadOperation():Operation
+		protected function createLoadRequest():Request
 		{
 			throw new IllegalOperationError("Load function not defined for association " + owner.reflect.className + "." + definition.property);
 		}

@@ -63,14 +63,6 @@ package mesh.services
 			throw new IllegalOperationError(reflect.name + " does not support retrieval destruction entities.");
 		}
 		
-		private function filter(entities:Array):Array
-		{
-			return entities.filter(function(entity:Entity, ...args):Boolean
-			{
-				return _registered.contains(entity);
-			});
-		}
-		
 		/**
 		 * Generates an operation that retrieves a list of entities with the given IDs.
 		 * 
