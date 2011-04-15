@@ -2,9 +2,9 @@ package mesh.services
 {
 	public class UpdateRequest extends PersistRequest
 	{
-		public function UpdateRequest(entities:Array, block:Function)
+		public function UpdateRequest(service:Service, entities:Array, block:Function)
 		{
-			super(entities, block);
+			super(service, entities, block);
 		}
 	}
 }

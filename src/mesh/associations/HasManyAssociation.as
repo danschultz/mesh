@@ -7,7 +7,7 @@ package mesh.associations
 		/**
 		 * @copy AssociationCollection#AssociationCollection()
 		 */
-		public function HasManyAssociation(source:Entity, relationship:AssociationDefinition)
+		public function HasManyAssociation(source:Entity, relationship:HasManyDefinition)
 		{
 			super(source, relationship);
 		}

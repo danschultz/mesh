@@ -2,9 +2,15 @@ package mesh.services
 {
 	public class DestroyRequest extends PersistRequest
 	{
-		public function DestroyRequest(entities:Array, block:Function)
+		public function DestroyRequest(service:Service, entities:Array, block:Function)
 		{
-			super(entities, block);
+			super(service, entities, block);
+		}
+		
+		override protected function success():void
+		{
+			service.unregister(entities);
+			super.success();
 		}
 	}
 }

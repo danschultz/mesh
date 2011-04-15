@@ -4,27 +4,34 @@ package mesh.models
 	
 	import mesh.associations.HasManyAssociation;
 	import mesh.associations.HasOneAssociation;
-	import mesh.validators.LengthValidator;
+	import mesh.core.object.copy;
 	import mesh.validators.PresenceValidator;
 	
 	public class Customer extends Person
 	{
 		public static var validate:Object = 
 		{
-			addressStreet: [{validator:PresenceValidator}, {validator:LengthValidator, minimum:2}],
-			addressCity: [{validator:PresenceValidator}, {validator:LengthValidator, minimum:2}]
+			address: [{validator:PresenceValidator}]
 		};
 		
 		[Bindable] public var address:Address;
+		public var accountId:int;
 		
 		public function Customer(properties:Object = null)
 		{
 			super(properties);
 		}
 		
+		override public function translateTo():*
+		{
+			var result:Object = super.translateTo();
+			copy(this, result, {includes:["address"]});
+			return result;
+		}
+		
 		public function get account():HasOneAssociation
 		{
-			return hasOne("account", Account);
+			return hasOne("account", Account, {foreignKey:"accountId"});
 		}
 		public function set account(value:HasOneAssociation):void
 		{
@@ -33,7 +40,7 @@ package mesh.models
 		
 		public function get orders():HasManyAssociation
 		{
-			return hasMany("orders", Order);
+			return hasMany("orders", Order, {inverse:"customer"});
 		}
 		public function set orders(value:HasManyAssociation):void
 		{

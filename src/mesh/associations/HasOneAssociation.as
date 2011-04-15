@@ -11,7 +11,7 @@ package mesh.associations
 		/**
 		 * @copy HasAssociation#HasAssociation()
 		 */
-		public function HasOneAssociation(owner:Entity, relationship:AssociationDefinition)
+		public function HasOneAssociation(owner:Entity, relationship:HasOneDefinition)
 		{
 			super(owner, relationship);
 		}

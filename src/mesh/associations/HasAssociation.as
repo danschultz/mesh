@@ -1,5 +1,6 @@
 package mesh.associations
 {
+	import flash.errors.IllegalOperationError;
 	import flash.utils.flash_proxy;
 	
 	import mesh.Entity;
@@ -11,9 +12,21 @@ package mesh.associations
 		/**
 		 * @copy AssociationProxy#AssociationProxy()
 		 */
-		public function HasAssociation(owner:Entity, relationship:AssociationDefinition)
+		public function HasAssociation(owner:Entity, relationship:HasOneDefinition)
 		{
 			super(owner, relationship);
+			beforeAdd(populateForeignKey);
+		}
+		
+		private function populateForeignKey(entity:Entity):void
+		{
+			if (definition.hasForeignKey) {
+				if (owner.hasOwnProperty(definition.foreignKey)) {
+					owner[definition.foreignKey] = entity.id;
+				} else {
+					throw new IllegalOperationError("Foreign key '" + definition.foreignKey + "' is not defined on " + entity.reflect.name);
+				}
+			}
 		}
 		
 		/**

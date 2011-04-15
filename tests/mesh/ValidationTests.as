@@ -28,13 +28,13 @@ package mesh
 		public function testValidateFails():void
 		{
 			var customer:Customer = new Customer();
-			customer.name = new Name("", "");
-			customer.address = new Address("", "");
+			customer.name = null;
+			customer.address = null;
 			customer.age = 0;
 			
 			assertThat(customer.isValid(), equalTo(false));
 			assertThat(customer.isInvalid(), equalTo(true));
-			assertThat(customer.errors.toArray(), arrayWithSize(9));
+			assertThat(customer.errors.toArray(), arrayWithSize(3));
 		}
 	}
 }

@@ -3,6 +3,7 @@ package mesh.associations
 	import collections.ArraySequence;
 	import collections.HashSet;
 	
+	import flash.errors.IllegalOperationError;
 	import flash.utils.flash_proxy;
 	import flash.utils.setTimeout;
 	
@@ -29,11 +30,13 @@ package mesh.associations
 		/**
 		 * @copy AssociationProxy#AssociationProxy()
 		 */
-		public function AssociationCollection(source:Entity, relationship:AssociationDefinition)
+		public function AssociationCollection(source:Entity, relationship:HasManyDefinition)
 		{
 			super(source, relationship);
 			flash_proxy::object = [];
+			
 			afterLoad(loaded);
+			beforeAdd(populateInverseAssociation);
 		}
 		
 		/**
@@ -169,6 +172,17 @@ package mesh.associations
 			
 			for each (var entity:Entity in this) {
 				entity.callback("afterFind");
+			}
+		}
+		
+		private function populateInverseAssociation(entity:Entity):void
+		{
+			if (definition.hasInverse) {
+				if (entity.hasOwnProperty(definition.inverse)) {
+					entity[definition.inverse].object = owner;
+				} else {
+					throw new IllegalOperationError("Inverse property '" + definition.inverse + "' not defined on " + entity.reflect.name);
+				}
 			}
 		}
 		

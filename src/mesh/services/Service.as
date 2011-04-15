@@ -55,7 +55,20 @@ package mesh.services
 		 */
 		public function destroy(entities:Object):DestroyRequest
 		{
+			return createDestroy(pendingDestroy(filter(flatten(entities))));
+		}
+		
+		protected function createDestroy(entities:Array):DestroyRequest
+		{
 			throw new IllegalOperationError(reflect.name + " does not support retrieval destruction entities.");
+		}
+		
+		private function filter(entities:Array):Array
+		{
+			return entities.filter(function(entity:Entity, ...args):Boolean
+			{
+				return _registered.contains(entity);
+			});
 		}
 		
 		/**
@@ -81,6 +94,11 @@ package mesh.services
 		}
 		
 		public function insert(entities:Object):InsertRequest
+		{
+			return createInsert(pendingCreate(filter(flatten(entities))));
+		}
+		
+		protected function createInsert(entities:Array):InsertRequest
 		{
 			throw new IllegalOperationError(reflect.name + " does not support insertion of entities.");
 		}
@@ -114,6 +132,11 @@ package mesh.services
 			_registered.addAll(flatten(entities));
 		}
 		
+		public function unregister(entities:Object):void
+		{
+			_registered.removeAll(flatten(entities));
+		}
+		
 		public function save(entities:Object):Request
 		{
 			return insert(entities).then(update(entities));
@@ -125,6 +148,11 @@ package mesh.services
 		}
 		
 		public function update(entities:Object):UpdateRequest
+		{
+			return createUpdate(pendingUpdate(filter(flatten(entities))));
+		}
+		
+		protected function createUpdate(entities:Array):UpdateRequest
 		{
 			throw new IllegalOperationError(reflect.name + " does not support updating of entities.");
 		}

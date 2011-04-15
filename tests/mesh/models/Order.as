@@ -23,14 +23,5 @@ package mesh.models
 		{
 			customer.flash_proxy::object = value;
 		}
-		
-		flash_proxy function get customer():Customer
-		{
-			return customer.flash_proxy::object;
-		}
-		flash_proxy function set customer(value:Customer):void
-		{
-			customer.flash_proxy::object = value;
-		}
 	}
 }

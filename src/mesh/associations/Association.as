@@ -19,7 +19,7 @@ package mesh.associations
 	import mx.events.PropertyChangeEvent;
 	
 	use namespace flash_proxy;
-
+	
 	/**
 	 * An association class is a proxy object that contains the references to the objects in
 	 * a relationship, where the <em>owner</em> represents the object hosting the association, 
@@ -47,9 +47,7 @@ package mesh.associations
 			beforeLoad(loading);
 			afterLoad(loaded);
 			
-			beforeAdd(populateForeignKey);
 			beforeAdd(reviveEntity);
-			
 			beforeRemove(markEntityForRemoval);
 		}
 		
@@ -160,17 +158,6 @@ package mesh.associations
 		private function markEntityForRemoval(entity:Entity):void
 		{
 			entity.markForRemoval();
-		}
-		
-		private function populateForeignKey(entity:Entity):void
-		{
-			if (definition.hasForeignKey) {
-				if (entity.hasOwnProperty(definition.foreignKey)) {
-					entity[definition.foreignKey] = owner.id;
-				} else {
-					throw new IllegalOperationError("Foreign key '" + definition.foreignKey + "' is not defined on " + entity.reflect.name);
-				}
-			}
 		}
 		
 		/**

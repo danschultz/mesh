@@ -11,7 +11,7 @@ package mesh
 	public class HasManyAssociationTests
 	{
 		[Test]
-		public function testPopulateInverseRelationships():void
+		public function testPopulateInverseAssociation():void
 		{
 			var order:Order = new Order();
 			var customer:Customer = new Customer();

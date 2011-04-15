@@ -4,9 +4,9 @@ package mesh.services
 	
 	public class InsertRequest extends PersistRequest
 	{
-		public function InsertRequest(entities:Array, block:Function)
+		public function InsertRequest(service:Service, entities:Array, block:Function)
 		{
-			super(entities, block);
+			super(service, entities, block);
 		}
 	}
 }

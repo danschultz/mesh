@@ -44,12 +44,14 @@ package mesh
 		}
 		
 		[Test]
-		public function testInverseRelationshipPopulated():void
+		public function testForeignKeyIsPopulatedOnAssignment():void
 		{
 			var account:Account = new Account();
-			_customer.account.flash_proxy::object = account;
+			account.id = 3;
+			account.number = "000-001";
 			
-			assertThat(account.customer.flash_proxy::object, equalTo(_customer));
+			_customer.account.flash_proxy::object = account;
+			assertThat(_customer.accountId, equalTo(account.id));
 		}
 	}
 }
