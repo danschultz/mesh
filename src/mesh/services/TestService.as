@@ -14,6 +14,14 @@ package mesh.services
 			_entity = entity;
 		}
 		
+		override public function belongingTo(entity:Entity):QueryRequest
+		{
+			return new QueryRequest(this, function():Operation
+			{
+				return adaptor.createOperation("belongingTo", this);
+			}
+		}
+		
 		override public function findOne(id:*):QueryRequest
 		{
 			return new QueryRequest(this, function():Operation

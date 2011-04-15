@@ -38,6 +38,11 @@ package mesh.services
 			throw new IllegalOperationError(reflect.name + " does not support retrieval of entities using all()");
 		}
 		
+		public function belongingTo(entity:Entity):QueryRequest
+		{
+			throw new IllegalOperationError(reflect.name + " does not support retrieval of entities belonging to " + entity);
+		}
+		
 		public function create(clazz:Class):*
 		{
 			if (clazz is Entity) {
@@ -155,7 +160,7 @@ package mesh.services
 		 * @param options The options to limit the retrieval.
 		 * @return An unexecuted operation.
 		 */
-		public function where():ListQueryRequest
+		public function where():WhereQueryRequest
 		{
 			throw new IllegalOperationError(reflect.name + " does not support retrieval of entities using where().");
 		}

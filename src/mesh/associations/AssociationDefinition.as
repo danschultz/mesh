@@ -9,6 +9,7 @@ package mesh.associations
 	import mesh.Entity;
 	import mesh.core.inflection.camelize;
 	import mesh.core.inflection.humanize;
+	import mesh.core.reflection.Type;
 	import mesh.core.reflection.className;
 	import mesh.core.reflection.newInstance;
 	
@@ -93,7 +94,7 @@ package mesh.associations
 		 */
 		public function toString():String
 		{
-			return property;
+			return Type.reflect(owner).name + "." + property;
 		}
 		
 		private function toBoolean(obj:Object):Boolean

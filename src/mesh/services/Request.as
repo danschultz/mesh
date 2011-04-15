@@ -7,17 +7,43 @@ package mesh.services
 	public dynamic class Request extends DataProxy
 	{
 		private var _block:Function;
-		private var _handler:Object;
+		private var _handlers:Array = [];
 		
 		public function Request(block:Function)
 		{
 			super();
 			_block = block;
+			addHandler(new DefaultHandler());
+		}
+		
+		public function addHandler(handler:Object):Request
+		{
+			if (!handler.hasOwnProperty("fault")) {
+				handler.fault = function(fault:Object):void {};
+			}
+			
+			if (!handler.hasOwnProperty("success")) {
+				handler.success = function():void {};
+			}
+			
+			_handlers.push(handler);
+			return this;
+		}
+		
+		public function execute(handler:Object = null):Request
+		{
+			if (handler != null) {
+				addHandler(handler);
+			}
+			executeBlock(_block);
+			return this;
 		}
 		
 		protected function fault(fault:Object):void
 		{
-			_handler.fault(fault);
+			for each (var handler:Object in _handlers) {
+				handler.fault(fault);
+			}
 		}
 		
 		protected function result(data:Object):void
@@ -27,28 +53,14 @@ package mesh.services
 		
 		protected function success():void
 		{
-			_handler.success();
+			for each (var handler:Object in _handlers) {
+				handler.success();
+			}
 		}
 		
 		public function then(request:Request):Request
 		{
 			return new CompoundRequest([this, request]);
-		}
-		
-		public function execute(handler:Object = null):Request
-		{
-			_handler = handler != null ? handler : new DefaultHandler();
-			
-			if (!_handler.hasOwnProperty("fault")) {
-				_handler.fault = function(fault:Object):void {};
-			}
-			
-			if (!_handler.hasOwnProperty("success")) {
-				_handler.success = function():void {};
-			}
-			
-			executeBlock(_block);
-			return this;
 		}
 		
 		protected function blockArgs():Array

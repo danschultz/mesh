@@ -1,8 +1,11 @@
 package mesh.associations
 {
+	import flash.errors.IllegalOperationError;
 	import flash.utils.flash_proxy;
 	
 	import mesh.Entity;
+	import mesh.Mesh;
+	import mesh.services.Request;
 	
 	use namespace flash_proxy;
 	
@@ -11,9 +14,23 @@ package mesh.associations
 		/**
 		 * @copy HasAssociation#HasAssociation()
 		 */
-		public function HasOneAssociation(owner:Entity, relationship:HasOneDefinition)
+		public function HasOneAssociation(owner:Entity, definition:HasOneDefinition)
 		{
-			super(owner, relationship);
+			super(owner, definition);
+		}
+		
+		/**
+		 * @inheritDoc
+		 */
+		override protected function createLoadRequest():Request
+		{
+			if (Mesh.services.hasService(definition.target)) {
+				if (definition.hasForeignKey) {
+					return Mesh.services.serviceFor(definition.target).findOne(definition.foreignKey);
+				}
+				throw new IllegalOperationError("Cannot load " + this + " with undefined foreign key for " + definition);
+			}
+			throw new IllegalOperationError("Cannot load " + this + " with undefined service undefined for " + definition);
 		}
 		
 		/**

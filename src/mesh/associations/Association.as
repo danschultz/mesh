@@ -5,6 +5,7 @@ package mesh.associations
 	
 	import mesh.Callbacks;
 	import mesh.Entity;
+	import mesh.core.inflection.humanize;
 	import mesh.core.proxy.DataProxy;
 	import mesh.core.reflection.Type;
 	import mesh.services.Request;
@@ -109,7 +110,14 @@ package mesh.associations
 			
 			if (!isLoaded) {
 				callback("beforeLoad");
-				return definition.hasLoadRequest ? definition.loadRequest() : createLoadRequest();
+				_loadRequest = definition.hasLoadRequest ? definition.loadRequest() : createLoadRequest();
+				_loadRequest.addHandler({
+					success:function():void
+					{
+						callback("afterLoad");
+					}
+				});
+				return _loadRequest;
 			}
 			
 			return new Request(function():void {});
@@ -117,7 +125,7 @@ package mesh.associations
 		
 		protected function createLoadRequest():Request
 		{
-			throw new IllegalOperationError("Load function not defined for association " + owner.reflect.className + "." + definition.property);
+			throw new IllegalOperationError("Load function not implemented for " + definition);
 		}
 		
 		private function loading():void
@@ -159,6 +167,11 @@ package mesh.associations
 		public function save():Request
 		{
 			throw new IllegalOperationError(reflect.name + ".save() is not implemented.");
+		}
+		
+		public function toString():String
+		{
+			return humanize(reflect.className).toLowerCase();
 		}
 		
 		/**

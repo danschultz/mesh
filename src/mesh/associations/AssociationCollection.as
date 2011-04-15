@@ -30,9 +30,9 @@ package mesh.associations
 		/**
 		 * @copy AssociationProxy#AssociationProxy()
 		 */
-		public function AssociationCollection(source:Entity, relationship:HasManyDefinition)
+		public function AssociationCollection(source:Entity, definition:HasManyDefinition)
 		{
-			super(source, relationship);
+			super(source, definition);
 			flash_proxy::object = [];
 			
 			afterLoad(loaded);

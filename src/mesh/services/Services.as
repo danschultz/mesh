@@ -1,10 +1,12 @@
 package mesh.services
 {
 	import collections.HashMap;
+	
+	import mesh.core.reflection.Type;
 
 	public class Services
 	{
-		private var _services:HashMap = new HashMap();
+		private var _entityToService:HashMap = new HashMap();
 		
 		/**
 		 * Constructor.
@@ -14,12 +16,22 @@ package mesh.services
 			
 		}
 		
-		public function instanceOf(service:Class):Service
+		public function hasService(entity:Class):Boolean
 		{
-			if (!_services.containsKey(service)) {
-				_services.put(service, new service());
+			return _entityToService.containsKey(entity);
+		}
+		
+		public function map(entity:Class, service:Service):void
+		{
+			_entityToService.put(entity, service);
+		}
+		
+		public function serviceFor(entity:Class):Service
+		{
+			if (hasService(entity)) {
+				_entityToService.grab(entity);
 			}
-			return _services.grab(service);
+			throw new ArgumentError("Service not found for " + Type.reflect(entity).name);
 		}
 	}
 }

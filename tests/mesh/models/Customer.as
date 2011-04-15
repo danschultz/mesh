@@ -2,13 +2,18 @@ package mesh.models
 {
 	import flash.utils.flash_proxy;
 	
+	import mesh.Mesh;
 	import mesh.associations.HasManyAssociation;
 	import mesh.associations.HasOneAssociation;
 	import mesh.core.object.copy;
+	import mesh.services.Request;
+	import mesh.services.TestService;
 	import mesh.validators.PresenceValidator;
 	
 	public class Customer extends Person
 	{
+		Mesh.services.map(Customer, new TestService(Customer));
+		
 		public static var validate:Object = 
 		{
 			address: [{validator:PresenceValidator}]
@@ -41,7 +46,13 @@ package mesh.models
 		
 		public function get orders():HasManyAssociation
 		{
-			return hasMany("orders", Order, {inverse:"customer"});
+			return hasMany("orders", Order, {
+				inverse:"customer",
+				loadRequest:function():Request
+				{
+					return Mesh.services.serviceFor(Order).belongingTo(this);
+				}
+			});
 		}
 		public function set orders(value:HasManyAssociation):void
 		{

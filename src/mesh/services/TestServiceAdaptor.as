@@ -41,6 +41,16 @@ package mesh.services
 			});
 		}
 		
+		public function belongingTo(entity:Entity):Operation
+		{
+			return new MethodOperation(function():void
+			{
+				for each (var object:Object in _registry) {
+					
+				}
+			});
+		}
+		
 		public function insert(entities:Array):Operation
 		{
 			return new MethodOperation(function():void
