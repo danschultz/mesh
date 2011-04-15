@@ -1,6 +1,6 @@
 package mesh.services
 {
-	import mesh.Entity;
+	import mesh.model.Entity;
 	import mesh.core.reflection.newInstance;
 	import mesh.operations.Operation;
 	
@@ -19,7 +19,7 @@ package mesh.services
 			return new QueryRequest(this, function():Operation
 			{
 				return adaptor.createOperation("belongingTo", this);
-			}
+			});
 		}
 		
 		override public function findOne(id:*):QueryRequest

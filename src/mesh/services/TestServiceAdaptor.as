@@ -2,7 +2,7 @@ package mesh.services
 {
 	import collections.HashMap;
 	
-	import mesh.Entity;
+	import mesh.model.Entity;
 	import mesh.operations.MethodOperation;
 	import mesh.operations.Operation;
 

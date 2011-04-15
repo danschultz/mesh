@@ -4,7 +4,7 @@ package mesh.services
 	
 	import flash.errors.IllegalOperationError;
 	
-	import mesh.Entity;
+	import mesh.model.Entity;
 	import mesh.core.array.flatten;
 	import mesh.core.reflection.Type;
 

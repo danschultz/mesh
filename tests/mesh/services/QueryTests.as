@@ -1,7 +1,7 @@
 package mesh.services
 {
-	import mesh.models.Customer;
-	import mesh.models.Name;
+	import mesh.Customer;
+	import mesh.Name;
 	
 	import org.flexunit.assertThat;
 	import org.flexunit.asserts.fail;
