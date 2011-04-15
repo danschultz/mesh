@@ -55,7 +55,7 @@ package mesh.services
 		 */
 		public function destroy(entities:Object):DestroyRequest
 		{
-			return createDestroy(pendingDestroy(filter(flatten(entities))));
+			return createDestroy(pendingDestroy(flatten(entities)));
 		}
 		
 		protected function createDestroy(entities:Array):DestroyRequest
@@ -88,14 +88,14 @@ package mesh.services
 			throw new IllegalOperationError(reflect.name + " does not support retrieval of entities using findOne().");
 		}
 		
-		public function findMany(...ids):QueryRequest
+		public function findMany(...ids):ListQueryRequest
 		{
 			throw new IllegalOperationError(reflect.name + " does not support retrieval of entities using findMany().");
 		}
 		
 		public function insert(entities:Object):InsertRequest
 		{
-			return createInsert(pendingCreate(filter(flatten(entities))));
+			return createInsert(pendingCreate(flatten(entities)));
 		}
 		
 		protected function createInsert(entities:Array):InsertRequest
@@ -149,7 +149,7 @@ package mesh.services
 		
 		public function update(entities:Object):UpdateRequest
 		{
-			return createUpdate(pendingUpdate(filter(flatten(entities))));
+			return createUpdate(pendingUpdate(flatten(entities)));
 		}
 		
 		protected function createUpdate(entities:Array):UpdateRequest

@@ -22,7 +22,7 @@ package mesh.services
 			});
 		}
 		
-		override public function findMany(...ids):QueryRequest
+		override public function findMany(...ids):ListQueryRequest
 		{
 			return new ListQueryRequest(this, function():Operation
 			{
@@ -47,18 +47,22 @@ package mesh.services
 		
 		private function createPesistRequest(clazz:Class, type:String, entities:Array):*
 		{
-			return newInstance(clazz, entities, function():Operation
+			return newInstance(clazz, this, entities, function():Operation
 			{
 				return adaptor.createOperation(type, entities);
 			});
 		}
 		
+		private var _adaptor:ServiceAdaptor;
 		override public function get adaptor():ServiceAdaptor
 		{
-			return new TestServiceAdaptor(function(object:Object):Entity
-			{
-				return new _entity();
-			});
+			if (_adaptor == null) {
+				_adaptor = new TestServiceAdaptor(function(object:Object):Entity
+				{
+					return new _entity();
+				});
+			}
+			return _adaptor;
 		}
 	}
 }

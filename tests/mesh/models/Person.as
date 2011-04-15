@@ -30,7 +30,7 @@ package mesh.models
 		override public function translateTo():*
 		{
 			var obj:Object = {};
-			copy(this, obj, {includes:["age", "name"]});
+			copy(this, obj, {includes:["id", "age", "name"]});
 			return obj;
 		}
 	}

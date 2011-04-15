@@ -4,7 +4,7 @@ package mesh.services
 	
 	import mesh.core.proxy.DataProxy;
 	
-	public class Request extends DataProxy
+	public dynamic class Request extends DataProxy
 	{
 		private var _block:Function;
 		private var _handler:Object;
@@ -35,7 +35,7 @@ package mesh.services
 			return new CompoundRequest([this, request]);
 		}
 		
-		public function execute(handler:Object = null):void
+		public function execute(handler:Object = null):Request
 		{
 			_handler = handler != null ? handler : new DefaultHandler();
 			
@@ -48,6 +48,7 @@ package mesh.services
 			}
 			
 			executeBlock(_block);
+			return this;
 		}
 		
 		protected function blockArgs():Array

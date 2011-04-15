@@ -14,13 +14,13 @@ package mesh.services
 		
 		public function ListQueryRequest(service:Service, block:Function)
 		{
-			super(service, block);
-			
 			_list = new ArrayList();
 			_list.addEventListener(CollectionEvent.COLLECTION_CHANGE, function(event:CollectionEvent):void
 			{
 				dispatchEvent(event);
 			});
+			
+			super(service, block);
 		}
 		
 		/**
@@ -164,14 +164,14 @@ package mesh.services
 		 */
 		override flash_proxy function get object():*
 		{
-			return super.flash_proxy::object;
+			return _list;
 		}
 		override flash_proxy function set object(value:*):void
 		{
 			if (value != null && value.hasOwnProperty("toArray")) {
 				value = value.toArray();
 			}
-			super.flash_proxy::object = value;
+			_list.source = value;
 		}
 	}
 }

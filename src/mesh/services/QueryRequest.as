@@ -1,6 +1,6 @@
 package mesh.services
 {
-	public class QueryRequest extends OperationRequest
+	public dynamic class QueryRequest extends OperationRequest
 	{
 		private var _service:Service;
 		

@@ -53,7 +53,7 @@ package mesh
 		[Test]
 		public function testIsDirtyWhenPropertyChanges():void
 		{
-			_customer.name = new Name("Jimmy", "Paige");
+			_customer.name = new Name("Jimmy", "Page");
 			assertThat(_customer.isDirty, equalTo(true));
 		}
 		
@@ -61,7 +61,7 @@ package mesh
 		public function testIsNotDirtyWhenReverted():void
 		{
 			_customer.age++;
-			_customer.name = new Name("Jimmy", "Paige");
+			_customer.name = new Name("Jimmy", "Page");
 			_customer.revert();
 			assertThat(_customer.isDirty, equalTo(false));
 		}
