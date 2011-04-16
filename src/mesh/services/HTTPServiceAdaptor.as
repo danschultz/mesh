@@ -48,10 +48,10 @@ package mesh.services
 		 * 
 		 * @param options An options hash to configure the adaptor.
 		 */
-		public function HTTPServiceAdaptor(options:Object = null)
+		public function HTTPServiceAdaptor(factory:Function, options:Object = null)
 		{
 			_service = new HTTPMultiService();
-			super(_service, options);
+			super(_service, factory, options);
 		}
 		
 		/**
@@ -62,7 +62,7 @@ package mesh.services
 		 * 
 		 * @inheritDoc
 		 */
-		override public function createOperation(...args):mesh.operations.Operation
+		override protected function createOperation(...args):mesh.operations.Operation
 		{
 			if (_service.operations == null || _service.operations[args[0]] == null) {
 				var operation:mx.rpc.http.Operation = createHTTPOperation(args[0], args[2]);

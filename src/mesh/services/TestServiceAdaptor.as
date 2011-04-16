@@ -2,6 +2,7 @@ package mesh.services
 {
 	import collections.HashMap;
 	
+	import mesh.core.reflection.newInstance;
 	import mesh.model.Entity;
 	import mesh.operations.MethodOperation;
 	import mesh.operations.Operation;
@@ -9,41 +10,21 @@ package mesh.services
 	public class TestServiceAdaptor extends ServiceAdaptor
 	{
 		private var _registry:HashMap = new HashMap();
-		private var _factory:Function;
 		private var _idCounter:int;
 		
 		public function TestServiceAdaptor(factory:Function, options:Object=null)
 		{
-			super(options);
-			_factory = factory;
+			super(factory, options);
 		}
 		
-		override public function createOperation(...args):Operation
+		override protected function createOperation(...args):Operation
 		{
-			return this[args[0]].apply(null, args.slice(1));
-		}
-		
-		override protected function deserialize(objects:Array):Array
-		{
-			return objects.map(function(object:Object, ...args):Entity
-			{
-				var entity:Entity = _factory(object);
-				entity.translateFrom(object);
-				return entity;
-			});
-		}
-		
-		override protected function serialize(entities:Array):Array
-		{
-			return entities.map(function(entity:Entity, ...args):Object
-			{
-				return entity.translateTo();
-			});
+			return newInstance.apply(null, [MethodOperation, args[0]]);
 		}
 		
 		public function belongingTo(entity:Entity):Operation
 		{
-			return new MethodOperation(function():void
+			return createOperation(function():void
 			{
 				for each (var object:Object in _registry) {
 					
@@ -53,7 +34,7 @@ package mesh.services
 		
 		public function insert(entities:Array):Operation
 		{
-			return new MethodOperation(function():void
+			return createOperation(function():void
 			{
 				for each (var entity:Entity in entities) {
 					entity.id = ++_idCounter;
@@ -64,7 +45,7 @@ package mesh.services
 		
 		public function destroy(entities:Array):Operation
 		{
-			return new MethodOperation(function():void
+			return createOperation(function():void
 			{
 				for each (var entity:Entity in entities) {
 					_registry.remove(entity.id);
@@ -74,7 +55,7 @@ package mesh.services
 		
 		public function update(entities:Array):Operation
 		{
-			return new MethodOperation(function():void
+			return createOperation(function():void
 			{
 				for each (var entity:Entity in entities) {
 					_registry.put(entity.id, serialize([entity]));
@@ -84,7 +65,7 @@ package mesh.services
 		
 		public function findOne(id:int):Operation
 		{
-			return new MethodOperation(function():Object
+			return createOperation(function():Object
 			{
 				if (_registry.containsKey(id)) {
 					var entities:Array = deserialize([_registry.grab(id)]);
@@ -96,7 +77,7 @@ package mesh.services
 		
 		public function findMany(ids:Array):Operation
 		{
-			return new MethodOperation(function():Object
+			return createOperation(function():Object
 			{
 				var objects:Array = [];
 				for each (var id:int in ids) {

@@ -45,13 +45,7 @@ package mesh
 		
 		public function get orders():HasManyAssociation
 		{
-			return hasMany("orders", Order, {
-				inverse:"customer",
-				loadRequest:function():Request
-				{
-					return Mesh.services.serviceFor(Order).belongingTo(this);
-				}
-			});
+			return hasMany("orders", Order, {inverse:"customer"});
 		}
 		public function set orders(value:HasManyAssociation):void
 		{

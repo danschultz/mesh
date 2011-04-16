@@ -9,10 +9,10 @@ package mesh.services
 		private var _block:Function;
 		private var _handlers:Array = [];
 		
-		public function Request(block:Function)
+		public function Request(block:Function = null)
 		{
 			super();
-			_block = block;
+			_block = block != null ? block : function():void {};
 			addHandler(new DefaultHandler());
 		}
 		

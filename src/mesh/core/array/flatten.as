@@ -24,8 +24,9 @@ package mesh.core.array
 	 * @depth The maximum depth to flatten.
 	 * @return A new flattened array.
 	 */
-	public function flatten(elements:Object, depth:int = int.MAX_VALUE):Array
+	public function flatten(elements:Object, depth:int = -1):Array
 	{
+		depth = depth < 0 ? int.MAX_VALUE : depth;
 		elements = elements is Array ? elements : [elements];
 		if (depth > 0) {
 			var result:Array = [];

@@ -34,9 +34,9 @@ package mesh.services
 		 * @param service The service for this adaptor.
 		 * @param options An options hash to configure the adaptor.
 		 */
-		public function RPCServiceAdaptor(service:AbstractService, options:Object = null)
+		public function RPCServiceAdaptor(service:AbstractService, factory:Function, options:Object = null)
 		{
-			super(options);
+			super(factory, options);
 			_service = service;
 			copy(options, service);
 		}
@@ -47,7 +47,7 @@ package mesh.services
 		 * 
 		 * @inheritDoc
 		 */
-		override public function createOperation(...args):Operation
+		override protected function createOperation(...args):Operation
 		{
 			return newInstance.apply(null, [ServiceOperation, service].concat(args));
 		}

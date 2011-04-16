@@ -18,7 +18,7 @@ package mesh.services
 		{
 			return new QueryRequest(this, function():Operation
 			{
-				return adaptor.createOperation("belongingTo", this);
+				return adaptor.belongingTo(this);
 			});
 		}
 		
@@ -26,7 +26,7 @@ package mesh.services
 		{
 			return new QueryRequest(this, function():Operation
 			{
-				return adaptor.createOperation("findOne", id);
+				return adaptor.findOne(id);
 			});
 		}
 		
@@ -34,7 +34,7 @@ package mesh.services
 		{
 			return new ListQueryRequest(this, function():Operation
 			{
-				return adaptor.createOperation("findMany", ids);
+				return adaptor.findMany(ids);
 			});
 		}
 		
@@ -57,7 +57,7 @@ package mesh.services
 		{
 			return newInstance(clazz, this, entities, function():Operation
 			{
-				return adaptor.createOperation(type, entities);
+				return adaptor[type](entities);
 			});
 		}
 		

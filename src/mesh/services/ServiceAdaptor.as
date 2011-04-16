@@ -3,6 +3,7 @@ package mesh.services
 	import flash.errors.IllegalOperationError;
 	
 	import mesh.core.reflection.Type;
+	import mesh.model.Entity;
 	import mesh.operations.Operation;
 	
 	/**
@@ -11,14 +12,17 @@ package mesh.services
 	 * 
 	 * @author Dan Schultz
 	 */
-	public class ServiceAdaptor
+	public dynamic class ServiceAdaptor
 	{
+		private var _factory:Function;
+		
 		/**
 		 * Constructor.
 		 */
-		public function ServiceAdaptor(options:Object = null)
+		public function ServiceAdaptor(factory:Function, options:Object = null)
 		{
 			_options = options == null ? {} : options;
+			_factory = factory;
 		}
 		
 		/**
@@ -27,19 +31,27 @@ package mesh.services
 		 * @param args The args to pass to the constructor of the operation.
 		 * @return A new unexecuted operation.
 		 */
-		public function createOperation(...args):Operation
+		protected function createOperation(...args):Operation
 		{
 			throw new IllegalOperationError(reflect.name + ".createOperation() is not implemented.");
 		}
 		
-		protected function deserialize(entities:Array):Array
+		protected function deserialize(objects:Array):Array
 		{
-			return entities.concat();
+			return objects.map(function(object:Object, ...args):Entity
+			{
+				var entity:Entity = _factory(object);
+				entity.translateFrom(object);
+				return entity;
+			});
 		}
 		
 		protected function serialize(entities:Array):Array
 		{
-			return entities.concat();
+			return entities.map(function(entity:Entity, ...args):Object
+			{
+				return entity.translateTo();
+			});
 		}
 		
 		private var _options:Object;

@@ -5,14 +5,10 @@ package mesh.model.associations
 	
 	import flash.errors.IllegalOperationError;
 	import flash.utils.flash_proxy;
-	import flash.utils.setTimeout;
 	
-	import mesh.model.Entity;
-	import mesh.Mesh;
 	import mesh.core.functions.closure;
-	import mesh.operations.EmptyOperation;
-	import mesh.operations.FactoryOperation;
-	import mesh.operations.Operation;
+	import mesh.model.Entity;
+	import mesh.services.Request;
 	
 	import mx.collections.ArrayCollection;
 	import mx.collections.IList;
@@ -92,14 +88,9 @@ package mesh.model.associations
 		 * @param entity The entity to destroy.
 		 * @return An executing operation.
 		 */
-		public function destroy(entity:Entity):Operation
+		public function destroy(entity:Entity):Request
 		{
-			var operation:Operation = new EmptyOperation();
-			if (contains(entity)) {
-				operation = new FactoryOperation(entity.destroy);
-			}
-			setTimeout(operation.execute, Mesh.DELAY);
-			return operation;
+			return contains(entity) ? entity.destroy() : new Request();
 		}
 		
 		/**

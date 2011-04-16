@@ -26,9 +26,9 @@ package mesh.services
 		 * 
 		 * @param options An options hash to configure the adaptor.
 		 */
-		public function AMFServiceAdaptor(options:Object = null)
+		public function AMFServiceAdaptor(factory:Function, options:Object = null)
 		{
-			super(new RemoteObject(), options);
+			super(new RemoteObject(), factory, options);
 		}
 	}
 }
