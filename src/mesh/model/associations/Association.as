@@ -3,11 +3,11 @@ package mesh.model.associations
 	import flash.errors.IllegalOperationError;
 	import flash.utils.flash_proxy;
 	
-	import mesh.model.Callbacks;
-	import mesh.model.Entity;
 	import mesh.core.inflection.humanize;
 	import mesh.core.proxy.DataProxy;
 	import mesh.core.reflection.Type;
+	import mesh.model.Callbacks;
+	import mesh.model.Entity;
 	import mesh.services.Request;
 	
 	import mx.events.PropertyChangeEvent;
@@ -114,6 +114,7 @@ package mesh.model.associations
 				_loadRequest.addHandler({
 					success:function():void
 					{
+						object = _loadRequest.object;
 						callback("afterLoad");
 					}
 				});

@@ -29,7 +29,7 @@ package mesh.services
 		public function serviceFor(entity:Class):Service
 		{
 			if (hasService(entity)) {
-				_entityToService.grab(entity);
+				return _entityToService.grab(entity);
 			}
 			throw new ArgumentError("Service not found for " + Type.reflect(entity).name);
 		}

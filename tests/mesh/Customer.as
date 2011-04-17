@@ -2,12 +2,11 @@ package mesh
 {
 	import flash.utils.flash_proxy;
 	
+	import mesh.core.object.copy;
 	import mesh.model.associations.HasManyAssociation;
 	import mesh.model.associations.HasOneAssociation;
-	import mesh.core.object.copy;
-	import mesh.services.Request;
-	import mesh.services.TestService;
 	import mesh.model.validators.PresenceValidator;
+	import mesh.services.TestService;
 	
 	public class Customer extends Person
 	{
@@ -19,6 +18,7 @@ package mesh
 		};
 		
 		[Bindable] public var address:Address;
+		[Bindable] public var accountId:int;
 		
 		public function Customer(properties:Object = null)
 		{
@@ -28,11 +28,9 @@ package mesh
 		override public function translateTo():*
 		{
 			var result:Object = super.translateTo();
-			copy(this, result, {includes:["address"]});
+			copy(this, result, {includes:["address", "accountId"]});
 			return result;
 		}
-		
-		public var accountId:int;
 		
 		public function get account():HasOneAssociation
 		{

@@ -75,8 +75,6 @@ package mesh.services
 	}
 }
 
-
-
 class DefaultHandler
 {
 	public function fault(fault:Object):void

@@ -8,7 +8,7 @@ package mesh.services
 	
 	use namespace flash_proxy;
 	
-	public class ListQueryRequest extends QueryRequest implements IList
+	public dynamic class ListQueryRequest extends QueryRequest implements IList
 	{
 		private var _list:ArrayList;
 		

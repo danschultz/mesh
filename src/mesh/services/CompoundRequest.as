@@ -30,7 +30,7 @@ package mesh.services
 				{
 					fault(f);
 				},
-				finish:function():void
+				success:function():void
 				{
 					executeNext();
 				}
@@ -39,8 +39,8 @@ package mesh.services
 		
 		private function executeNext():void
 		{
-			if (_index++ < _requests.length) {
-				executeRequest(_requests[_index]);
+			if (_index < _requests.length) {
+				executeRequest(_requests[_index++]);
 			} else {
 				success();
 			}

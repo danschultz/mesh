@@ -4,7 +4,6 @@ package mesh.services
 	import mesh.operations.Operation;
 	
 	import mx.rpc.http.HTTPMultiService;
-	import mx.rpc.http.Operation;
 	
 	/**
 	 * A service adaptor that uses a <code>HTTPMultiService</code> to perform persistence
@@ -39,19 +38,14 @@ package mesh.services
 	 * @see http://help.adobe.com/en_US/FlashPlatform/reference/actionscript/3/mx/rpc/http/mxml/HTTPMultiService.html HTTPMultiService
 	 * @author Dan Schultz
 	 */
-	public class HTTPServiceAdaptor extends RPCServiceAdaptor
+	public class HTTPService extends RPCService
 	{
 		private var _service:HTTPMultiService;
 		
-		/**
-		 * Constructor.
-		 * 
-		 * @param options An options hash to configure the adaptor.
-		 */
-		public function HTTPServiceAdaptor(factory:Function, options:Object = null)
+		public function HTTPService(factory:Function)
 		{
 			_service = new HTTPMultiService();
-			super(_service, factory, options);
+			super(_service, factory);
 		}
 		
 		/**

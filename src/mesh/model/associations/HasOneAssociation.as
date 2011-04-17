@@ -3,8 +3,8 @@ package mesh.model.associations
 	import flash.errors.IllegalOperationError;
 	import flash.utils.flash_proxy;
 	
-	import mesh.model.Entity;
 	import mesh.Mesh;
+	import mesh.model.Entity;
 	import mesh.services.Request;
 	
 	use namespace flash_proxy;
@@ -26,7 +26,7 @@ package mesh.model.associations
 		{
 			if (Mesh.services.hasService(definition.target)) {
 				if (definition.hasForeignKey) {
-					return Mesh.services.serviceFor(definition.target).findOne(definition.foreignKey);
+					return Mesh.services.serviceFor(definition.target).findOne(owner[definition.foreignKey]);
 				}
 				throw new IllegalOperationError("Cannot load " + this + " with undefined foreign key for " + definition);
 			}
@@ -38,17 +38,17 @@ package mesh.model.associations
 		 */
 		override flash_proxy function get object():*
 		{
-			return super.flash_proxy::object;
+			return super.object;
 		}
 		override flash_proxy function set object(value:*):void
 		{
-			value = (value is HasOneAssociation) ? value.flash_proxy::object : value;
-			var oldValue:Entity = flash_proxy::object;
+			value = (value is HasOneAssociation) ? value.object : value;
+			var oldValue:Entity = object;
 			
 			callbackIfNotNull("beforeRemove", oldValue);
 			callbackIfNotNull("beforeAdd", value);
 			
-			super.flash_proxy::object = value;
+			super.object = value;
 			
 			callbackIfNotNull("afterRemove", oldValue);
 			callbackIfNotNull("afterAdd", value);

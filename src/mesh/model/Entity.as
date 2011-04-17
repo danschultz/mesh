@@ -1,23 +1,22 @@
 package mesh.model
 {
-	import flash.errors.IllegalOperationError;
 	import flash.events.EventDispatcher;
 	import flash.utils.flash_proxy;
 	
+	import mesh.Mesh;
+	import mesh.core.inflection.humanize;
+	import mesh.core.object.copy;
+	import mesh.core.reflection.Type;
 	import mesh.model.associations.Association;
 	import mesh.model.associations.HasManyAssociation;
 	import mesh.model.associations.HasManyDefinition;
 	import mesh.model.associations.HasOneAssociation;
 	import mesh.model.associations.HasOneDefinition;
-	import mesh.core.inflection.humanize;
-	import mesh.core.object.copy;
-	import mesh.core.reflection.Type;
+	import mesh.model.validators.Errors;
+	import mesh.model.validators.Validator;
 	import mesh.operations.Operation;
 	import mesh.services.DestroyRequest;
 	import mesh.services.Request;
-	import mesh.services.Service;
-	import mesh.model.validators.Errors;
-	import mesh.model.validators.Validator;
 	
 	import mx.events.PropertyChangeEvent;
 	
@@ -158,7 +157,7 @@ package mesh.model
 		 */
 		public function destroy():DestroyRequest
 		{
-			return service.destroy(this);
+			return Mesh.services.serviceFor(reflect.clazz).destroy(this);
 		}
 		
 		protected function beforeDestroy(block:Function):void
@@ -290,7 +289,7 @@ package mesh.model
 		 */
 		public function save():Request
 		{
-			return service.save(this);
+			return Mesh.services.serviceFor(reflect.clazz).save(this);
 		}
 		
 		private function synced():void
@@ -510,14 +509,6 @@ package mesh.model
 				_reflect = Type.reflect(this);
 			}
 			return _reflect;
-		}
-		
-		/**
-		 * The service attached to this entity.
-		 */
-		public function get service():Service
-		{
-			throw new IllegalOperationError(reflect.className + ".service is not implemented.");
 		}
 	}
 }

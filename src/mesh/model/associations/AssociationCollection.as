@@ -6,6 +6,7 @@ package mesh.model.associations
 	import flash.errors.IllegalOperationError;
 	import flash.utils.flash_proxy;
 	
+	import mesh.Mesh;
 	import mesh.core.functions.closure;
 	import mesh.model.Entity;
 	import mesh.services.Request;
@@ -29,7 +30,7 @@ package mesh.model.associations
 		public function AssociationCollection(source:Entity, definition:HasManyDefinition)
 		{
 			super(source, definition);
-			flash_proxy::object = [];
+			object = [];
 			
 			afterLoad(loaded);
 			beforeAdd(populateInverseAssociation);
@@ -65,7 +66,7 @@ package mesh.model.associations
 		public function addItemAt(item:Object, index:int):void
 		{
 			callbackIfNotNull("beforeAdd", Entity( item ));
-			flash_proxy::object.addItemAt(item, index);
+			object.addItemAt(item, index);
 		}
 		
 		/**
@@ -98,7 +99,7 @@ package mesh.model.associations
 		 */
 		public function getItemAt(index:int, prefetch:int = 0):Object
 		{
-			return flash_proxy::object.getItemAt(index, prefetch);
+			return object.getItemAt(index, prefetch);
 		}
 		
 		/**
@@ -119,13 +120,13 @@ package mesh.model.associations
 					handleEntitiesRemoved(event.items);
 					break;
 				case CollectionEventKind.RESET:
-					handleEntitiesRemoved(_mirroredEntities.difference(flash_proxy::object).toArray());
+					handleEntitiesRemoved(_mirroredEntities.difference(object).toArray());
 					handleEntitiesAdded(toArray());
 					break;
 			}
 			
 			if (event.kind != CollectionEventKind.UPDATE) {
-				_mirroredEntities = new ArraySequence(flash_proxy::object.source);
+				_mirroredEntities = new ArraySequence(object.source);
 			}
 			
 			dispatchEvent(event.clone());
@@ -154,7 +155,7 @@ package mesh.model.associations
 		 */
 		public function itemUpdated(item:Object, property:Object = null, oldValue:Object = null, newValue:Object = null):void
 		{
-			flash_proxy::object.itemUpdated(item, property, oldValue, newValue);
+			object.itemUpdated(item, property, oldValue, newValue);
 		}
 		
 		private function loaded():void
@@ -190,7 +191,7 @@ package mesh.model.associations
 		 */
 		public function removeAll():void
 		{
-			flash_proxy::object.removeAll();
+			object.removeAll();
 		}
 		
 		/**
@@ -221,7 +222,7 @@ package mesh.model.associations
 		public function removeItemAt(index:int):Object
 		{
 			callbackIfNotNull("beforeRemove", Entity( getItemAt(index) ));
-			return flash_proxy::object.removeItemAt(index);
+			return object.removeItemAt(index);
 		}
 		
 		/**
@@ -231,7 +232,7 @@ package mesh.model.associations
 		{
 			super.revert();
 			
-			flash_proxy::object = _originalEntities;
+			object = _originalEntities;
 			
 			for each (var entity:Entity in this) {
 				entity.revert();
@@ -241,9 +242,20 @@ package mesh.model.associations
 		/**
 		 * @inheritDoc
 		 */
+		override public function save():Request
+		{
+			if (length > 0) {
+				return Mesh.services.serviceFor(getItemAt(0).reflect.clazz).save(toArray());
+			}
+			return new Request();
+		}
+		
+		/**
+		 * @inheritDoc
+		 */
 		public function setItemAt(item:Object, index:int):Object
 		{
-			return flash_proxy::object.setItemAt(item, index);
+			return object.setItemAt(item, index);
 		}
 		
 		/**
@@ -251,7 +263,7 @@ package mesh.model.associations
 		 */
 		public function toArray():Array
 		{
-			return flash_proxy::object.toArray();
+			return object.toArray();
 		}
 		
 		/**
@@ -259,7 +271,7 @@ package mesh.model.associations
 		 */
 		public function get length():int
 		{
-			return flash_proxy::object.length;
+			return object.length;
 		}
 		
 		/**
@@ -292,7 +304,7 @@ package mesh.model.associations
 		 */
 		override flash_proxy function get object():*
 		{
-			return super.flash_proxy::object;
+			return super.object;
 		}
 		override flash_proxy function set object(value:*):void
 		{
@@ -300,23 +312,23 @@ package mesh.model.associations
 				throw new ArgumentError("AssociationCollection.object must be an Array, have a toArray method, or be null.");
 			}
 			
-			if (value != flash_proxy::object) {
-				if (flash_proxy::object != null) {
-					flash_proxy::object.removeEventListener(CollectionEvent.COLLECTION_CHANGE, handleEntitiesCollectionChange);
+			if (value != object) {
+				if (object != null) {
+					object.removeEventListener(CollectionEvent.COLLECTION_CHANGE, handleEntitiesCollectionChange);
 				}
 				
 				if (value != null && value.hasOwnProperty("toArray")) {
 					value = value.toArray();
 				}
 				
-				super.flash_proxy::object = new ArrayCollection(value);
+				super.object = new ArrayCollection(value);
 				
 				if (_mirroredEntities == null) {
 					_mirroredEntities = new ArraySequence(value);
 				}
 				
-				flash_proxy::object.addEventListener(CollectionEvent.COLLECTION_CHANGE, handleEntitiesCollectionChange);
-				flash_proxy::object.dispatchEvent(new CollectionEvent(CollectionEvent.COLLECTION_CHANGE, false, false, CollectionEventKind.RESET));
+				object.addEventListener(CollectionEvent.COLLECTION_CHANGE, handleEntitiesCollectionChange);
+				object.dispatchEvent(new CollectionEvent(CollectionEvent.COLLECTION_CHANGE, false, false, CollectionEventKind.RESET));
 			}
 		}
 		

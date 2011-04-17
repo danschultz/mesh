@@ -1,24 +1,36 @@
 package mesh.services
 {
-	import mesh.model.Entity;
+	import collections.HashMap;
+	
 	import mesh.core.reflection.newInstance;
+	import mesh.model.Entity;
+	import mesh.operations.MethodOperation;
 	import mesh.operations.Operation;
 	
 	public class TestService extends Service
 	{
-		private var _entity:Class;
+		private var _belongingToBlock:Function;
 		
-		public function TestService(entity:Class)
+		private var _registry:HashMap = new HashMap();
+		private var _idCounter:int;
+		
+		public function TestService(entity:Class, belongingToBlock:Function = null)
 		{
-			super();
-			_entity = entity;
+			super(function(item:Object):Entity
+			{
+				return new entity();
+			});
+			_belongingToBlock = belongingToBlock;
 		}
 		
-		override public function belongingTo(entity:Entity):QueryRequest
+		override public function belongingTo(entity:Entity):ListQueryRequest
 		{
-			return new QueryRequest(this, function():Operation
+			return new ListQueryRequest(this, function():Operation
 			{
-				return adaptor.belongingTo(this);
+				return createOperation(function():Object
+				{
+					return _belongingToBlock == null ? [] : deserialize(_belongingToBlock(entity, _registry.values()));
+				});
 			});
 		}
 		
@@ -26,7 +38,14 @@ package mesh.services
 		{
 			return new QueryRequest(this, function():Operation
 			{
-				return adaptor.findOne(id);
+				return createOperation(function():Object
+				{
+					if (_registry.containsKey(id)) {
+						var entities:Array = deserialize([_registry.grab(id)]);
+						return entities[0];
+					}
+					throw new ArgumentError("Entity not found with ID=" + id);
+				});
 			});
 		}
 		
@@ -34,43 +53,63 @@ package mesh.services
 		{
 			return new ListQueryRequest(this, function():Operation
 			{
-				return adaptor.findMany(ids);
+				return createOperation(function():Object
+				{
+					var objects:Array = [];
+					for each (var id:int in ids) {
+						if (_registry.containsKey(id)) {
+							objects.push(_registry.grab(id));
+						} else {
+							throw new ArgumentError("Entity not found with ID=" + id);
+						}
+					}
+					return deserialize(objects);
+				});
 			});
 		}
 		
 		override protected function createInsert(entities:Array):InsertRequest
 		{
-			return createPesistRequest(InsertRequest, "insert", entities);
+			return createPesistRequest(InsertRequest, entities, function():void
+			{
+				for each (var entity:Entity in entities) {
+					entity.id = ++_idCounter;
+					_registry.put(entity.id, serialize([entity])[0]);
+				}
+			});
 		}
 		
 		override protected function createDestroy(entities:Array):DestroyRequest
 		{
-			return createPesistRequest(DestroyRequest, "destroy", entities);
+			return createPesistRequest(DestroyRequest, entities, function():void
+			{
+				for each (var entity:Entity in entities) {
+					_registry.remove(entity.id);
+				}
+			});
 		}
 		
 		override protected function createUpdate(entities:Array):UpdateRequest
 		{
-			return createPesistRequest(UpdateRequest, "update", entities);
-		}
-		
-		private function createPesistRequest(clazz:Class, type:String, entities:Array):*
-		{
-			return newInstance(clazz, this, entities, function():Operation
+			return createPesistRequest(UpdateRequest, entities, function():void
 			{
-				return adaptor[type](entities);
+				for each (var entity:Entity in entities) {
+					_registry.put(entity.id, serialize([entity])[0]);
+				}
 			});
 		}
 		
-		private var _adaptor:ServiceAdaptor;
-		override public function get adaptor():ServiceAdaptor
+		override protected function createOperation(...args):Operation
 		{
-			if (_adaptor == null) {
-				_adaptor = new TestServiceAdaptor(function(object:Object):Entity
-				{
-					return new _entity();
-				});
-			}
-			return _adaptor;
+			return newInstance.apply(null, [MethodOperation, args[0]]);
+		}
+		
+		private function createPesistRequest(clazz:Class, entities:Array, block:Function):*
+		{
+			return newInstance(clazz, this, entities, function():Operation
+			{
+				return createOperation(block);
+			});
 		}
 	}
 }

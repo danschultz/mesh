@@ -1,6 +1,5 @@
 package mesh.services
 {
-	import mesh.core.object.copy;
 	import mesh.core.reflection.newInstance;
 	import mesh.operations.Operation;
 	import mesh.operations.ServiceOperation;
@@ -26,19 +25,11 @@ package mesh.services
 	 * @see http://help.adobe.com/en_US/FlashPlatform/reference/actionscript/3/mx/rpc/AbstractService.html AbstractService
 	 * @author Dan Schultz
 	 */
-	public class RPCServiceAdaptor extends ServiceAdaptor
+	public class RPCService extends Service
 	{
-		/**
-		 * Constructor.
-		 * 
-		 * @param service The service for this adaptor.
-		 * @param options An options hash to configure the adaptor.
-		 */
-		public function RPCServiceAdaptor(service:AbstractService, factory:Function, options:Object = null)
+		public function RPCService(service:AbstractService, factory:Function)
 		{
-			super(factory, options);
-			_service = service;
-			copy(options, service);
+			super(factory);
 		}
 		
 		/**
@@ -49,7 +40,7 @@ package mesh.services
 		 */
 		override protected function createOperation(...args):Operation
 		{
-			return newInstance.apply(null, [ServiceOperation, service].concat(args));
+			return newInstance.apply(null, [ServiceOperation, _service].concat(args));
 		}
 		
 		private var _service:AbstractService;

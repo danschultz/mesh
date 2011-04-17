@@ -4,6 +4,7 @@ package mesh.model.associations
 	import flash.utils.flash_proxy;
 	
 	import mesh.model.Entity;
+	import mesh.services.Request;
 	
 	use namespace flash_proxy;
 	
@@ -34,17 +35,17 @@ package mesh.model.associations
 		 */
 		override public function revert():void
 		{
-			flash_proxy::object = _persistedTarget;
+			object = _persistedTarget;
 			
-			if (flash_proxy::object != null) {
-				flash_proxy::object.revert();
+			if (object != null) {
+				object.revert();
 			}
 		}
 		
 		private function targetDestroyed(entity:Entity):void
 		{
 			_persistedTarget = null;
-			flash_proxy::object = null;
+			object = null;
 		}
 		
 		private function targetSaved(entity:Entity):void
@@ -55,9 +56,17 @@ package mesh.model.associations
 		/**
 		 * @inheritDoc
 		 */
+		override public function save():Request
+		{
+			return object.save();
+		}
+		
+		/**
+		 * @inheritDoc
+		 */
 		override protected function get dirtyEntities():Array
 		{
-			return [_persistedTarget, flash_proxy::object].filter(function(entity:Entity, ...args):Boolean
+			return [_persistedTarget, object].filter(function(entity:Entity, ...args):Boolean
 			{
 				return entity != null && entity.isDirty;
 			});
@@ -69,22 +78,23 @@ package mesh.model.associations
 		 */
 		override flash_proxy function get object():*
 		{
-			return super.flash_proxy::object;
+			return super.object;
 		}
 		override flash_proxy function set object(value:*):void
 		{
-			if (flash_proxy::object != null) {
-				flash_proxy::object.removeObserver("afterDestroy", targetDestroyed);
-				flash_proxy::object.removeObserver("afterSave", targetSaved);
+			if (object != null) {
+				object.removeObserver("afterDestroy", targetDestroyed);
+				object.removeObserver("afterSave", targetSaved);
 			}
 			
-			super.flash_proxy::object = value;
+			super.object = value;
 			
-			if (flash_proxy::object != null) {
-				flash_proxy::object.revive();
+			if (object != null) {
+				object.revive();
 				
-				flash_proxy::object.addObserver("afterSave", targetSaved);
-				flash_proxy::object.addObserver("afterDestroy", targetDestroyed);
+				object.addObserver("afterSave", targetSaved);
+				object.addObserver("afterSave", populateForeignKey);
+				object.addObserver("afterDestroy", targetDestroyed);
 			}
 		}
 	}

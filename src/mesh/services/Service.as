@@ -4,9 +4,10 @@ package mesh.services
 	
 	import flash.errors.IllegalOperationError;
 	
-	import mesh.model.Entity;
 	import mesh.core.array.flatten;
 	import mesh.core.reflection.Type;
+	import mesh.model.Entity;
+	import mesh.operations.Operation;
 
 	/**
 	 * The <code>Service</code> class is a layer between the application and the backend. Its
@@ -18,13 +19,14 @@ package mesh.services
 	public dynamic class Service
 	{
 		private var _registered:HashSet = new HashSet();
+		private var _factory:Function;
 		
 		/**
 		 * Constructor.
 		 */
-		public function Service()
+		public function Service(factory:Function)
 		{
-			
+			_factory = factory;
 		}
 		
 		/**
@@ -38,7 +40,7 @@ package mesh.services
 			throw new IllegalOperationError(reflect.name + " does not support retrieval of entities using all()");
 		}
 		
-		public function belongingTo(entity:Entity):QueryRequest
+		public function belongingTo(entity:Entity):ListQueryRequest
 		{
 			throw new IllegalOperationError(reflect.name + " does not support retrieval of entities belonging to " + entity);
 		}
@@ -51,6 +53,35 @@ package mesh.services
 				return instance;
 			}
 			throw new ArgumentError("Expected class to be an Entity");
+		}
+		
+		/**
+		 * Generates an operation that is specific for this service adaptor.
+		 * 
+		 * @param args The args to pass to the constructor of the operation.
+		 * @return A new unexecuted operation.
+		 */
+		protected function createOperation(...args):Operation
+		{
+			throw new IllegalOperationError(reflect.name + ".createOperation() is not implemented.");
+		}
+		
+		protected function deserialize(items:Array):Array
+		{
+			return items.map(function(item:Object, ...args):Entity
+			{
+				var entity:Entity = _factory(item);
+				entity.translateFrom(item);
+				return entity;
+			});
+		}
+		
+		protected function serialize(entities:Array):Array
+		{
+			return entities.map(function(entity:Entity, ...args):Object
+			{
+				return entity.translateTo();
+			});
 		}
 		
 		/**
@@ -120,7 +151,7 @@ package mesh.services
 		{
 			return entities.filter(function(entity:Entity, ...args):Boolean
 			{
-				return !entity.isPersisted && entity.hasPropertyChanges;
+				return entity.isPersisted && entity.hasPropertyChanges;
 			});
 		}
 		
@@ -163,20 +194,6 @@ package mesh.services
 		public function where():WhereQueryRequest
 		{
 			throw new IllegalOperationError(reflect.name + " does not support retrieval of entities using where().");
-		}
-		
-		private var _adaptor:ServiceAdaptor;
-		/**
-		 * The adaptor for this service that generates operations based on the application's
-		 * current environment.
-		 */
-		public function get adaptor():ServiceAdaptor
-		{
-			return _adaptor;
-		}
-		public function set adaptor(value:ServiceAdaptor):void
-		{
-			_adaptor = value;
 		}
 		
 		private var _reflect:Type;
