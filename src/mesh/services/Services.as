@@ -3,6 +3,7 @@ package mesh.services
 	import collections.HashMap;
 	
 	import mesh.core.reflection.Type;
+	import mesh.model.Entity;
 
 	public class Services
 	{

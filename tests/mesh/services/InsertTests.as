@@ -18,7 +18,7 @@ package mesh.services
 			customer.age = 67;
 			customer.save().execute();
 			
-			var query:Request = Mesh.services.serviceFor(Customer).find(customer.id).execute();
+			var query:Request = Mesh.service(Customer).find(customer.id).execute();
 			assertThat(customer.id, notNullValue());
 			assertThat(query.id, equalTo(customer.id));
 		}

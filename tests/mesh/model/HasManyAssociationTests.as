@@ -55,7 +55,7 @@ package mesh.model
 			_customer.orders.add(order2);
 			_customer.orders.save().execute();
 			
-			var customer:Request = Mesh.services.serviceFor(Customer).find(_customer.id).execute();
+			var customer:Request = Mesh.service(Customer).find(_customer.id).execute();
 			var orders:Request = customer.orders.load().execute();
 			assertThat(customer.orders.length, equalTo(_customer.orders.length));
 			assertThat(customer.orders.isLoaded, equalTo(true));

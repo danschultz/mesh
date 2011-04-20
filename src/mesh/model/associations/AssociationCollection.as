@@ -245,7 +245,7 @@ package mesh.model.associations
 		override public function save():Request
 		{
 			if (length > 0) {
-				return Mesh.services.serviceFor(getItemAt(0).reflect.clazz).save(toArray());
+				return Mesh.service(getItemAt(0).reflect.clazz).save(toArray());
 			}
 			return new Request();
 		}

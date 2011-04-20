@@ -163,7 +163,7 @@ package mesh.model
 		 */
 		public function destroy():DestroyRequest
 		{
-			return Mesh.services.serviceFor(reflect.clazz).destroy(this);
+			return Mesh.service(reflect.clazz).destroy(this);
 		}
 		
 		protected function beforeDestroy(block:Function):void
@@ -296,7 +296,7 @@ package mesh.model
 		 */
 		public function save():Request
 		{
-			return Mesh.services.serviceFor(reflect.clazz).save(this);
+			return Mesh.service(reflect.clazz).save(this);
 		}
 		
 		private function synced():void

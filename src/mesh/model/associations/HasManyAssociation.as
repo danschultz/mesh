@@ -25,7 +25,7 @@ package mesh.model.associations
 		override protected function createLoadRequest():Request
 		{
 			if (Mesh.services.hasService(definition.target)) {
-				return Mesh.services.serviceFor(definition.target).belongingTo(owner);
+				return Mesh.service(definition.target).belongingTo(owner);
 			}
 			throw new IllegalOperationError("Cannot load " + this + " with undefined service undefined for " + definition);
 		}

@@ -93,7 +93,7 @@ package mesh.model
 			_customer.account.save().execute();
 			_customer.save().execute();
 			
-			var customer:Request = Mesh.services.serviceFor(Customer).find(_customer.id).execute();
+			var customer:Request = Mesh.service(Customer).find(_customer.id).execute();
 			customer.account.load().execute();
 			assertThat(customer.account.id, equalTo(account.id));
 		}

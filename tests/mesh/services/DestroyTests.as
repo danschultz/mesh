@@ -24,7 +24,7 @@ package mesh.services
 		{
 			_customer.destroy().execute();
 			
-			var query:Request = Mesh.services.serviceFor(Customer).find(_customer.id).execute({
+			var query:Request = Mesh.service(Customer).find(_customer.id).execute({
 				fault:function(data:Object):void
 				{
 					

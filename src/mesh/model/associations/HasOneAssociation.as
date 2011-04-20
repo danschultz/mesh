@@ -26,7 +26,7 @@ package mesh.model.associations
 		{
 			if (Mesh.services.hasService(definition.target)) {
 				if (definition.hasForeignKey) {
-					return Mesh.services.serviceFor(definition.target).findOne(owner[definition.foreignKey]);
+					return Mesh.service(definition.target).find(owner[definition.foreignKey]);
 				}
 				throw new IllegalOperationError("Cannot load " + this + " with undefined foreign key for " + definition);
 			}
