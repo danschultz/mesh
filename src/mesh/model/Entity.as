@@ -35,6 +35,7 @@ package mesh.model
 		private var _callbacks:Callbacks = new Callbacks();
 		private var _observers:Callbacks = new Callbacks();
 		private var _associations:Object = {};
+		private var _aggregates:Aggregates = new Aggregates(this);
 		private var _changes:Changes = new Changes(this);
 		
 		/**
@@ -77,6 +78,11 @@ package mesh.model
 		public function removeObserver(method:String, block:Function):void
 		{
 			_observers.removeCallback(method, block);
+		}
+		
+		protected function aggregate(property:String, type:Class, mappings:Array):void
+		{
+			_aggregates.add(property, type, mappings);
 		}
 		
 		/**
@@ -256,6 +262,7 @@ package mesh.model
 		protected function propertyChanged(property:String, oldValue:Object, newValue:Object):void
 		{
 			_changes.changed(property, oldValue, newValue);
+			_aggregates.changed(property);
 		}
 		
 		/**

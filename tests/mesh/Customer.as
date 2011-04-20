@@ -23,6 +23,8 @@ package mesh
 		public function Customer(properties:Object = null)
 		{
 			super(properties);
+			
+			aggregate("address", Address, ["street:street", "city:city"]);
 		}
 		
 		override public function translateTo():*
