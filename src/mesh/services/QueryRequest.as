@@ -1,18 +1,25 @@
 package mesh.services
 {
-	public dynamic class QueryRequest extends OperationRequest
+	import mesh.core.array.flatten;
+
+	public dynamic class QueryRequest extends ServiceRequest
 	{
-		private var _service:Service;
+		private var _deserializer:Function;
 		
-		public function QueryRequest(service:Service, block:Function)
+		public function QueryRequest(service:Service, deserializer:Function, block:Function)
 		{
-			super(block);
-			_service = service;
+			super(service, block);
+			_deserializer = deserializer;
 		}
 		
 		override protected function result(data:Object):void
 		{
-			_service.register(data);
+			if (data.hasOwnProperty("toArray")) {
+				data = data.toArray();
+			}
+			
+			data = _deserializer(flatten(data));
+			service.register(data);
 			super.result(data);
 		}
 	}

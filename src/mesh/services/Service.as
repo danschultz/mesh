@@ -37,22 +37,28 @@ package mesh.services
 		 */
 		public function all():ListQueryRequest
 		{
+			return new ListQueryRequest(this, deserialize, function():Operation
+			{
+				return createAllOperation();
+			});
+		}
+		
+		protected function createAllOperation():Operation
+		{
 			throw new IllegalOperationError(reflect.name + " does not support retrieval of entities using all()");
 		}
 		
 		public function belongingTo(entity:Entity):ListQueryRequest
 		{
-			throw new IllegalOperationError(reflect.name + " does not support retrieval of entities belonging to " + entity);
+			return new ListQueryRequest(this, deserialize, function():Operation
+			{
+				return createBelongingToOperation(entity);
+			});
 		}
 		
-		public function create(clazz:Class):*
+		protected function createBelongingToOperation(entity:Entity):Operation
 		{
-			if (clazz is Entity) {
-				var instance:Entity = new clazz();
-				register(instance);
-				return instance;
-			}
-			throw new ArgumentError("Expected class to be an Entity");
+			throw new IllegalOperationError(reflect.name + " does not support retrieval of entities belonging to " + entity);
 		}
 		
 		/**
@@ -115,12 +121,28 @@ package mesh.services
 			return ids.length == 1 ? findOne(ids[0]) : findMany(ids);
 		}
 		
-		public function findOne(id:*):QueryRequest
+		public function findOne(id:*):ItemQueryRequest
+		{
+			return new ItemQueryRequest(this, deserialize, function():Operation
+			{
+				return createFindOneOperation(id);
+			});
+		}
+		
+		protected function createFindOneOperation(id:*):Operation
 		{
 			throw new IllegalOperationError(reflect.name + " does not support retrieval of entities using findOne().");
 		}
 		
 		public function findMany(...ids):ListQueryRequest
+		{
+			return new ListQueryRequest(this, deserialize, function():Operation
+			{
+				return createFindManyOperation.apply(null, ids);
+			});
+		}
+		
+		protected function createFindManyOperation(...ids):Operation
 		{
 			throw new IllegalOperationError(reflect.name + " does not support retrieval of entities using findMany().");
 		}

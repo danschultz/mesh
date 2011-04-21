@@ -2,9 +2,9 @@ package mesh.services
 {
 	public dynamic class WhereQueryRequest extends ListQueryRequest
 	{
-		public function WhereQueryRequest(service:Service, block:Function)
+		public function WhereQueryRequest(service:Service, deserializer:Function, block:Function)
 		{
-			super(service, block);
+			super(service, deserializer, block);
 		}
 	}
 }

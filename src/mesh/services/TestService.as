@@ -23,48 +23,38 @@ package mesh.services
 			_belongingToBlock = belongingToBlock;
 		}
 		
-		override public function belongingTo(entity:Entity):ListQueryRequest
+		override protected function createBelongingToOperation(entity:Entity):Operation
 		{
-			return new ListQueryRequest(this, function():Operation
+			return createOperation(function():Object
 			{
-				return createOperation(function():Object
-				{
-					return _belongingToBlock == null ? [] : deserialize(_belongingToBlock(entity, _registry.values()));
-				});
+				return _belongingToBlock == null ? [] : _belongingToBlock(entity, _registry.values());
 			});
 		}
 		
-		override public function findOne(id:*):QueryRequest
+		override protected function createFindOneOperation(id:*):Operation
 		{
-			return new QueryRequest(this, function():Operation
+			return createOperation(function():Object
 			{
-				return createOperation(function():Object
-				{
+				if (_registry.containsKey(id)) {
+					return _registry.grab(id);
+				}
+				throw new ArgumentError("Entity not found with ID=" + id);
+			});
+		}
+		
+		override protected function createFindManyOperation(...ids):Operation
+		{
+			return createOperation(function():Object
+			{
+				var objects:Array = [];
+				for each (var id:int in ids) {
 					if (_registry.containsKey(id)) {
-						var entities:Array = deserialize([_registry.grab(id)]);
-						return entities[0];
+						objects.push(_registry.grab(id));
+					} else {
+						throw new ArgumentError("Entity not found with ID=" + id);
 					}
-					throw new ArgumentError("Entity not found with ID=" + id);
-				});
-			});
-		}
-		
-		override public function findMany(...ids):ListQueryRequest
-		{
-			return new ListQueryRequest(this, function():Operation
-			{
-				return createOperation(function():Object
-				{
-					var objects:Array = [];
-					for each (var id:int in ids) {
-						if (_registry.containsKey(id)) {
-							objects.push(_registry.grab(id));
-						} else {
-							throw new ArgumentError("Entity not found with ID=" + id);
-						}
-					}
-					return deserialize(objects);
-				});
+				}
+				return objects;
 			});
 		}
 		

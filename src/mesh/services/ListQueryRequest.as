@@ -12,7 +12,7 @@ package mesh.services
 	{
 		private var _list:ArrayList;
 		
-		public function ListQueryRequest(service:Service, block:Function)
+		public function ListQueryRequest(service:Service, deserializer:Function, block:Function)
 		{
 			_list = new ArrayList();
 			_list.addEventListener(CollectionEvent.COLLECTION_CHANGE, function(event:CollectionEvent):void
@@ -20,7 +20,7 @@ package mesh.services
 				dispatchEvent(event);
 			});
 			
-			super(service, block);
+			super(service, deserializer, block);
 		}
 		
 		/**
@@ -36,7 +36,7 @@ package mesh.services
 		 */
 		public function addItemAt(item:Object, index:int):void
 		{
-			flash_proxy::object.addItemAt(item, index);
+			object.addItemAt(item, index);
 		}
 		
 		/**
@@ -56,7 +56,7 @@ package mesh.services
 		 */
 		public function getItemAt(index:int, prefetch:int = 0):Object
 		{
-			return flash_proxy::object.getItemAt(index, prefetch);
+			return object.getItemAt(index, prefetch);
 		}
 		
 		/**
@@ -64,7 +64,7 @@ package mesh.services
 		 */
 		public function getItemIndex(item:Object):int
 		{
-			return flash_proxy::object.getItemIndex(item);
+			return object.getItemIndex(item);
 		}
 		
 		/**
@@ -72,7 +72,7 @@ package mesh.services
 		 */
 		public function itemUpdated(item:Object, property:Object = null, oldValue:Object = null, newValue:Object = null):void
 		{
-			flash_proxy::object.itemUpdated(item, property, oldValue, newValue);
+			object.itemUpdated(item, property, oldValue, newValue);
 		}
 		
 		/**
@@ -110,7 +110,7 @@ package mesh.services
 		 */
 		public function removeAll():void
 		{
-			flash_proxy::object.removeAll();
+			object.removeAll();
 		}
 		
 		/**
@@ -132,7 +132,7 @@ package mesh.services
 		 */
 		public function removeItemAt(index:int):Object
 		{
-			return flash_proxy::object.removeItemAt(index);
+			return object.removeItemAt(index);
 		}
 		
 		/**
@@ -140,7 +140,7 @@ package mesh.services
 		 */
 		public function setItemAt(item:Object, index:int):Object
 		{
-			return flash_proxy::object.setItemAt(item, index);
+			return object.setItemAt(item, index);
 		}
 		
 		/**
@@ -148,7 +148,7 @@ package mesh.services
 		 */
 		public function toArray():Array
 		{
-			return flash_proxy::object.toArray();
+			return object.toArray();
 		}
 		
 		/**
@@ -156,7 +156,7 @@ package mesh.services
 		 */
 		public function get length():int
 		{
-			return flash_proxy::object.length;
+			return object.length;
 		}
 		
 		/**
