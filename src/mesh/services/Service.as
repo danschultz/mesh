@@ -91,10 +91,14 @@ package mesh.services
 		 */
 		public function destroy(entities:Object):DestroyRequest
 		{
-			return createDestroy(pendingDestroy(flatten(entities)));
+			entities = pendingDestroy(flatten(entities));
+			return new DestroyRequest(this, entities as Array, function():Operation
+			{
+				return createDestroyOperation(entities as Array);
+			});
 		}
 		
-		protected function createDestroy(entities:Array):DestroyRequest
+		protected function createDestroyOperation(entities:Array):Operation
 		{
 			throw new IllegalOperationError(reflect.name + " does not support retrieval destruction entities.");
 		}
@@ -123,10 +127,14 @@ package mesh.services
 		
 		public function insert(entities:Object):InsertRequest
 		{
-			return createInsert(pendingCreate(flatten(entities)));
+			entities = pendingCreate(flatten(entities));
+			return new InsertRequest(this, entities as Array, function():Operation
+			{
+				return createInsertOperation(entities as Array);
+			});
 		}
 		
-		protected function createInsert(entities:Array):InsertRequest
+		protected function createInsertOperation(entities:Array):Operation
 		{
 			throw new IllegalOperationError(reflect.name + " does not support insertion of entities.");
 		}
@@ -177,10 +185,14 @@ package mesh.services
 		
 		public function update(entities:Object):UpdateRequest
 		{
-			return createUpdate(pendingUpdate(flatten(entities)));
+			entities = pendingUpdate(flatten(entities));
+			return new UpdateRequest(this, entities as Array, function():Operation
+			{
+				return createUpdateOperation(entities as Array);
+			});
 		}
 		
-		protected function createUpdate(entities:Array):UpdateRequest
+		protected function createUpdateOperation(entities:Array):Operation
 		{
 			throw new IllegalOperationError(reflect.name + " does not support updating of entities.");
 		}

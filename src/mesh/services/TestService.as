@@ -68,9 +68,9 @@ package mesh.services
 			});
 		}
 		
-		override protected function createInsert(entities:Array):InsertRequest
+		override protected function createInsertOperation(entities:Array):Operation
 		{
-			return createPesistRequest(InsertRequest, entities, function():void
+			return createOperation(function():void
 			{
 				for each (var entity:Entity in entities) {
 					entity.id = ++_idCounter;
@@ -79,9 +79,9 @@ package mesh.services
 			});
 		}
 		
-		override protected function createDestroy(entities:Array):DestroyRequest
+		override protected function createDestroyOperation(entities:Array):Operation
 		{
-			return createPesistRequest(DestroyRequest, entities, function():void
+			return createOperation(function():void
 			{
 				for each (var entity:Entity in entities) {
 					_registry.remove(entity.id);
@@ -89,9 +89,9 @@ package mesh.services
 			});
 		}
 		
-		override protected function createUpdate(entities:Array):UpdateRequest
+		override protected function createUpdateOperation(entities:Array):Operation
 		{
-			return createPesistRequest(UpdateRequest, entities, function():void
+			return createOperation(function():void
 			{
 				for each (var entity:Entity in entities) {
 					_registry.put(entity.id, serialize([entity])[0]);
