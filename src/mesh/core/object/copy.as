@@ -1,14 +1,16 @@
 package mesh.core.object
 {
 	/**
-	 * Copies the enumerable values defined on <code>from</code> to <code>to</code>. If a key
-	 * exists on <code>from</code>, but not on <code>to</code>, its value is not copied.
+	 * Copies the enumerable values defined on <code>from</code> to <code>to</code>. If 
+	 * <code>to</code> is a non-dynamic class, and a key exists on <code>from</code>, but 
+	 * not on <code>to</code>, its value is not copied.
 	 * 
 	 * <p>
 	 * Additional options can be passed in to configure the copy:
 	 * 
 	 * <ul>
-	 * <li>ignore:<code>Array</code> - A list of properties to not copy.</li>
+	 * <li>excludes:<code>Array</code> - A list of properties to not copy.</li>
+	 * <li>includes:<code>Array</code> - A list of properties to copy.</li>
 	 * </ul>
 	 * </p>
 	 * 
@@ -22,13 +24,24 @@ package mesh.core.object
 	{
 		options = options == null ? {} : options;
 		
-		var ignore:Array = (options.ignore is Array) ? options.ignore : null;
+		var includes:Array = (options.includes is Array) ? options.includes : [];
+		var excludes:Array = (options.excludes is Array) ? options.excludes : [];
 		
 		for (var key:String in from) {
-			if (to.hasOwnProperty(key) && to[key] != from[key]) {
-				if (ignore == null || ignore.indexOf(key) == -1) {
-					to[key] = from[key];
+			if (includes.indexOf(key) == -1) {
+				includes.push(key);
+			}
+		}
+		
+		for each (key in includes) {
+			try {
+				if (to[key] != from[key]) {
+					if (excludes.indexOf(key) == -1) {
+						to[key] = from[key];
+					}
 				}
+			} catch (e:ReferenceError) {
+				
 			}
 		}
 	}

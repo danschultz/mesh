@@ -3,7 +3,7 @@
 
 	<!-- 
 	[ComposedOf(property="address", type="mesh.models.Address", prefix="address", mapping="street,city")]
-	-->
+	
 	<metadata name="ComposedOf" description="Add an aggregate on an entity.">
 		
 		<context name="class">
@@ -19,10 +19,10 @@
 		<attribute name="mapping" type="Array" required="true"/>
 		<attribute name="bindable" type="Boolean" defaultValue="true" hint="boolean"/>
 	</metadata>
-	
+	-->
 	<!-- 
 	[HasOne(type="mesh.models.Order", property="orders")]
-	-->
+	
 	<metadata name="HasOne" description="Add a one-to-one relationship to an entity.">
 		
 		<context name="class">
@@ -36,10 +36,10 @@
 		<attribute name="lazy" type="Boolean" required="true" defaultValue="true" hint="boolean"/>
 		<attribute name="autoSave" type="Boolean" defaultValue="false" hint="boolean"/>
 	</metadata>
-	
+	-->
 	<!-- 
 	[BelongsTo(type="mesh.models.Order", property="orders")]
-	-->
+	
 	<metadata name="BelongsTo" description="Add a belongs-to relationship to an entity.">
 		
 		<context name="class">
@@ -53,10 +53,10 @@
 		<attribute name="lazy" type="Boolean" required="true" defaultValue="true" hint="boolean"/>
 		<attribute name="foreignKey" type="String" hint="properties"/>
 	</metadata>
-	
+	-->
 	<!-- 
 	[HasMany(type="mesh.models.Order", property="orders")]
-	-->
+	
 	<metadata name="HasMany" description="Add a one-to-many relationship to an entity.">
 		
 		<context name="class">
@@ -70,10 +70,10 @@
 		<attribute name="lazy" type="Boolean" required="true" defaultValue="true" hint="boolean"/>
 		<attribute name="autoSave" type="Boolean" defaultValue="false" hint="boolean"/>
 	</metadata>
-	
+	-->
 	<!-- 
 	[ServiceAdaptor(type="mesh.adaptors.ServiceAdaptor")]
-	-->
+	
 	<metadata name="ServiceAdaptor" description="Add a one-to-many relationship to an entity.">
 		
 		<context name="class"/>
@@ -81,18 +81,18 @@
 		
 		<attribute name="type" type="Class" hint="classes" hintType="mesh.adaptors.ServiceAdaptor"/>
 	</metadata>
-	
+	-->
 	<!-- 
 	[Factory]
-	-->
+	
 	<metadata name="Factory" description="Add a one-to-many relationship to an entity.">
 		
 		<context name="method"/>
 	</metadata>
-	
+	-->
 	<!-- 
 	[Ignore(property="orders")]
-	-->
+	
 	<metadata name="HasMany" description="Add a one-to-many relationship to an entity.">
 		
 		<context name="class">
@@ -103,23 +103,23 @@
 		<context name="setter"/>
 		<context name="variable"/>
 	</metadata>
-	
+	-->
 	<!-- 
 	[VO]
-	-->
+	
 	<metadata name="VO" description="Maps a VO to an entity.">
 		
 		<context name="class"/>
 		
 	</metadata>
-	
+	-->
 	<!-- 
 	[Entity]
-	-->
+	
 	<metadata name="Entity" description="Add a VO serialization type to an entity.">
 		
 		<context name="class"/>
 		
 	</metadata>
-	
+	-->
 </annotations>
