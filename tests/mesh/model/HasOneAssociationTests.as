@@ -72,6 +72,18 @@ package mesh.model
 		}
 		
 		[Test]
+		public function testAutoSave():void
+		{
+			var account:Account = new Account();
+			account.number = "000-001";
+			
+			_customer.account.object = account;
+			_customer.save().execute();
+			
+			assertThat(account.isPersisted, equalTo(true));
+		}
+		
+		[Test]
 		public function testSavePopulatesForeignKeyOnOwner():void
 		{
 			var account:Account = new Account();

@@ -42,10 +42,10 @@ package mesh.services
 	{
 		private var _service:HTTPMultiService;
 		
-		public function HTTPService(factory:Function)
+		public function HTTPService(entity:Class, options:Object = null)
 		{
 			_service = new HTTPMultiService();
-			super(_service, factory);
+			super(_service, entity, options);
 		}
 		
 		/**

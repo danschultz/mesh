@@ -4,9 +4,9 @@ package mesh.services
 	
 	public class AMFService extends RPCService
 	{
-		public function AMFService(factory:Function)
+		public function AMFService(entity:Class, options:Object = null)
 		{
-			super(new RemoteObject(), factory);
+			super(new RemoteObject(), entity, options);
 		}
 	}
 }

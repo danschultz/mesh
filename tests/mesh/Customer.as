@@ -34,7 +34,7 @@ package mesh
 		
 		public function get account():HasOneAssociation
 		{
-			return hasOne("account", Account, {foreignKey:"accountId"});
+			return hasOne("account", Account, {foreignKey:"accountId", autoSave:true});
 		}
 		public function set account(value:HasOneAssociation):void
 		{
@@ -43,7 +43,7 @@ package mesh
 		
 		public function get orders():HasManyAssociation
 		{
-			return hasMany("orders", Order, {inverse:"customer"});
+			return hasMany("orders", Order, {inverse:"customer", autoSave:true});
 		}
 		public function set orders(value:HasManyAssociation):void
 		{

@@ -16,10 +16,7 @@ package mesh.services
 		
 		public function TestService(entity:Class, belongingToBlock:Function = null)
 		{
-			super(function(item:Object):Entity
-			{
-				return new entity();
-			});
+			super(entity);
 			_belongingToBlock = belongingToBlock;
 		}
 		

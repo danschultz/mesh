@@ -2,48 +2,26 @@ package mesh.services
 {
 	public class CompoundRequest extends Request
 	{
-		private var _requests:Array;
-		private var _index:int;
-		
-		public function CompoundRequest(requests:Array)
+		public function CompoundRequest(block:Function, requests:Array = null)
 		{
-			super(executeNext);
-			_requests = requests;
-		}
-		
-		/**
-		 * @inheritDoc
-		 */
-		override public function then(request:Request):Request
-		{
-			if (_requests.indexOf(request) == -1) {
-				_requests.push(request);
+			super(block);
+			
+			for each (var request:Request in requests) {
+				add(request);
 			}
-			return this;
 		}
 		
-		private function executeRequest(request:Request):void
+		public function add(request:Request):void
 		{
-			request.execute(
-			{
-				fault:function(f:Object):void
-				{
-					fault(f);
-				},
-				success:function():void
-				{
-					executeNext();
-				}
-			});
-		}
-		
-		private function executeNext():void
-		{
-			if (_index < _requests.length) {
-				executeRequest(_requests[_index++]);
-			} else {
-				success();
+			if (requests.indexOf(request) == -1) {
+				requests.push(request);
 			}
+		}
+		
+		private var _requests:Array = [];
+		protected function get requests():Array
+		{
+			return _requests;
 		}
 	}
 }

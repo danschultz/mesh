@@ -47,6 +47,19 @@ package mesh.model
 		}
 		
 		[Test]
+		public function testAutoSave():void
+		{
+			var order1:Order = new Order();
+			var order2:Order = new Order();
+			
+			_customer.orders.add(order1);
+			_customer.orders.add(order2);
+			_customer.save().execute();
+			
+			assertThat([order1, order2], everyItem(hasPropertyWithValue("isPersisted", true)));
+		}
+		
+		[Test]
 		public function testLoad():void
 		{
 			var order1:Order = new Order();

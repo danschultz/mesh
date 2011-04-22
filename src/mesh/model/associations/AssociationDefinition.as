@@ -136,10 +136,10 @@ package mesh.model.associations
 			return false;
 		}
 		
-		public function get load():Function
+		public function get loadRequest():Function
 		{
-			if (options.hasOwnProperty("load")) {
-				return options.load;
+			if (options.hasOwnProperty("loadRequest")) {
+				return options.loadRequest;
 			}
 			return null;
 		}

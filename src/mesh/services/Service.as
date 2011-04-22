@@ -3,12 +3,16 @@ package mesh.services
 	import collections.HashSet;
 	
 	import flash.errors.IllegalOperationError;
+	import flash.utils.flash_proxy;
 	
 	import mesh.core.array.flatten;
 	import mesh.core.reflection.Type;
 	import mesh.model.Entity;
+	import mesh.model.associations.Association;
 	import mesh.operations.Operation;
-
+	
+	use namespace flash_proxy;
+	
 	/**
 	 * The <code>Service</code> class is a layer between the application and the backend. Its
 	 * purpose is to keep track of which entities were retrieved by the backend, which entities 
@@ -19,14 +23,14 @@ package mesh.services
 	public dynamic class Service
 	{
 		private var _registered:HashSet = new HashSet();
-		private var _factory:Function;
 		
 		/**
 		 * Constructor.
 		 */
-		public function Service(factory:Function)
+		public function Service(entity:Class, options:Object = null)
 		{
-			_factory = factory;
+			_entity = entity;
+			_options = options != null ? options : {};
 		}
 		
 		/**
@@ -76,7 +80,7 @@ package mesh.services
 		{
 			return items.map(function(item:Object, ...args):Entity
 			{
-				var entity:Entity = _factory(item);
+				var entity:Entity = _options.factory != null ? _options.factory(item) : new _entity();
 				entity.translateFrom(item);
 				return entity;
 			});
@@ -181,7 +185,7 @@ package mesh.services
 		{
 			return entities.filter(function(entity:Entity, ...args):Boolean
 			{
-				return entity.isPersisted && entity.hasPropertyChanges;
+				return entity.isPersisted && entity.isDirty;
 			});
 		}
 		
@@ -228,6 +232,24 @@ package mesh.services
 		public function where():WhereQueryRequest
 		{
 			throw new IllegalOperationError(reflect.name + " does not support retrieval of entities using where().");
+		}
+		
+		private var _entity:Class;
+		/**
+		 * The entity type for this service.
+		 */
+		protected function get entity():Class
+		{
+			return _entity;
+		}
+		
+		private var _options:Object;
+		/**
+		 * The options specified for this service.
+		 */
+		protected function get options():Object
+		{
+			return _options;
 		}
 		
 		private var _reflect:Type;

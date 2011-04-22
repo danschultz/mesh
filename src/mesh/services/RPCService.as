@@ -27,9 +27,10 @@ package mesh.services
 	 */
 	public class RPCService extends Service
 	{
-		public function RPCService(service:AbstractService, factory:Function)
+		public function RPCService(service:AbstractService, entity:Class, options:Object = null)
 		{
-			super(factory);
+			super(entity, options);
+			_service = service;
 		}
 		
 		/**

@@ -12,7 +12,9 @@ package mesh.services
 		public function Request(block:Function = null)
 		{
 			super();
-			_block = block != null ? block : function():void {};
+			_block = block != null ? block : function():void {
+				success();
+			};
 			addHandler(new DefaultHandler());
 		}
 		
@@ -58,9 +60,14 @@ package mesh.services
 			}
 		}
 		
+		public function and(request:Request):Request
+		{
+			return new ParallelRequest([this, request]);
+		}
+		
 		public function then(request:Request):Request
 		{
-			return new CompoundRequest([this, request]);
+			return new SequentialRequest([this, request]);
 		}
 		
 		protected function blockArgs():Array

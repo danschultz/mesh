@@ -393,6 +393,15 @@ package mesh.model
 			return errors.toArray();
 		}
 		
+		/**
+		 * A hash of the associations for this entity, where the key represents the association's
+		 * property, and the value is the <code>Association</code>.
+		 */
+		public function get associations():Object
+		{
+			return _associations;
+		}
+		
 		private var _errors:Errors;
 		/**
 		 * A set of <code>ValidationResult</code>s that failed during the last call to 
@@ -469,7 +478,7 @@ package mesh.model
 		 */
 		public function get hasDirtyAssociations():Boolean
 		{
-			for each (var association:Association in _associations) {
+			for each (var association:Association in associations) {
 				if (association.definition.autoSave && association.isDirty) {
 					return true;
 				}
