@@ -34,7 +34,7 @@ package mesh.model.associations
 			object = [];
 			
 			afterLoad(loaded);
-			beforeAdd(populateInverseAssociation);
+			afterAdd(populateInverseAssociation);
 		}
 		
 		/**
@@ -204,6 +204,8 @@ package mesh.model.associations
 		{
 			if (definition.hasInverse) {
 				if (entity.hasOwnProperty(definition.inverse)) {
+					// if the inverse relationship is an association, then we populate the inverse 
+					// association's object. otherwise, we just set the property to the association's owner.
 					if (entity[definition.inverse] is Association) {
 						entity[definition.inverse].object = owner;
 					} else {
@@ -368,6 +370,10 @@ package mesh.model.associations
 				
 				if (value != null && value.hasOwnProperty("toArray")) {
 					value = value.toArray();
+				}
+				
+				for each (var entity:Entity in value) {
+					callbackIfNotNull("beforeAdd", entity);
 				}
 				
 				super.object = new ArrayCollection(value);

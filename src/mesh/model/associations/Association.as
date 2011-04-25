@@ -110,7 +110,7 @@ package mesh.model.associations
 			
 			if (!isLoaded) {
 				callback("beforeLoad");
-				_loadRequest = definition.hasLoadRequest ? definition.loadRequest() : createLoadRequest();
+				_loadRequest = definition.hasLoadRequest ? definition.loadRequest.apply(owner) : createLoadRequest();
 				_loadRequest.addHandler({
 					success:function():void
 					{
