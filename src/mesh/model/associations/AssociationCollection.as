@@ -204,7 +204,11 @@ package mesh.model.associations
 		{
 			if (definition.hasInverse) {
 				if (entity.hasOwnProperty(definition.inverse)) {
-					entity[definition.inverse].object = owner;
+					if (entity[definition.inverse] is Association) {
+						entity[definition.inverse].object = owner;
+					} else {
+						entity[definition.inverse] = owner;
+					}
 				} else {
 					throw new IllegalOperationError("Inverse property '" + definition.inverse + "' not defined on " + entity.reflect.name);
 				}

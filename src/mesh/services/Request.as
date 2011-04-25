@@ -8,6 +8,7 @@ package mesh.services
 	{
 		private var _block:Function;
 		private var _handlers:Array = [];
+		private var _isExecuting:Boolean;
 		
 		public function Request(block:Function = null)
 		{
@@ -34,10 +35,13 @@ package mesh.services
 		
 		public function execute(handler:Object = null):Request
 		{
-			if (handler != null) {
-				addHandler(handler);
+			if (!_isExecuting) {
+				_isExecuting = true;
+				if (handler != null) {
+					addHandler(handler);
+				}
+				executeBlock(_block);
 			}
-			executeBlock(_block);
 			return this;
 		}
 		
@@ -58,6 +62,7 @@ package mesh.services
 			for each (var handler:Object in _handlers) {
 				handler.success();
 			}
+			_isExecuting = false;
 		}
 		
 		public function and(request:Request):Request
