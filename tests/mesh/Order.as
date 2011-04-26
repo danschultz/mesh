@@ -7,6 +7,8 @@ package mesh
 	import mesh.model.associations.HasOneAssociation;
 	import mesh.services.TestService;
 	
+	use namespace flash_proxy;
+	
 	public class Order extends Entity
 	{
 		Mesh.services.map(Order, new TestService(Order, function(belongingTo:Entity, entities:Array):Array
@@ -48,7 +50,7 @@ package mesh
 		}
 		public function set customer(value:HasOneAssociation):void
 		{
-			customer.flash_proxy::object = value;
+			customer.object = value;
 		}
 	}
 }

@@ -306,7 +306,7 @@ package mesh.model
 		
 		private function markNonLazyAssociationsAsLoaded():void
 		{
-			for each (var association:Association in _associations) {
+			for each (var association:Association in associations) {
 				if (!association.definition.isLazy && !association.isLoaded) {
 					association.callback("afterLoad");
 				}

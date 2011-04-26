@@ -156,13 +156,22 @@ package mesh.services
 			entities = pendingCreate(flatten(entities));
 			return new InsertRequest(this, entities as Array, function():Operation
 			{
-				return entities.length > 0 ? createInsertOperation(entities as Array) : new EmptyOperation();
+				var toSave:Array = entities as Array;
+				return toSave.length > 0 ? createInsertOperation(toSave) : new EmptyOperation();
 			});
 		}
 		
 		protected function createInsertOperation(entities:Array):Operation
 		{
 			throw new IllegalOperationError(reflect.name + " does not support insertion of entities.");
+		}
+		
+		private function havingPropertyChanges(entities:Array):Array
+		{
+			return entities.filter(function(entity:Entity, ...args):Boolean
+			{
+				return entity.hasPropertyChanges;
+			});
 		}
 		
 		private function pendingCreate(entities:Array):Array
@@ -214,7 +223,8 @@ package mesh.services
 			entities = pendingUpdate(flatten(entities));
 			return new UpdateRequest(this, entities as Array, function():Operation
 			{
-				return entities.length > 0 ? createUpdateOperation(entities as Array) : new EmptyOperation();
+				var toSave:Array = havingPropertyChanges(entities as Array);
+				return toSave.length > 0 ? createUpdateOperation(toSave) : new EmptyOperation();
 			});
 		}
 		

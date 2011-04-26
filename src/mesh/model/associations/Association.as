@@ -148,6 +148,11 @@ package mesh.model.associations
 			}
 		}
 		
+		protected function markEntitiesAsFound():void
+		{
+			throw new IllegalOperationError(reflect.name + ".markEntitiesAsFound() is not implemented.");
+		}
+		
 		private function markEntityForRemoval(entity:Entity):void
 		{
 			entity.markForRemoval();
@@ -183,7 +188,7 @@ package mesh.model.associations
 		/**
 		 * The set of <code>Entity</code>s that are dirty and need to be persisted.
 		 */
-		protected function get dirtyEntities():Array
+		flash_proxy function get dirtyEntities():Array
 		{
 			return [];
 		}

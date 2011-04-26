@@ -16,7 +16,15 @@ package mesh.model.associations
 		public function HasAssociation(owner:Entity, relationship:HasOneDefinition)
 		{
 			super(owner, relationship);
+			afterLoad(loaded);
 			beforeAdd(populateForeignKey);
+		}
+		
+		private function loaded():void
+		{
+			if (object != null) {
+				(object as Entity).callback("afterFind");
+			}
 		}
 		
 		private function populateForeignKey(entity:Entity):void
@@ -64,7 +72,7 @@ package mesh.model.associations
 		/**
 		 * @inheritDoc
 		 */
-		override protected function get dirtyEntities():Array
+		override flash_proxy function get dirtyEntities():Array
 		{
 			return [_persistedTarget, object].filter(function(entity:Entity, ...args):Boolean
 			{

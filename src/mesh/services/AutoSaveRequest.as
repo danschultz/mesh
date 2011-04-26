@@ -45,7 +45,6 @@ import flash.utils.flash_proxy;
 import mesh.Mesh;
 import mesh.core.array.flatten;
 import mesh.model.associations.Association;
-import mesh.model.associations.HasManyAssociation;
 import mesh.services.Request;
 
 use namespace flash_proxy;
@@ -78,12 +77,8 @@ class AutoSaveAssociations extends HashMap
 	{
 		var result:Array = [];
 		for each (var association:Association in associations) {
-			if (association.object != null) {
-				if (association is HasManyAssociation) {
-					result.push(association.toArray());
-				} else {
-					result.push(association.object);
-				}
+			if (association.isDirty) {
+				result = result.concat(association.dirtyEntities);
 			}
 		}
 		return flatten(result);

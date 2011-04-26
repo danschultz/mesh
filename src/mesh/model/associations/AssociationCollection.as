@@ -312,7 +312,7 @@ package mesh.model.associations
 		/**
 		 * @inheritDoc
 		 */
-		override protected function get dirtyEntities():Array
+		override flash_proxy function get dirtyEntities():Array
 		{
 			return toArray().concat(_removedEntities.toArray()).filter(closure(function(entity:Entity):Boolean
 			{

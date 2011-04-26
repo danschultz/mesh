@@ -8,6 +8,8 @@ package mesh
 	import mesh.model.validators.PresenceValidator;
 	import mesh.services.TestService;
 	
+	use namespace flash_proxy;
+	
 	public class Customer extends Person
 	{
 		Mesh.services.map(Customer, new TestService(Customer));
@@ -36,18 +38,10 @@ package mesh
 		{
 			return hasOne("account", Account, {foreignKey:"accountId", autoSave:true});
 		}
-		public function set account(value:HasOneAssociation):void
-		{
-			account.flash_proxy::object = value;
-		}
 		
 		public function get orders():HasManyAssociation
 		{
 			return hasMany("orders", Order, {inverse:"customer", autoSave:true});
-		}
-		public function set orders(value:HasManyAssociation):void
-		{
-			orders.flash_proxy::object = value;
 		}
 	}
 }

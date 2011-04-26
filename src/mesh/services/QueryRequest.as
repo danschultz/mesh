@@ -1,6 +1,7 @@
 package mesh.services
 {
 	import mesh.core.array.flatten;
+	import mesh.model.Entity;
 
 	public dynamic class QueryRequest extends ServiceRequest
 	{
@@ -18,7 +19,12 @@ package mesh.services
 				data = data.toArray();
 			}
 			
-			data = _deserializer(flatten(data));
+			var result:Array = _deserializer(flatten(data));
+			for each (var entity:Entity in result) {
+				entity.callback("afterFind");
+			}
+			
+			data = result;
 			service.register(data);
 			super.result(data);
 		}

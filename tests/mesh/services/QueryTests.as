@@ -56,6 +56,7 @@ package mesh.services
 		{
 			assertThat(customer.id, equalTo(against.id));
 			assertThat(customer.name.equals(against.name), equalTo(true));
+			assertThat(customer.isDirty, equalTo(false));
 		}
 	}
 }
