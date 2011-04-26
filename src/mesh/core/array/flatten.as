@@ -33,7 +33,7 @@ package mesh.core.array
 			for each (var element:Object in elements) {
 				if (element is Array) {
 					result = result.concat(flatten(element, depth-1));
-					break;
+					continue;
 				}
 				result.push(element);
 			}

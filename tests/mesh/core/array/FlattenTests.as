@@ -14,6 +14,7 @@ package mesh.core.array
 				{elements:[1, 2, 3, [4, 5]], expected:[1, 2, 3, 4, 5]},
 				{elements:[1, 2, [3, [4, 5]]], expected:[1, 2, 3, 4, 5]},
 				{elements:[1, 2, [3, [4, 5]]], depth:1, expected:[1, 2, 3, [4, 5]]},
+				{elements:[[1, 2], [3, 4]], expected:[1, 2, 3, 4]},
 				{elements:1, expected:[1]}
 			];
 			
