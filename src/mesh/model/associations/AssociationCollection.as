@@ -6,7 +6,6 @@ package mesh.model.associations
 	import flash.errors.IllegalOperationError;
 	import flash.utils.flash_proxy;
 	
-	import mesh.Mesh;
 	import mesh.core.functions.closure;
 	import mesh.core.object.copy;
 	import mesh.model.Entity;
@@ -276,17 +275,6 @@ package mesh.model.associations
 			for each (var entity:Entity in this) {
 				entity.revert();
 			}
-		}
-		
-		/**
-		 * @inheritDoc
-		 */
-		override public function save():Request
-		{
-			if (length > 0) {
-				return Mesh.service(getItemAt(0).reflect.clazz).save(toArray());
-			}
-			return new Request();
 		}
 		
 		/**

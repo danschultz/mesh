@@ -3,6 +3,7 @@ package mesh.model.associations
 	import flash.errors.IllegalOperationError;
 	import flash.utils.flash_proxy;
 	
+	import mesh.Mesh;
 	import mesh.core.inflection.humanize;
 	import mesh.core.proxy.DataProxy;
 	import mesh.core.reflection.Type;
@@ -167,7 +168,11 @@ package mesh.model.associations
 		
 		public function save():Request
 		{
-			throw new IllegalOperationError(reflect.name + ".save() is not implemented.");
+			var toSave:Array = dirtyEntities;
+			if (toSave.length > 0) {
+				return Mesh.service((toSave[0] as Entity).reflect.clazz).save(toSave);
+			}
+			return new Request();
 		}
 		
 		public function toString():String

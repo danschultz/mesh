@@ -47,6 +47,20 @@ package mesh.model
 		}
 		
 		[Test]
+		public function testSaveRemoved():void
+		{
+			var order:Order = new Order();
+			
+			_customer.orders.add(order);
+			_customer.orders.save().execute();
+			
+			_customer.orders.remove(order);
+			_customer.orders.save().execute();
+			
+			assertThat(order.isDestroyed, equalTo(true));
+		}
+		
+		[Test]
 		public function testAutoSave():void
 		{
 			var order1:Order = new Order();

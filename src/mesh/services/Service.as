@@ -8,7 +8,7 @@ package mesh.services
 	import mesh.core.array.flatten;
 	import mesh.core.reflection.Type;
 	import mesh.model.Entity;
-	import mesh.model.associations.Association;
+	import mesh.operations.EmptyOperation;
 	import mesh.operations.Operation;
 	
 	use namespace flash_proxy;
@@ -104,7 +104,7 @@ package mesh.services
 			entities = pendingDestroy(flatten(entities));
 			return new DestroyRequest(this, entities as Array, function():Operation
 			{
-				return createDestroyOperation(entities as Array);
+				return entities.length > 0 ? createDestroyOperation(entities as Array) : new EmptyOperation();
 			});
 		}
 		
@@ -156,7 +156,7 @@ package mesh.services
 			entities = pendingCreate(flatten(entities));
 			return new InsertRequest(this, entities as Array, function():Operation
 			{
-				return createInsertOperation(entities as Array);
+				return entities.length > 0 ? createInsertOperation(entities as Array) : new EmptyOperation();
 			});
 		}
 		
@@ -201,7 +201,7 @@ package mesh.services
 		
 		public function save(entities:Object):Request
 		{
-			return insert(entities).then(update(entities));
+			return insert(entities).then(update(entities)).then(destroy(entities));
 		}
 		
 		public function saveAll():Request
@@ -214,7 +214,7 @@ package mesh.services
 			entities = pendingUpdate(flatten(entities));
 			return new UpdateRequest(this, entities as Array, function():Operation
 			{
-				return createUpdateOperation(entities as Array);
+				return entities.length > 0 ? createUpdateOperation(entities as Array) : new EmptyOperation();
 			});
 		}
 		
