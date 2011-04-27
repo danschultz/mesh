@@ -230,6 +230,21 @@ package mesh.model.associations
 			return _definition;
 		}
 		
+		/**
+		 * @inheritDoc
+		 */
+		override flash_proxy function get object():*
+		{
+			return super.object;
+		}
+		override flash_proxy function set object(value:*):void
+		{
+			if (object != value) {
+				super.object = value;
+				owner.dispatchEvent( PropertyChangeEvent.createUpdateEvent(owner, definition.property, this, this) );
+			}
+		}
+		
 		private var _owner:Entity;
 		/**
 		 * The instance of the parent owning this association.
