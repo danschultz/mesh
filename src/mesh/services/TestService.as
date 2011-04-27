@@ -20,7 +20,7 @@ package mesh.services
 			_belongingToBlock = belongingToBlock;
 		}
 		
-		override protected function createBelongingToOperation(entity:Entity):Operation
+		override protected function createBelongingToOperation(entity:Entity, options:Object = null):Operation
 		{
 			return createOperation(function():Object
 			{

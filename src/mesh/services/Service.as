@@ -52,15 +52,15 @@ package mesh.services
 			throw new IllegalOperationError(reflect.name + " does not support retrieval of entities using all()");
 		}
 		
-		public function belongingTo(entity:Entity):ListQueryRequest
+		public function belongingTo(entity:Entity, options:Object = null):ListQueryRequest
 		{
 			return new ListQueryRequest(this, deserialize, function():Operation
 			{
-				return createBelongingToOperation(entity);
+				return createBelongingToOperation(entity, options);
 			});
 		}
 		
-		protected function createBelongingToOperation(entity:Entity):Operation
+		protected function createBelongingToOperation(entity:Entity, options:Object = null):Operation
 		{
 			throw new IllegalOperationError(reflect.name + " does not support retrieval of entities belonging to " + entity);
 		}
