@@ -239,7 +239,15 @@ package mesh.services
 		 * @param options The options to limit the retrieval.
 		 * @return An unexecuted operation.
 		 */
-		public function where():WhereQueryRequest
+		public function where(options:Object):WhereQueryRequest
+		{
+			return new WhereQueryRequest(this, deserialize, function():Operation
+			{
+				return createWhereOperation(options);
+			});
+		}
+		
+		protected function createWhereOperation(options:Object):Operation
 		{
 			throw new IllegalOperationError(reflect.name + " does not support retrieval of entities using where().");
 		}
