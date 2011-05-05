@@ -3,7 +3,8 @@ package mesh.model
 	import collections.Collection;
 	
 	/**
-	 * A class that holds an object's old values.
+	 * The <code>Changes</code> class represents a storage container for values that have
+	 * changed on an instance of an <code>Entity</code>.
 	 * 
 	 * @author Dan Schultz
 	 */
@@ -37,22 +38,17 @@ package mesh.model
 		}
 		
 		/**
-		 * Removes all original values.
-		 */
-		public function clear():void
-		{
-			_oldValues = {};
-		}
-		
-		/**
-		 * Returns the current value for the given property on the host.
+		 * Either clears all recorded changes, or the changes recorded for the given property.
 		 * 
-		 * @param property The property name to retrieve.
-		 * @return The property's current value.
+		 * @param property The property to clear. If <code>null</code>, all changes are cleared.
 		 */
-		public function currentValue(property:String):*
+		public function clear(property:String = null):void
 		{
-			return _host[property];
+			if (property != null) {
+				delete _oldValues[property];
+			} else {
+				_oldValues = {};
+			}
 		}
 		
 		/**
@@ -64,12 +60,34 @@ package mesh.model
 		 * @param property The property to check.
 		 * @return <code>true</code> if the property has changed.
 		 */
-		public function hasPropertyChanged(property:String):Boolean
+		public function hasChanged(property:String):Boolean
 		{
 			if (_oldValues.hasOwnProperty(property)) {
-				return !Collection.areElementsEqual(oldValue(property), currentValue(property));
+				return !Collection.areElementsEqual(whatWas(property), whatIs(property));
 			}
 			return false;
+		}
+		
+		/**
+		 * Sets all properties on the host back to their original values.
+		 */
+		public function revert():void
+		{
+			for (var property:String in _oldValues) {
+				_host[property] = whatWas(property);
+			}
+			clear();
+		}
+		
+		/**
+		 * Returns the current value for the given property on the host.
+		 * 
+		 * @param property The property name to retrieve.
+		 * @return The property's current value.
+		 */
+		public function whatIs(property:String):*
+		{
+			return _host[property];
 		}
 		
 		/**
@@ -79,20 +97,9 @@ package mesh.model
 		 * @param property The property to get the original value for.
 		 * @return The properties original value, or <code>undefined</code> if no value exists.
 		 */
-		public function oldValue(property:String):*
+		public function whatWas(property:String):*
 		{
-			return _oldValues.hasOwnProperty(property) ? _oldValues[property] : currentValue(property);
-		}
-		
-		/**
-		 * Sets all properties on the host back to their original values.
-		 */
-		public function revert():void
-		{
-			for (var property:String in _oldValues) {
-				_host[property] = oldValue(property);
-			}
-			clear();
+			return _oldValues.hasOwnProperty(property) ? _oldValues[property] : whatIs(property);
 		}
 		
 		/**
@@ -101,7 +108,7 @@ package mesh.model
 		public function get hasChanges():Boolean
 		{
 			for (var property:String in _oldValues) {
-				if (hasPropertyChanged(property)) {
+				if (hasChanged(property)) {
 					return true;
 				}
 			}

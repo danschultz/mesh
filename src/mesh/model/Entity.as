@@ -36,7 +36,6 @@ package mesh.model
 		private var _observers:Callbacks = new Callbacks();
 		private var _associations:Object = {};
 		private var _aggregates:Aggregates = new Aggregates(this);
-		private var _changes:Changes = new Changes(this);
 		
 		/**
 		 * Constructor.
@@ -224,6 +223,18 @@ package mesh.model
 		}
 		
 		/**
+		 * Performs a check on the property of this entity to see if it has changed since the 
+		 * last save.
+		 * 
+		 * @param property The property to check.
+		 * @return <code>true</code> if the property has been updated.
+		 */
+		public function hasChanged(property:String):Boolean
+		{
+			return changes.hasChanged(property);
+		}
+		
+		/**
 		 * Runs the validations defined for this entity and returns <code>true</code> if any
 		 * validations failed.
 		 * 
@@ -261,7 +272,7 @@ package mesh.model
 		 */
 		protected function propertyChanged(property:String, oldValue:Object, newValue:Object):void
 		{
-			_changes.changed(property, oldValue, newValue);
+			changes.changed(property, oldValue, newValue);
 			_aggregates.changed(property);
 		}
 		
@@ -270,7 +281,7 @@ package mesh.model
 		 */
 		public function revert():void
 		{
-			_changes.revert();
+			changes.revert();
 		}
 		
 		/**
@@ -301,7 +312,7 @@ package mesh.model
 		
 		private function synced():void
 		{
-			_changes.clear();
+			changes.clear();
 		}
 		
 		private function markNonLazyAssociationsAsLoaded():void
@@ -359,7 +370,7 @@ package mesh.model
 		 */
 		public function whatWas(property:String):*
 		{
-			return _changes.oldValue(property);
+			return changes.whatWas(property);
 		}
 		
 		/**
@@ -400,6 +411,15 @@ package mesh.model
 		public function get associations():Object
 		{
 			return _associations;
+		}
+		
+		private var _changes:Changes = new Changes(this);
+		/**
+		 * @copy Changes
+		 */
+		public function get changes():Changes
+		{
+			return _changes;
 		}
 		
 		private var _errors:Errors;
@@ -470,7 +490,7 @@ package mesh.model
 		 */
 		public function get hasPropertyChanges():Boolean
 		{
-			return _changes.hasChanges;
+			return changes.hasChanges;
 		}
 		
 		/**
