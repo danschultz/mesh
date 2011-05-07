@@ -99,9 +99,9 @@ package mesh.services
 		 * 
 		 * @param entities The entities to destroy.
 		 */
-		public function destroy(entities:Object):DestroyRequest
+		public function destroy(entities:Array):DestroyRequest
 		{
-			entities = pendingDestroy(flatten(entities));
+			entities = pendingDestroy(entities);
 			return new DestroyRequest(this, entities as Array, function():Operation
 			{
 				return entities.length > 0 ? createDestroyOperation(entities as Array) : new EmptyOperation();
@@ -151,9 +151,9 @@ package mesh.services
 			throw new IllegalOperationError(reflect.name + " does not support retrieval of entities using findMany().");
 		}
 		
-		public function insert(entities:Object):InsertRequest
+		public function insert(entities:Array):InsertRequest
 		{
-			entities = pendingCreate(flatten(entities));
+			entities = pendingCreate(entities);
 			return new InsertRequest(this, entities as Array, function():Operation
 			{
 				var toSave:Array = entities as Array;
@@ -208,7 +208,7 @@ package mesh.services
 			_registered.removeAll(flatten(entities));
 		}
 		
-		public function save(entities:Object):Request
+		public function save(entities:Array):Request
 		{
 			return insert(entities).then(update(entities)).then(destroy(entities));
 		}
@@ -218,12 +218,12 @@ package mesh.services
 			return save(_registered.toArray());
 		}
 		
-		public function update(entities:Object):UpdateRequest
+		public function update(entities:Array):UpdateRequest
 		{
-			entities = pendingUpdate(flatten(entities));
+			entities = pendingUpdate(entities);
 			return new UpdateRequest(this, entities as Array, function():Operation
 			{
-				var toSave:Array = havingPropertyChanges(entities as Array);
+				var toSave:Array = havingPropertyChanges(entities);
 				return toSave.length > 0 ? createUpdateOperation(toSave) : new EmptyOperation();
 			});
 		}

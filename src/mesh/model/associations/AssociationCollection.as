@@ -6,7 +6,6 @@ package mesh.model.associations
 	import flash.errors.IllegalOperationError;
 	import flash.utils.flash_proxy;
 	
-	import mesh.core.functions.closure;
 	import mesh.core.object.copy;
 	import mesh.model.Entity;
 	import mesh.services.Request;
@@ -314,10 +313,13 @@ package mesh.model.associations
 		 */
 		override flash_proxy function get dirtyEntities():Array
 		{
-			return toArray().concat(_removedEntities.toArray()).filter(closure(function(entity:Entity):Boolean
-			{
-				return entity.isDirty;
-			}));
+			var result:Array = [];
+			for each (var entity:Entity in toArray().concat(_removedEntities.toArray())) {
+				if (entity.isDirty) {
+					result.push(entity);
+				}
+			}
+			return result;
 		}
 		
 		/**
