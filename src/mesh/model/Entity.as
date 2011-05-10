@@ -162,6 +162,7 @@ package mesh.model
 		 */
 		public function destroy():DestroyRequest
 		{
+			markForRemoval();
 			return Mesh.service(reflect.clazz).destroy([this]);
 		}
 		

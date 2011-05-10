@@ -33,6 +33,9 @@ package mesh.model.associations
 			
 			afterLoad(loaded);
 			afterAdd(populateInverseAssociation);
+			
+			afterAdd(registerObserversOnEntity);
+			afterRemove(unregisterObserversOnEntity);
 		}
 		
 		/**
@@ -181,6 +184,11 @@ package mesh.model.associations
 			}
 		}
 		
+		private function handleEntityDestroyed(entity:Entity):void
+		{
+			remove(entity);
+		}
+		
 		/**
 		 * @inheritDoc
 		 */
@@ -213,6 +221,16 @@ package mesh.model.associations
 					throw new IllegalOperationError("Inverse property '" + definition.inverse + "' not defined on " + entity.reflect.name);
 				}
 			}
+		}
+		
+		private function registerObserversOnEntity(entity:Entity):void
+		{
+			entity.addObserver("afterDestroy", handleEntityDestroyed);
+		}
+		
+		private function unregisterObserversOnEntity(entity:Entity):void
+		{
+			entity.removeObserver("afterDestroy", handleEntityDestroyed);
 		}
 		
 		/**

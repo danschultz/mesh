@@ -2,14 +2,14 @@ package mesh.model
 {
 	import flash.utils.flash_proxy;
 	
+	import mesh.Address;
+	import mesh.Customer;
+	import mesh.Order;
 	import mesh.model.associations.AssociationCollection;
 	
 	import org.flexunit.assertThat;
 	import org.hamcrest.collection.array;
 	import org.hamcrest.object.equalTo;
-	import mesh.Address;
-	import mesh.Customer;
-	import mesh.Order;
 
 	public class AssociationCollectionTests
 	{
@@ -73,6 +73,19 @@ package mesh.model
 			
 			_collection.addItem(order);
 			assertThat(_collection.isDirty, equalTo(true));
+		}
+		
+		[Test]
+		public function testDestroyEntityBelongingToAssociation():void
+		{
+			var order:Order = new Order();
+			_collection.add(order);
+			_collection.save().execute();
+			
+			_collection.destroy(order).execute();
+			assertThat(order.isDestroyed, equalTo(true));
+			assertThat(_collection.contains(order), equalTo(false));
+			assertThat(_collection.isDirty, equalTo(false));
 		}
 		
 		[Test]
