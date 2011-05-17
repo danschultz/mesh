@@ -11,28 +11,20 @@ package mesh.services
 	 *  
 	 * <p>
 	 * This adaptor lazily creates <code>mx.rpc.http.Operation</code>s for its <code>HTTPMultiService</code>
-	 * when sub-classes call <code>generateOperation()</code>. This method accepts an optional 
+	 * when sub-classes call <code>createOperation()</code>. This method accepts an optional 
 	 * third argument of type <code>Object</code>. Any values defined on this object will be set 
 	 * on the new <code>mx.rpc.http.Operation</code>. 
 	 * 
 	 * <p>
 	 * <strong>Example:</strong> Configuring the <code>mx.rpc.http.Operation</code>.
 	 * <pre listing="3.0">
-	 * return generateOperation("user_timeline", {user_id:options.user.id}, {resultFormat:"array", showBusyCursor:false});
+	 * ...
+	 * override protected function createFindOneOperation(id:*):Operation
+	 * {
+	 * 	return createOperation("https://graph.facebook.com/"+id, null, {showBusyCursor:true});
+	 * }
+	 * ...
 	 * </pre>
-	 * </p>
-	 * </p>
-	 * 
-	 * <p>
-	 * Any options that are defined on the <code>[ServiceAdaptor]</code> metadata or passed to 
-	 * the constructor, will tried to be set on the adaptor's service.
-	 * 
-	 * <p>
-	 * <strong>Example:</strong> Setting the busy cursor for the service.
-	 * <pre listing="3.0">
-	 * [ServiceAdaptor(showBusyCursor="true")]
-	 * </pre>
-	 * </p>
 	 * </p>
 	 * 
 	 * @see http://help.adobe.com/en_US/FlashPlatform/reference/actionscript/3/mx/rpc/http/mxml/HTTPMultiService.html HTTPMultiService
@@ -49,7 +41,7 @@ package mesh.services
 		}
 		
 		/**
-		 * The first argument is a string which represents the REST operation to call. The second
+		 * The first argument is a URL string which represents the REST operation to call. The second
 		 * argument is an optional object to pass to the operation. The third argument is an optional
 		 * object who's values will be copied to the <code>mx.rpc.http.Operation</code> which is 
 		 * generated from this function.
@@ -82,6 +74,7 @@ package mesh.services
 		{
 			var operation:mx.rpc.http.Operation = new mx.rpc.http.Operation();
 			operation.name = name;
+			operation.url = name;
 			
 			if (options != null) {
 				copy(options, operation);
