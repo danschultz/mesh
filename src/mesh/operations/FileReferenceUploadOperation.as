@@ -19,6 +19,12 @@ package mesh.operations
 	 * 	<code>FileReference.upload()</code> for more information on this option.</li>
 	 * <li><code>testUpload:Boolean</code> - (default = <code>false</code>) See 
 	 * 	<code>FileReference.upload()</code> for more information on this option.</li>
+	 * <li><code>finishOn:String</code> - (default = <code>Event.COMPLETE</code>) The event
+	 * 	that signifies when this operation is finished. <code>FileReference</code> is capable
+	 * 	of dispatching two complete events: <code>Event.COMPLETE</code> and 
+	 * 	<code>DataEvent.UPLOAD_COMPLETE_DATA</code>. Set this option to <code>DataEvent.UPLOAD_COMPLETE_DATA</code>
+	 * 	if you want the operation to not finish until data has been sent back from the upload
+	 * 	server.</li>
 	 * </ul>
 	 * 
 	 * @see http://help.adobe.com/en_US/FlashPlatform/reference/actionscript/3/flash/net/FileReference.html#upload() <code>FileReference.upload()</code>
@@ -42,7 +48,7 @@ package mesh.operations
 			super();
 			_file = file;
 			_request = request;
-			_options = merge({uploadDataFieldName:"Filedata", testUpload:false}, options);
+			_options = merge({uploadDataFieldName:"Filedata", testUpload:false, finishOn:Event.COMPLETE}, options);
 		}
 		
 		/**
@@ -52,6 +58,11 @@ package mesh.operations
 		{
 			super.cancelRequest();
 			_file.cancel();
+		}
+		
+		private function canFinishWithEvent(event:Event):Boolean
+		{
+			return event.type == _options.finishOn;
 		}
 		
 		/**
@@ -91,7 +102,9 @@ package mesh.operations
 		
 		private function handleFileComplete(event:Event):void
 		{
-			finish(true);
+			if (canFinishWithEvent(event)) {
+				finish(true);
+			}
 		}
 		
 		/**

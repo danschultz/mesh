@@ -142,14 +142,6 @@ package mesh.operations
 		}
 		
 		/**
-		 * @inheritDoc
-		 */
-		final override protected function result(data:Object):void
-		{
-			super.result(data);
-		}
-		
-		/**
 		 * Called by sub-classes to retry a failed request. If no more retry attempts can be made,
 		 * the operation fails and dispatches a <code>FaultOperationEvent.FAULT</code> event.
 		 * 

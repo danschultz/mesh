@@ -1,6 +1,5 @@
 package mesh.operations
 {
-	import flash.events.Event;
 	import flash.events.EventDispatcher;
 	
 	import mx.collections.ArrayList;
@@ -96,8 +95,9 @@ package mesh.operations
 		{
 			if (_items.removeItem(operation)) {
 				operation.removeEventListener(OperationEvent.CANCELED, handleOperationCanceled);
+				operation.cancel();
 				
-				if (operation.isFinished) {
+				if (operation.isSuccessful) {
 					_progress.confirmed -= operation.progress.complete;
 				}
 				progress.total -= operation.progress.total;
@@ -156,7 +156,7 @@ package mesh.operations
 		
 		private function executeAvailable():void
 		{
-			while (next() != null && executing.length < _simultaneousCount) {
+			while (isRunning && next() != null && executing.length < _simultaneousCount) {
 				execute(next());
 			}
 		}
