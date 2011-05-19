@@ -19,7 +19,7 @@ package mesh.model.associations
 	
 	public dynamic class AssociationCollection extends Association implements IList
 	{
-		private var _originalEntities:ArraySequence;
+		private var _originalEntities:Array;
 		private var _mirroredEntities:ArraySequence;
 		private var _removedEntities:HashSet = new HashSet();
 		
@@ -35,7 +35,6 @@ package mesh.model.associations
 			afterAdd(populateInverseAssociation);
 			
 			afterAdd(registerObserversOnEntity);
-			afterRemove(unregisterObserversOnEntity);
 		}
 		
 		/**
@@ -168,18 +167,18 @@ package mesh.model.associations
 		
 		protected function handleEntitiesAdded(entities:Array):void
 		{
-			_removedEntities.removeAll(entities);
-			
 			for each (var entity:Entity in entities) {
+				_removedEntities.remove(entity);
 				callbackIfNotNull("afterAdd", entity);
 			}
 		}
 		
 		protected function handleEntitiesRemoved(entities:Array):void
 		{
-			_removedEntities.addAll(entities);
-			
 			for each (var entity:Entity in entities) {
+				if (entity.isPersisted) {
+					_removedEntities.add(entity);
+				}
 				callbackIfNotNull("afterRemove", entity);
 			}
 		}
@@ -187,6 +186,8 @@ package mesh.model.associations
 		private function handleEntityDestroyed(entity:Entity):void
 		{
 			remove(entity);
+			_removedEntities.remove(entity);
+			unregisterObserversOnEntity(entity);
 		}
 		
 		/**
@@ -199,7 +200,7 @@ package mesh.model.associations
 		
 		private function loaded():void
 		{
-			_originalEntities = new ArraySequence(toArray());
+			snapshot();
 			
 			for each (var entity:Entity in this) {
 				entity.callback("afterFind");
@@ -302,6 +303,11 @@ package mesh.model.associations
 			return object.setItemAt(item, index);
 		}
 		
+		private function snapshot():void
+		{
+			_originalEntities = toArray();
+		}
+		
 		/**
 		 * @inheritDoc
 		 */
@@ -331,8 +337,8 @@ package mesh.model.associations
 		 */
 		override flash_proxy function get dirtyEntities():Array
 		{
-			var result:Array = [];
-			for each (var entity:Entity in toArray().concat(_removedEntities.toArray())) {
+			var result:Array = _removedEntities.toArray();
+			for each (var entity:Entity in this) {
 				if (entity.isDirty) {
 					result.push(entity);
 				}

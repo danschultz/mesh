@@ -44,6 +44,7 @@ package mesh.model
 			_customer.orders.save().execute();
 			
 			assertThat([order1, order2], everyItem(hasPropertyWithValue("isPersisted", true)));
+			assertThat(_customer.orders.isDirty, equalTo(false));
 		}
 		
 		[Test]
@@ -58,6 +59,7 @@ package mesh.model
 			_customer.orders.save().execute();
 			
 			assertThat(order.isDestroyed, equalTo(true));
+			assertThat(_customer.orders.isDirty, equalTo(false));
 		}
 		
 		[Test]
@@ -71,6 +73,7 @@ package mesh.model
 			_customer.save().execute();
 			
 			assertThat([order1, order2], everyItem(hasPropertyWithValue("isPersisted", true)));
+			assertThat(_customer.orders.isDirty, equalTo(false));
 		}
 		
 		[Test]
@@ -85,6 +88,7 @@ package mesh.model
 			_customer.save().execute();
 			
 			assertThat(order.isDestroyed, equalTo(true));
+			assertThat(_customer.orders.isDirty, equalTo(false));
 		}
 		
 		[Test]
@@ -100,6 +104,7 @@ package mesh.model
 			var orders:Request = customer.orders.load().execute();
 			assertThat(customer.orders.length, equalTo(_customer.orders.length));
 			assertThat(customer.orders.isLoaded, equalTo(true));
+			assertThat(customer.orders.isDirty, equalTo(false));
 		}
 	}
 }

@@ -479,7 +479,7 @@ package mesh.model
 		public function get isDirty():Boolean
 		{
 			return (isNew && !isMarkedForRemoval) || 
-				   ((isMarkedForRemoval || hasPropertyChanges || hasDirtyAssociations) && isPersisted); 
+				   (isPersisted && (isMarkedForRemoval || hasPropertyChanges || hasDirtyAssociations)); 
 		}
 		
 		/**
