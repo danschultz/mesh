@@ -9,8 +9,11 @@ package mesh.model
 	
 	import org.flexunit.assertThat;
 	import org.hamcrest.collection.array;
+	import org.hamcrest.collection.emptyArray;
 	import org.hamcrest.object.equalTo;
 
+	use namespace flash_proxy;
+	
 	public class AssociationCollectionTests
 	{
 		private var _collection:AssociationCollection;
@@ -99,6 +102,19 @@ package mesh.model
 			_collection.addItem(order);
 			assertThat(order.isNew, equalTo(true));
 			assertThat(order.isDirty, equalTo(true));
+		}
+		
+		[Test]
+		public function testReset():void
+		{
+			var order:Order = _collection.getItemAt(0) as Order;
+			
+			_collection.reset();
+			
+			assertThat(order.isMarkedForRemoval, equalTo(false));
+			assertThat(_collection.dirtyEntities, emptyArray());
+			assertThat(_collection.length, equalTo(0));
+			assertThat(_collection.isLoaded, equalTo(false));
 		}
 	}
 }

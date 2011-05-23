@@ -33,6 +33,11 @@ package mesh.services
 			return this;
 		}
 		
+		public function cancel():void
+		{
+			
+		}
+		
 		public function execute(handler:Object = null):Request
 		{
 			if (!_isExecuting) {

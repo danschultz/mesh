@@ -36,6 +36,15 @@ package mesh.model.associations
 		/**
 		 * @inheritDoc
 		 */
+		override public function reset():void
+		{
+			super.object = undefined;
+			super.reset();
+		}
+		
+		/**
+		 * @inheritDoc
+		 */
 		override flash_proxy function get object():*
 		{
 			return super.object;

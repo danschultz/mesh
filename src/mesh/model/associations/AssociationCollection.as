@@ -33,7 +33,6 @@ package mesh.model.associations
 			
 			afterLoad(loaded);
 			afterAdd(populateInverseAssociation);
-			
 			afterAdd(registerObserversOnEntity);
 		}
 		
@@ -279,6 +278,22 @@ package mesh.model.associations
 		{
 			callbackIfNotNull("beforeRemove", Entity( getItemAt(index) ));
 			return object.removeItemAt(index);
+		}
+		
+		/**
+		 * @inheritDoc
+		 */
+		override public function reset():void
+		{
+			for each (var entity:Entity in toArray().concat(_removedEntities.toArray())) {
+				unregisterObserversOnEntity(entity);
+			}
+			object.removeEventListener(CollectionEvent.COLLECTION_CHANGE, handleEntitiesCollectionChange);
+			
+			object = undefined;
+			_removedEntities.clear();
+			
+			super.reset();
 		}
 		
 		/**
