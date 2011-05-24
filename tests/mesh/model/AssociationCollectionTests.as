@@ -10,6 +10,7 @@ package mesh.model
 	import org.flexunit.assertThat;
 	import org.hamcrest.collection.array;
 	import org.hamcrest.collection.emptyArray;
+	import org.hamcrest.core.isA;
 	import org.hamcrest.object.equalTo;
 
 	use namespace flash_proxy;
@@ -42,6 +43,14 @@ package mesh.model
 			
 			_collection.flash_proxy::object = target;
 			_collection.callback("afterLoad");
+		}
+		
+		[Test]
+		public function testBuild():void
+		{
+			var order:Order = _collection.build({total:15});
+			assertThat(order.customer.flash_proxy::object, isA(Customer));
+			assertThat(order.total, equalTo(15));
 		}
 		
 		[Test]

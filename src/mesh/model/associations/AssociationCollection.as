@@ -83,6 +83,7 @@ package mesh.model.associations
 			for each (var property:Object in properties) {
 				var entity:Entity = new definition.target();
 				copy(property, entity);
+				populateInverseAssociation(entity);
 				result.push(entity);
 			}
 			return result.length == 1 ? result.pop() : result;
