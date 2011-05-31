@@ -353,8 +353,8 @@ package mesh.model.associations
 		 */
 		override flash_proxy function get dirtyEntities():Array
 		{
-			var result:Array = _removedEntities.toArray();
-			for each (var entity:Entity in this) {
+			var result:Array = [];
+			for each (var entity:Entity in toArray().concat(_removedEntities.toArray())) {
 				if (entity.isDirty) {
 					result.push(entity);
 				}
