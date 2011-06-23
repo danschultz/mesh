@@ -14,7 +14,6 @@ package mesh.model
 	import mesh.model.associations.HasOneDefinition;
 	import mesh.model.validators.Errors;
 	import mesh.model.validators.Validator;
-	import mesh.operations.Operation;
 	import mesh.services.DestroyRequest;
 	import mesh.services.Request;
 	
@@ -133,13 +132,20 @@ package mesh.model
 		}
 		
 		/**
-		 * Reloads the attributes of this entity from the backend.
+		 * Returns a request that will reload the attributes of this entity when executed.
 		 * 
-		 * @return An executing operation.
+		 * @return An unexecuted request.
 		 */
-		public function reload():Operation
+		public function reload():Request
 		{
-			return null;
+			var request:Request = Mesh.service(reflect.clazz).find(id);
+			request.addHandler({
+				success:function():void
+				{
+					translateFrom(request.translateTo());
+				}
+			});
+			return request;
 		}
 		
 		/**

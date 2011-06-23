@@ -390,7 +390,7 @@ package mesh.model.associations
 			}
 			
 			if (value != null && (!(value is Array) && !value.hasOwnProperty("toArray"))) {
-				throw new ArgumentError("AssociationCollection.object must be an Array, have a toArray method, or be null.");
+				throw new ArgumentError("AssociationCollection.object must be an Array, have a 'toArray' method, or be null.");
 			}
 			
 			if (value != object) {
