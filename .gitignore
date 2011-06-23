@@ -1,8 +1,11 @@
 .project
 .flexLibProperties
 .actionScriptProperties
+.fxpProperties
+.DS_Store
+**/.DS_Store
 /.settings
 /.FlexUnitSettings
 *FlexUnit*
+/bin
 /target
-
