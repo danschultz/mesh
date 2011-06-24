@@ -9,6 +9,7 @@ package mesh.model
 	
 	import org.flexunit.assertThat;
 	import org.hamcrest.object.equalTo;
+	import org.hamcrest.object.nullValue;
 	
 	use namespace flash_proxy;
 
@@ -108,6 +109,24 @@ package mesh.model
 			var customer:Request = Mesh.service(Customer).find(_customer.id).execute();
 			customer.account.load().execute();
 			assertThat(customer.account.id, equalTo(account.id));
+		}
+		
+		[Test]
+		public function testReset():void
+		{
+			var account:Account = new Account();
+			account.number = "000-001";
+			
+			_customer.account.object = account;
+			_customer.account.save().execute();
+			_customer.save().execute();
+			
+			var customer:Request = Mesh.service(Customer).find(_customer.id).execute();
+			customer.account.load().execute();
+			
+			customer.account.reset();
+			assertThat(customer.account.object, nullValue());
+			assertThat(customer.account.isLoaded, equalTo(false));
 		}
 	}
 }

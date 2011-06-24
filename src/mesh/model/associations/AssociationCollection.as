@@ -33,7 +33,6 @@ package mesh.model.associations
 			
 			afterLoad(loaded);
 			afterAdd(populateInverseAssociation);
-			
 			afterAdd(registerObserversOnEntity);
 		}
 		
@@ -84,6 +83,7 @@ package mesh.model.associations
 			for each (var property:Object in properties) {
 				var entity:Entity = new definition.target();
 				copy(property, entity);
+				populateInverseAssociation(entity);
 				result.push(entity);
 			}
 			return result.length == 1 ? result.pop() : result;
@@ -284,6 +284,22 @@ package mesh.model.associations
 		/**
 		 * @inheritDoc
 		 */
+		override public function reset():void
+		{
+			for each (var entity:Entity in toArray().concat(_removedEntities.toArray())) {
+				unregisterObserversOnEntity(entity);
+			}
+			object.removeEventListener(CollectionEvent.COLLECTION_CHANGE, handleEntitiesCollectionChange);
+			
+			object = undefined;
+			_removedEntities.clear();
+			
+			super.reset();
+		}
+		
+		/**
+		 * @inheritDoc
+		 */
 		override public function revert():void
 		{
 			super.revert();
@@ -337,8 +353,8 @@ package mesh.model.associations
 		 */
 		override flash_proxy function get dirtyEntities():Array
 		{
-			var result:Array = _removedEntities.toArray();
-			for each (var entity:Entity in this) {
+			var result:Array = [];
+			for each (var entity:Entity in toArray().concat(_removedEntities.toArray())) {
 				if (entity.isDirty) {
 					result.push(entity);
 				}
@@ -374,7 +390,7 @@ package mesh.model.associations
 			}
 			
 			if (value != null && (!(value is Array) && !value.hasOwnProperty("toArray"))) {
-				throw new ArgumentError("AssociationCollection.object must be an Array, have a toArray method, or be null.");
+				throw new ArgumentError("AssociationCollection.object must be an Array, have a 'toArray' method, or be null.");
 			}
 			
 			if (value != object) {

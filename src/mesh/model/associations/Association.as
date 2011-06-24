@@ -159,6 +159,23 @@ package mesh.model.associations
 		}
 		
 		/**
+		 * Clears the association of its loaded data.
+		 */
+		public function reset():void
+		{
+			if (isLoading) {
+				_loadRequest.cancel();
+				_isLoading = false;
+				dispatchEvent( PropertyChangeEvent.createUpdateEvent(this, "isLoading", true, false) );
+			}
+			
+			if (isLoaded) {
+				_isLoaded = false;
+				dispatchEvent( PropertyChangeEvent.createUpdateEvent(this, "isLoaded", true, false) );
+			}
+		}
+		
+		/**
 		 * Changes the state of the object for this association back to what it was at the last save.
 		 */
 		public function revert():void

@@ -4,6 +4,8 @@ package mesh.services
 	
 	import mesh.core.proxy.DataProxy;
 	
+	import mx.managers.CursorManager;
+	
 	public dynamic class Request extends DataProxy
 	{
 		private var _block:Function;
@@ -33,23 +35,40 @@ package mesh.services
 			return this;
 		}
 		
+		public function cancel():void
+		{
+			
+		}
+		
 		public function execute(handler:Object = null):Request
 		{
 			if (!_isExecuting) {
 				_isExecuting = true;
+				
+				showBusyCursor();
 				if (handler != null) {
 					addHandler(handler);
 				}
+				
 				executeBlock(_block);
 			}
 			return this;
 		}
 		
+		private var _useBusyCursor:Boolean;
+		public function useBusyCursor():Request
+		{
+			_useBusyCursor = true;
+			return this;
+		}
+		
 		protected function fault(fault:Object):void
 		{
+			hideBusyCursor();
 			for each (var handler:Object in _handlers) {
 				handler.fault(fault);
 			}
+			_isExecuting = false;
 		}
 		
 		protected function result(data:Object):void
@@ -59,6 +78,7 @@ package mesh.services
 		
 		protected function success():void
 		{
+			hideBusyCursor();
 			for each (var handler:Object in _handlers) {
 				handler.success();
 			}
@@ -83,6 +103,20 @@ package mesh.services
 		protected function executeBlock(block:Function):void
 		{
 			block.apply(null, blockArgs());
+		}
+		
+		private function showBusyCursor():void
+		{
+			if (_useBusyCursor) {
+				CursorManager.setBusyCursor();
+			}
+		}
+		
+		private function hideBusyCursor():void
+		{
+			if (_useBusyCursor) {
+				CursorManager.removeBusyCursor();
+			}
 		}
 	}
 }
