@@ -109,12 +109,18 @@ package mesh.model
 		
 		protected function hasOne(property:String, clazz:Class, options:Object = null):HasOneAssociation
 		{
-			return associate(property, new HasOneDefinition(reflect.clazz, property, clazz, options).createProxy(this));
+			if (!_associations.hasOwnProperty(property)) {
+				_associations[property] = new HasOneDefinition(reflect.clazz, property, clazz, options).createProxy(this);
+			}
+			return _associations[property];
 		}
 		
 		protected function hasMany(property:String, clazz:Class, options:Object = null):HasManyAssociation
 		{
-			return associate(property, new HasManyDefinition(reflect.clazz, property, clazz, options).createProxy(this));
+			if (!_associations.hasOwnProperty(property)) {
+				_associations[property] = new HasManyDefinition(reflect.clazz, property, clazz, options).createProxy(this);
+			}
+			return _associations[property];
 		}
 		
 		/**
