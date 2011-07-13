@@ -83,6 +83,33 @@ package mesh.model
 			_aggregates.add(property, type, mappings);
 		}
 		
+		private var _associationCounter:int;
+		/**
+		 * @private
+		 * 
+		 * Called when this entity has been added to an association. This method should only be
+		 * called internally by Mesh.
+		 */
+		public function associated():void
+		{
+			_associationCounter++;
+			revive();
+		}
+		
+		/**
+		 * @private
+		 * 
+		 * Called when this entity has been removed from an association. This method should only be
+		 * called internally by Mesh.
+		 */
+		public function unassociated():void
+		{
+			_associationCounter--;
+			if (isDestroyableByRemovalFromAssociation) {
+				markForRemoval();
+			}
+		}
+		
 		/**
 		 * Returns an association proxy for the given the given property. The proxy that is
 		 * returned is determined by the relationship type. For instance, if the property is
@@ -545,6 +572,17 @@ package mesh.model
 		public function get isMarkedForRemoval():Boolean
 		{
 			return _isMarkedForRemoval;
+		}
+		
+		/**
+		 * @private
+		 * 
+		 * <code>true</code> if this entity may be destroyed by being removed from an association.
+		 * This may only happen if the entity is not being referenced by any assocations.
+		 */
+		private function get isDestroyableByRemovalFromAssociation():Boolean
+		{
+			return _associationCounter == 0;
 		}
 		
 		private var _reflect:Type;

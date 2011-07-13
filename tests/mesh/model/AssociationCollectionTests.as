@@ -125,5 +125,20 @@ package mesh.model
 			assertThat(_collection.length, equalTo(0));
 			assertThat(_collection.isLoaded, equalTo(false));
 		}
+		
+		[Test]
+		public function testDoNotDestroyEntityThatIsRemovedFromSingleAssociation():void
+		{
+			// Test that when an entity is removed from an association, but belongs to another 
+			// association, it will not be destroyed.
+			var order:Order = _collection.getItemAt(0) as Order;
+			var collection2:AssociationCollection = new Customer().orders;
+			
+			collection2.add(order);
+			_collection.remove(order);
+			
+			_collection.save().execute();
+			assertThat(order.isDestroyed, equalTo(false));
+		}
 	}
 }

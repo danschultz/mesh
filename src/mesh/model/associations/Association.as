@@ -42,8 +42,18 @@ package mesh.model.associations
 			beforeLoad(loading);
 			afterLoad(loaded);
 			
-			beforeAdd(reviveEntity);
-			beforeRemove(markEntityForRemoval);
+			beforeAdd(associated);
+			beforeRemove(unassociated);
+		}
+		
+		private function associated(entity:Entity):void
+		{
+			entity.associated();
+		}
+		
+		private function unassociated(entity:Entity):void
+		{
+			entity.unassociated();
 		}
 		
 		private function addCallback(method:String, block:Function):void
@@ -153,11 +163,6 @@ package mesh.model.associations
 			throw new IllegalOperationError(reflect.name + ".markEntitiesAsFound() is not implemented.");
 		}
 		
-		private function markEntityForRemoval(entity:Entity):void
-		{
-			entity.markForRemoval();
-		}
-		
 		/**
 		 * Clears the association of its loaded data.
 		 */
@@ -181,11 +186,6 @@ package mesh.model.associations
 		public function revert():void
 		{
 			
-		}
-		
-		private function reviveEntity(entity:Entity):void
-		{
-			entity.revive();
 		}
 		
 		public function save():Request
