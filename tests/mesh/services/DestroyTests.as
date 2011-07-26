@@ -22,7 +22,7 @@ package mesh.services
 		[Test]
 		public function testDestroy():void
 		{
-			_customer.destroy().execute();
+			_customer.destroy();
 			
 			var query:Request = Mesh.service(Customer).find(_customer.id).execute({
 				fault:function(data:Object):void

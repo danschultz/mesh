@@ -186,7 +186,7 @@ package mesh.services
 		{
 			return entities.filter(function(entity:Entity, ...args):Boolean
 			{
-				return entity.isMarkedForRemoval;
+				return entity.isDestroyed;
 			});
 		}
 		

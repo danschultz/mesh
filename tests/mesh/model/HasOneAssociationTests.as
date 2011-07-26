@@ -30,7 +30,7 @@ package mesh.model
 			var account:Account = new Account();
 			account.id = 3;
 			account.number = "000-001";
-			account.callback("afterDestroy");
+			account.destroy();
 			
 			_customer.account.object = account;
 			assertThat(_customer.account.isDirty, equalTo(true));
@@ -42,7 +42,7 @@ package mesh.model
 			var account:Account = new Account();
 			account.id = 3;
 			account.number = "000-001";
-			account.callback("afterDestroy");
+			account.destroy();
 			
 			_customer.account.object = account;
 			assertThat(account.isNew, equalTo(true));

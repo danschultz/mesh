@@ -115,19 +115,6 @@ package mesh.model.associations
 		}
 		
 		/**
-		 * Executes an operation that will remove the given entity from this association and from the
-		 * backend. If the entity does not belong to this association, an empty operation is executed
-		 * and nothing is performed.
-		 * 
-		 * @param entity The entity to destroy.
-		 * @return An executing operation.
-		 */
-		public function destroy(entity:Entity):Request
-		{
-			return contains(entity) ? entity.destroy() : new Request();
-		}
-		
-		/**
 		 * @inheritDoc
 		 */
 		public function getItemAt(index:int, prefetch:int = 0):Object
@@ -201,10 +188,6 @@ package mesh.model.associations
 		private function loaded():void
 		{
 			snapshot();
-			
-			for each (var entity:Entity in this) {
-				entity.callback("afterFind");
-			}
 		}
 		
 		private function populateInverseAssociation(entity:Entity):void

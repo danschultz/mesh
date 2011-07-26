@@ -81,7 +81,7 @@ package mesh.model
 			var order:Order = new Order();
 			order.id = 3;
 			order.shippingAddress = new Address("2306 Zanker Rd", "San Jose");
-			order.callback("afterDestroy");
+			order.destroy();
 			
 			_collection.addItem(order);
 			assertThat(_collection.isDirty, equalTo(true));
@@ -106,7 +106,7 @@ package mesh.model
 			var order:Order = new Order();
 			order.id = 3;
 			order.shippingAddress = new Address("2306 Zanker Rd", "San Jose");
-			order.callback("afterDestroy");
+			order.destroy();
 			
 			_collection.addItem(order);
 			assertThat(order.isNew, equalTo(true));
@@ -120,7 +120,7 @@ package mesh.model
 			
 			_collection.reset();
 			
-			assertThat(order.isMarkedForRemoval, equalTo(false));
+			assertThat(order.isDestroyed, equalTo(false));
 			assertThat(_collection.dirtyEntities, emptyArray());
 			assertThat(_collection.length, equalTo(0));
 			assertThat(_collection.isLoaded, equalTo(false));

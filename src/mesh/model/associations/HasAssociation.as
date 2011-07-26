@@ -23,7 +23,7 @@ package mesh.model.associations
 		private function loaded():void
 		{
 			if (object != null) {
-				(object as Entity).callback("afterFind");
+				//(object as Entity).callback("afterFind");
 			}
 		}
 		

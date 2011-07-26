@@ -21,7 +21,7 @@ package mesh.services
 			
 			var result:Array = _deserializer(flatten(data));
 			for each (var entity:Entity in result) {
-				entity.callback("afterFind");
+				//entity.callback("afterFind");
 			}
 			
 			data = result;

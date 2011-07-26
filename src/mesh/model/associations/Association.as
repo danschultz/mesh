@@ -155,7 +155,7 @@ package mesh.model.associations
 		
 		private function markEntityForRemoval(entity:Entity):void
 		{
-			entity.markForRemoval();
+			entity.destroy();
 		}
 		
 		/**

@@ -23,8 +23,6 @@ package mesh.model
 			var order:Order = new Order();
 			order.id = 1;
 			_customer.orders.add(order);
-			
-			_customer.callback("afterFind");
 		}
 		
 		[Test]
@@ -39,7 +37,7 @@ package mesh.model
 		public function testWhatWasReturnsSavedValueAfterSave():void
 		{
 			var newAge:int = ++_customer.age;
-			_customer.callback("afterSave");
+			_customer.save();
 			assertThat(_customer.whatWas("age"), equalTo(newAge));
 		}
 		
@@ -89,7 +87,7 @@ package mesh.model
 		public function testIsNotDirtyWhenNewAndMarkedForRemoval():void
 		{
 			var order:Order = new Order();
-			order.markForRemoval();
+			order.destroy();
 			assertThat(order.isDirty, equalTo(false));
 		}
 		
@@ -111,7 +109,7 @@ package mesh.model
 		public function testIsDirtyWhenMarkedForRemovalAndIsPersisted():void
 		{
 			_customer.id = 1;
-			_customer.markForRemoval();
+			_customer.destroy();
 			assertThat(_customer.isDirty, equalTo(true));
 		}
 	}

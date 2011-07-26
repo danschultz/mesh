@@ -20,7 +20,7 @@ package mesh.services
 		override protected function executeBlock(block:Function):void
 		{
 			for each (var entity:Entity in entities) {
-				entity.callback("before" + _callback);
+				//entity.callback("before" + _callback);
 			}
 			super.executeBlock(block);
 		}
@@ -28,7 +28,7 @@ package mesh.services
 		override protected function success():void
 		{
 			for each (var entity:Entity in entities) {
-				entity.callback("after" + _callback);
+				//entity.callback("after" + _callback);
 			}
 			super.success();
 		}

@@ -14,7 +14,6 @@ package mesh.model
 	import mesh.model.associations.HasOneDefinition;
 	import mesh.model.validators.Errors;
 	import mesh.model.validators.Validator;
-	import mesh.services.DestroyRequest;
 	import mesh.services.Request;
 	
 	import mx.events.PropertyChangeEvent;
@@ -62,7 +61,6 @@ package mesh.model
 		 */
 		public static const ERROR:int = 0x0003;
 		
-		private var _callbacks:Callbacks = new Callbacks();
 		private var _observers:Callbacks = new Callbacks();
 		private var _associations:Object = {};
 		private var _aggregates:Aggregates = new Aggregates(this);
@@ -143,20 +141,6 @@ package mesh.model
 		}
 		
 		/**
-		 * @copy Callbacks#callback()
-		 */
-		public function callback(method:String):void
-		{
-			_callbacks.callback(method);
-			_observers.callback(method, this);
-		}
-		
-		private function addCallback(method:String, block:Function):void
-		{
-			_callbacks.addCallback(method, block);
-		}
-		
-		/**
 		 * Returns a request that will reload the attributes of this entity when executed.
 		 * 
 		 * @return An unexecuted request.
@@ -186,56 +170,11 @@ package mesh.model
 		}
 		
 		/**
-		 * Executes an operation that will destroy this entity from the backend. If the entity also belongs 
-		 * to any associations, it will be removed from those associations.
-		 * 
-		 * @return An executing operation.
+		 * Puts the entity into the destroyed state.
 		 */
-		public function destroy():DestroyRequest
+		public function destroy():void
 		{
-			markForRemoval();
-			return Mesh.service(reflect.clazz).destroy([this]);
-		}
-		
-		protected function beforeDestroy(block:Function):void
-		{
-			addCallback("beforeDestroy", block);
-		}
-		
-		/**
-		 * Adds a callback function that will be executed before a save operation. If this 
-		 * function returns <code>false</code> or throws an error, the save will halt.
-		 * 
-		 * @param block The callback function.
-		 */
-		protected function beforeSave(block:Function):void
-		{
-			addCallback("beforeSave", block);
-		}
-		
-		protected function afterDestroy(block:Function):void
-		{
-			addCallback("afterDestroy", block)
-		}
-		
-		protected function afterFind(block:Function):void
-		{
-			addCallback("afterFind", block);
-		}
-		
-		/**
-		 * Adds a callback function that will be executed after a save operation has finished.
-		 * 
-		 * @param block The callback function.
-		 */
-		protected function afterSave(block:Function):void
-		{
-			addCallback("afterSave", block);
-		}
-		
-		private function destroyed():void
-		{
-			_isDestroyed = true;
+			state = DESTROYED | DIRTY;
 		}
 		
 		private function handlePropertyChange(event:PropertyChangeEvent):void
@@ -333,13 +272,8 @@ package mesh.model
 		 */
 		public function revive():void
 		{
-			if (isMarkedForRemoval) {
-				_isMarkedForRemoval = false;
-			}
-			
 			if (isDestroyed) {
 				id = 0;
-				_isDestroyed = false;
 			}
 		}
 		
@@ -354,11 +288,6 @@ package mesh.model
 			return Mesh.service(reflect.clazz).save([this]);
 		}
 		
-		private function synced():void
-		{
-			changes.clear();
-		}
-		
 		private function markNonLazyAssociationsAsLoaded():void
 		{
 			for each (var association:Association in associations) {
@@ -366,14 +295,6 @@ package mesh.model
 					association.callback("afterLoad");
 				}
 			}
-		}
-		
-		/**
-		 * Marks the entity to be destroyed on its next save call.
-		 */
-		public function markForRemoval():void
-		{
-			_isMarkedForRemoval = true;
 		}
 		
 		/**
@@ -503,13 +424,12 @@ package mesh.model
 			_id = value;
 		}
 		
-		private var _isDestroyed:Boolean;
 		/**
 		 * <code>true</code> if this record has been destroyed.
 		 */
 		public function get isDestroyed():Boolean
 		{
-			return _isDestroyed;
+			return isInState(DESTROYED);
 		}
 		
 		/**
@@ -521,8 +441,7 @@ package mesh.model
 		 */
 		public function get isDirty():Boolean
 		{
-			return (isNew && !isMarkedForRemoval) || 
-				   (isPersisted && (isMarkedForRemoval || hasPropertyChanges || hasDirtyAssociations)); 
+			return isInState(DIRTY); 
 		}
 		
 		/**
@@ -567,15 +486,6 @@ package mesh.model
 		public function get isPersisted():Boolean
 		{
 			return !isNew && !isDestroyed;
-		}
-		
-		private var _isMarkedForRemoval:Boolean;
-		/**
-		 * <code>true</code> if this entity will be removed on its next save call.
-		 */
-		public function get isMarkedForRemoval():Boolean
-		{
-			return _isMarkedForRemoval;
 		}
 		
 		private var _reflect:Type;
