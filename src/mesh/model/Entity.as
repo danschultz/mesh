@@ -31,6 +31,37 @@ package mesh.model
 	 */
 	public class Entity extends EventDispatcher
 	{
+		/**
+		 * The generic lifecycle state for when the entity has been loaded.
+		 */
+		public static const READY:int = 0x0100;
+		
+		/**
+		 * The generic lifecycle state for when the entity is communicating with the
+		 * data source.
+		 */
+		public static const BUSY:int = 0x0200;
+		
+		/**
+		 * The generic lifecycle state for when the entity has been destroyed.
+		 */
+		public static const DESTROYED:int = 0x0300;
+		
+		/**
+		 * The generic lifecycle state for when there are no changes to be committed.
+		 */
+		public static const CLEAN:int = 0x0001;
+		
+		/**
+		 * The generic lifecycle state for when there are changes to be committed.
+		 */
+		public static const DIRTY:int = 0x0002;
+		
+		/**
+		 * The generic lifecycle state for when there's an error after a commit.
+		 */
+		public static const ERROR:int = 0x0003;
+		
 		private var _callbacks:Callbacks = new Callbacks();
 		private var _observers:Callbacks = new Callbacks();
 		private var _associations:Object = {};
@@ -43,18 +74,6 @@ package mesh.model
 		{
 			super();
 			copy(values, this);
-			
-			// add necessary callbacks for find
-			afterFind(markNonLazyAssociationsAsLoaded);
-			afterFind(synced);
-			
-			// add necessary callbacks for save
-			beforeSave(validate);
-			afterSave(synced);
-			
-			// add necessary callback for destroy
-			afterDestroy(destroyed);
-			
 			addEventListener(PropertyChangeEvent.PROPERTY_CHANGE, handlePropertyChange);
 		}
 		
@@ -232,7 +251,7 @@ package mesh.model
 		 */
 		public function hashCode():Object
 		{
-			return id;
+			return storeKey;
 		}
 		
 		/**
@@ -245,6 +264,18 @@ package mesh.model
 		public function hasChanged(property:String):Boolean
 		{
 			return changes.hasChanged(property);
+		}
+		
+		/**
+		 * Performs a check to see if this entity is in the given state. This method uses the
+		 * logical <code>&</code> operator when testing the status.
+		 * 
+		 * @param state The state to test against.
+		 * @return <code>true</code> if the states match.
+		 */
+		public function isInState(value:int):Boolean
+		{
+			return (state & value) != 0;
 		}
 		
 		/**
@@ -559,5 +590,16 @@ package mesh.model
 			}
 			return _reflect;
 		}
+		
+		[Bindable]
+		/**
+		 * The current state of the entity in its lifecycle.
+		 */
+		public var state:int;
+		
+		/**
+		 * The global unique identifier assigned to this entity by the store.
+		 */
+		public var storeKey:Object;
 	}
 }

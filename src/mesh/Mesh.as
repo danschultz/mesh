@@ -1,5 +1,6 @@
 package mesh
 {
+	import mesh.model.EntityStore;
 	import mesh.services.Service;
 	import mesh.services.Services;
 
@@ -25,5 +26,10 @@ package mesh
 		{
 			return services.serviceFor(type);
 		}
+		
+		/**
+		 * The repository of all <code>Entity</code>s in the application.
+		 */
+		public static var store:EntityStore;
 	}
 }
