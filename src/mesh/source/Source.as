@@ -6,8 +6,18 @@ package mesh.source
 	import mesh.model.Store;
 	import mesh.model.query.Query;
 
+	/**
+	 * The <code>Source</code> class is responsible for persisting an <code>Entity</code>.
+	 * The class defines methods for creating, retrieving, updating and destroying an entity.
+	 * These methods must be overridden by sub-classes to perform the persistence.
+	 * 
+	 * @author Dan Schultz
+	 */
 	public class Source
 	{
+		/**
+		 * Constructor.
+		 */
 		public function Source()
 		{
 			
@@ -15,7 +25,20 @@ package mesh.source
 		
 		public function commit(store:Store, entities:Array):void
 		{
-			throw new IllegalOperationError("EntitySource.commit() is not implemented.");
+			createEach(store, entities.filter(function(entity:Entity, ...args):Boolean
+			{
+				return entity.isNew && entity.isDirty;
+			}));
+			
+			updateEach(store, entities.filter(function(entity:Entity, ...args):Boolean
+			{
+				return !entity.isNew && !entity.isDestroyed && entity.isDirty;
+			}));
+			
+			destroyEach(store, entities.filter(function(entity:Entity, ...args):Boolean
+			{
+				return entity.isDestroyed && entity.isDirty;
+			}));
 		}
 		
 		public function create(store:Store, entity:Entity):void
@@ -68,6 +91,27 @@ package mesh.source
 		{
 			for each (var entity:Entity in entities) {
 				update(store, entity);
+			}
+		}
+		
+		protected function destroyed(...entities):void
+		{
+			for each (var entity:Entity in entities) {
+				entity.state = Entity.DESTROYED | Entity.CLEAN;
+			}
+		}
+		
+		protected function saved(...entities):void
+		{
+			for each (var entity:Entity in entities) {
+				entity.state = Entity.READY | Entity.CLEAN;
+			}
+		}
+		
+		protected function errored(...entities):void
+		{
+			for each (var entity:Entity in entities) {
+				entity.state |= Entity.ERROR;
 			}
 		}
 	}

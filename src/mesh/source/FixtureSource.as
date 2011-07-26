@@ -2,6 +2,7 @@ package mesh.source
 {
 	import flash.errors.IllegalOperationError;
 	import flash.utils.Dictionary;
+	import flash.utils.setTimeout;
 	
 	import mesh.core.object.merge;
 	import mesh.model.Entity;
@@ -45,6 +46,7 @@ package mesh.source
 				throw new IllegalOperationError("Attempted to destroy a non-existent entity.");
 			}
 			delete _fixtures[entity.id];
+			setTimeout(destroyed, latency, entity);
 		}
 		
 		/**
@@ -56,6 +58,7 @@ package mesh.source
 				throw new IllegalOperationError("Attempted to update a new entity.");
 			}
 			_fixtures[entity.id] = entity.translateTo();
+			setTimeout(saved, latency, entity);
 		}
 		
 		private function get latency():Number

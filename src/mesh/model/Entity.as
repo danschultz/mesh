@@ -59,7 +59,7 @@ package mesh.model
 		/**
 		 * The generic lifecycle state for when there's an error after a commit.
 		 */
-		public static const ERROR:int = 0x0003;
+		public static const ERROR:int = 0x1000;
 		
 		private var _observers:Callbacks = new Callbacks();
 		private var _associations:Object = {};

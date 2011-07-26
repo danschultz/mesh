@@ -5,6 +5,7 @@ package mesh.model
 	import flash.events.EventDispatcher;
 	import flash.utils.Dictionary;
 	
+	import mesh.core.array.flatten;
 	import mesh.core.reflection.newInstance;
 	import mesh.source.Source;
 	
@@ -24,9 +25,9 @@ package mesh.model
 			_dataSource = dataSource;
 		}
 		
-		public function commit(entities:Object):void
+		public function commit(...entities):void
 		{
-			
+			_dataSource.commit(this, flatten(entities));
 		}
 		
 		public function create(...args):*
@@ -91,6 +92,7 @@ package mesh.model
 			}
 			entity.removeEventListener(PropertyChangeEvent.PROPERTY_CHANGE, handleEntityPropertyChange);
 			delete _keyToEntity[entity.storeKey];
+			_changes.remove(entity);
 		}
 	}
 }
