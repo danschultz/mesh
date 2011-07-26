@@ -425,6 +425,14 @@ package mesh.model
 		}
 		
 		/**
+		 * <code>true</code> if this record is in a clean state.
+		 */
+		public function get isClean():Boolean
+		{
+			return isInState(CLEAN);
+		}
+		
+		/**
 		 * <code>true</code> if this record has been destroyed.
 		 */
 		public function get isDestroyed():Boolean

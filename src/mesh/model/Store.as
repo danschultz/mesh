@@ -70,9 +70,9 @@ package mesh.model
 		{
 			var entity:Entity = Entity( event.source );
 			if (event.property == "state") {
-				if (entity.isInState(Entity.DIRTY)) {
+				if (entity.isDirty) {
 					_changes.add(entity);
-				} else if (entity.isInState(Entity.CLEAN)) {
+				} else if (entity.isClean) {
 					_changes.remove(entity);
 				}
 			}
