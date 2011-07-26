@@ -5,9 +5,9 @@ package mesh.source
 	
 	import mesh.core.object.merge;
 	import mesh.model.Entity;
-	import mesh.model.EntityStore;
+	import mesh.model.Store;
 
-	public class FixtureEntitySource extends EntitySource
+	public class FixtureSource extends Source
 	{
 		private var _fixtures:Dictionary = new Dictionary();
 		private var _idCounter:int;
@@ -18,7 +18,7 @@ package mesh.source
 		 * 
 		 * @param options The options for this source.
 		 */
-		public function FixtureEntitySource(options:Object = null)
+		public function FixtureSource(options:Object = null)
 		{
 			super();
 			_options = merge({latency:250}, options);
@@ -27,7 +27,7 @@ package mesh.source
 		/**
 		 * @inheritDoc
 		 */
-		override public function create(store:EntityStore, entity:Entity):void
+		override public function create(store:Store, entity:Entity):void
 		{
 			if (!entity.isNew) {
 				throw new ArgumentError("Attempted to create an non-new entity.");
@@ -39,7 +39,7 @@ package mesh.source
 		/**
 		 * @inheritDoc
 		 */
-		override public function destroy(store:EntityStore, entity:Entity):void
+		override public function destroy(store:Store, entity:Entity):void
 		{
 			if (_fixtures[entity.id] == null) {
 				throw new IllegalOperationError("Attempted to destroy a non-existent entity.");
@@ -50,7 +50,7 @@ package mesh.source
 		/**
 		 * @inheritDoc
 		 */
-		override public function update(store:EntityStore, entity:Entity):void
+		override public function update(store:Store, entity:Entity):void
 		{
 			if (entity.isNew) {
 				throw new IllegalOperationError("Attempted to update a new entity.");

@@ -1,6 +1,6 @@
 package mesh
 {
-	import mesh.model.EntityStore;
+	import mesh.model.Store;
 	import mesh.services.Service;
 	import mesh.services.Services;
 
@@ -30,6 +30,6 @@ package mesh
 		/**
 		 * The repository of all <code>Entity</code>s in the application.
 		 */
-		public static var store:EntityStore;
+		public static var store:Store;
 	}
 }

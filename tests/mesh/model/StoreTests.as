@@ -1,6 +1,6 @@
 package mesh.model
 {
-	public class EntityStoreTests
+	public class StoreTests
 	{
 		[Before]
 		public function setup():void

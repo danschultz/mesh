@@ -6,18 +6,19 @@ package mesh.model
 	import flash.utils.Dictionary;
 	
 	import mesh.core.reflection.newInstance;
-	import mesh.source.EntitySource;
+	import mesh.source.Source;
 	
 	import mx.events.PropertyChangeEvent;
 
-	public class EntityStore extends EventDispatcher
+	public class Store extends EventDispatcher
 	{
 		private var _keyCounter:Number = 0;
 		private var _keyToEntity:Dictionary = new Dictionary();
-		private var _dataSource:EntitySource;
 		private var _changes:HashSet = new HashSet();
 		
-		public function EntityStore(dataSource:EntitySource)
+		private var _dataSource:Source;
+		
+		public function Store(dataSource:Source)
 		{
 			super();
 			_dataSource = dataSource;
@@ -47,15 +48,17 @@ package mesh.model
 			
 			if (entity.isNew) {
 				entity.storeKey = ++_keyCounter;
-				store(entity);
+				register(entity);
 			}
 			
 			return entity;
 		}
 		
-		public function destroy(...args):void
+		public function destroy(...entities):void
 		{
-			
+			for each (var entity:Entity in entities) {
+				entity.destroy();
+			}
 		}
 		
 		public function find(...args):void
@@ -75,19 +78,19 @@ package mesh.model
 			}
 		}
 		
-		private function purge(entity:Entity):void
+		private function register(entity:Entity):void
+		{
+			_keyToEntity[entity.storeKey] = entity;
+			entity.addEventListener(PropertyChangeEvent.PROPERTY_CHANGE, handleEntityPropertyChange);
+		}
+		
+		private function unregister(entity:Entity):void
 		{
 			if (_keyToEntity[entity.storeKey] == null) {
 				throw new ArgumentError("Entity '" + entity + "' not found in store");
 			}
 			entity.removeEventListener(PropertyChangeEvent.PROPERTY_CHANGE, handleEntityPropertyChange);
 			delete _keyToEntity[entity.storeKey];
-		}
-		
-		private function store(entity:Entity):void
-		{
-			_keyToEntity[entity.storeKey] = entity;
-			entity.addEventListener(PropertyChangeEvent.PROPERTY_CHANGE, handleEntityPropertyChange);
 		}
 	}
 }
