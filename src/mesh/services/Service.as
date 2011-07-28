@@ -194,7 +194,7 @@ package mesh.services
 		{
 			return entities.filter(function(entity:Entity, ...args):Boolean
 			{
-				return entity.isPersisted && entity.isDirty;
+				return entity.isPersisted && !entity.isMarkedForRemoval && entity.isDirty;
 			});
 		}
 		
