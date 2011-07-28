@@ -43,7 +43,7 @@ package mesh.source
 		
 		public function create(store:Store, entity:Entity):void
 		{
-			throw new IllegalOperationError("EntitySource.createEntity() is not implemented.");
+			throw new IllegalOperationError("EntitySource.create() is not implemented.");
 		}
 		
 		public function createEach(store:Store, entities:Array):void
@@ -55,7 +55,7 @@ package mesh.source
 		
 		public function destroy(store:Store, entity:Entity):void
 		{
-			throw new IllegalOperationError("EntitySource.destroyEntity() is not implemented.");
+			throw new IllegalOperationError("EntitySource.destroy() is not implemented.");
 		}
 		
 		public function destroyEach(store:Store, entities:Array):void
@@ -70,21 +70,21 @@ package mesh.source
 			throw new IllegalOperationError("EntitySource.fetch() is not implemented.");
 		}
 		
-		public function retrieve(store:Store, id:*):void
+		public function retrieve(store:Store, entity:Entity):void
 		{
-			throw new IllegalOperationError("EntitySource.retrieveEntity() is not implemented.");
+			throw new IllegalOperationError("EntitySource.retrieve() is not implemented.");
 		}
 		
-		public function retrieveEach(store:Store, ids:Array):void
+		public function retrieveEach(store:Store, entities:Array):void
 		{
-			for each (var id:* in ids) {
-				retrieve(store, id);
+			for each (var entity:Entity in entities) {
+				retrieve(store, entity);
 			}
 		}
 		
 		public function update(store:Store, entity:Entity):void
 		{
-			throw new IllegalOperationError("EntitySource.updateEntity() is not implemented.");
+			throw new IllegalOperationError("EntitySource.update() is not implemented.");
 		}
 		
 		public function updateEach(store:Store, entities:Array):void
