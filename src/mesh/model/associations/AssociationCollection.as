@@ -30,10 +30,6 @@ package mesh.model.associations
 		{
 			super(source, definition);
 			object = [];
-			
-			afterLoad(loaded);
-			afterAdd(populateInverseAssociation);
-			afterAdd(registerObserversOnEntity);
 		}
 		
 		/**
@@ -174,7 +170,6 @@ package mesh.model.associations
 		{
 			remove(entity);
 			_removedEntities.remove(entity);
-			unregisterObserversOnEntity(entity);
 		}
 		
 		/**
@@ -205,16 +200,6 @@ package mesh.model.associations
 					throw new IllegalOperationError("Inverse property '" + definition.inverse + "' not defined on " + entity.reflect.name);
 				}
 			}
-		}
-		
-		private function registerObserversOnEntity(entity:Entity):void
-		{
-			entity.addObserver("afterDestroy", handleEntityDestroyed);
-		}
-		
-		private function unregisterObserversOnEntity(entity:Entity):void
-		{
-			entity.removeObserver("afterDestroy", handleEntityDestroyed);
 		}
 		
 		/**
@@ -269,9 +254,6 @@ package mesh.model.associations
 		 */
 		override public function reset():void
 		{
-			for each (var entity:Entity in toArray().concat(_removedEntities.toArray())) {
-				unregisterObserversOnEntity(entity);
-			}
 			object.removeEventListener(CollectionEvent.COLLECTION_CHANGE, handleEntitiesCollectionChange);
 			
 			object = undefined;

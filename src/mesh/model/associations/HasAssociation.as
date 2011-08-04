@@ -90,19 +90,10 @@ package mesh.model.associations
 		}
 		override flash_proxy function set object(value:*):void
 		{
-			if (object != null) {
-				object.removeObserver("afterDestroy", targetDestroyed);
-				object.removeObserver("afterSave", targetSaved);
-			}
-			
 			super.object = value;
 			
 			if (object != null) {
 				object.revive();
-				
-				object.addObserver("afterSave", targetSaved);
-				object.addObserver("afterSave", populateForeignKey);
-				object.addObserver("afterDestroy", targetDestroyed);
 			}
 		}
 	}

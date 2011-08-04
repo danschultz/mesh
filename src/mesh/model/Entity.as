@@ -1,5 +1,6 @@
 package mesh.model
 {
+	import flash.errors.IllegalOperationError;
 	import flash.events.EventDispatcher;
 	import flash.utils.flash_proxy;
 	
@@ -9,9 +10,8 @@ package mesh.model
 	import mesh.core.reflection.Type;
 	import mesh.model.associations.Association;
 	import mesh.model.associations.HasManyAssociation;
-	import mesh.model.associations.HasManyDefinition;
 	import mesh.model.associations.HasOneAssociation;
-	import mesh.model.associations.HasOneDefinition;
+	import mesh.model.query.Query;
 	import mesh.model.validators.Errors;
 	import mesh.model.validators.Validator;
 	import mesh.services.Request;
@@ -19,9 +19,6 @@ package mesh.model
 	import mx.events.PropertyChangeEvent;
 	
 	use namespace flash_proxy;
-	
-	[Exclude(kind="method", name="addObserver")]
-	[Exclude(kind="method", name="removeObserver")]
 	
 	/**
 	 * An entity.
@@ -31,37 +28,41 @@ package mesh.model
 	public class Entity extends EventDispatcher
 	{
 		/**
-		 * The generic lifecycle state for when the entity has been loaded.
+		 * The generic lifecycle state for when the entity is new.
 		 */
-		public static const READY:int = 0x0100;
+		public static const INITIALIZED:int = 0x00100;
 		
 		/**
-		 * The generic lifecycle state for when the entity is communicating with the
-		 * data source.
+		 * The generic lifecyle state for when an entity exists locally and on the server.
 		 */
-		public static const BUSY:int = 0x0200;
+		public static const PERSISTED:int = 0x00200;
 		
 		/**
 		 * The generic lifecycle state for when the entity has been destroyed.
 		 */
-		public static const DESTROYED:int = 0x0300;
-		
-		/**
-		 * The generic lifecycle state for when there are no changes to be committed.
-		 */
-		public static const CLEAN:int = 0x0001;
+		public static const DESTROYED:int = 0x00400;
 		
 		/**
 		 * The generic lifecycle state for when there are changes to be committed.
 		 */
-		public static const DIRTY:int = 0x0002;
+		public static const DIRTY:int = 0x0001;
+		
+		/**
+		 * The generic lifecycle state for when the changes have been synced with the
+		 * backend.
+		 */
+		public static const SYNCED:int = 0x0002;
 		
 		/**
 		 * The generic lifecycle state for when there's an error after a commit.
 		 */
-		public static const ERROR:int = 0x1000;
+		public static const ERRORED:int = 0x1000;
 		
-		private var _observers:Callbacks = new Callbacks();
+		/**
+		 * The generic lifecycle state for when an entity is busy.
+		 */
+		public static const BUSY:int = 0x01000;
+		
 		private var _associations:Object = {};
 		private var _aggregates:Aggregates = new Aggregates(this);
 		
@@ -73,26 +74,6 @@ package mesh.model
 			super();
 			copy(values, this);
 			addEventListener(PropertyChangeEvent.PROPERTY_CHANGE, handlePropertyChange);
-		}
-		
-		/**
-		 * @private
-		 * 
-		 * Not sure how observers are going to play out yet.
-		 */
-		public function addObserver(method:String, block:Function):void
-		{
-			_observers.addCallback(method, block);
-		}
-		
-		/**
-		 * @private
-		 * 
-		 * Not sure how observers are going to play out yet.
-		 */
-		public function removeObserver(method:String, block:Function):void
-		{
-			_observers.removeCallback(method, block);
 		}
 		
 		protected function aggregate(property:String, type:Class, mappings:Array):void
@@ -116,28 +97,54 @@ package mesh.model
 			return _associations[property];
 		}
 		
+		/**
+		 * Maps a property to an association object.
+		 * 
+		 * @param property The property to associate.
+		 * @param association The association to map.
+		 * @return The mapped association.
+		 */
 		protected function associate(property:String, association:Association):*
 		{
-			if (!_associations.hasOwnProperty(property)) {
-				_associations[property] = association;
-			}
+			_associations[property] = association;
 			return _associations[property];
 		}
 		
-		protected function hasOne(property:String, clazz:Class, options:Object = null):HasOneAssociation
+		/**
+		 * Sets up a has-one association for a property.
+		 * 
+		 * @param property The property that owns the association.
+		 * @param query The query to retrieve data for the association.
+		 * @param options Any options to configure the association.
+		 * @return The association object.
+		 */
+		protected function hasOne(property:String, query:Query, options:Object = null):HasOneAssociation
 		{
-			if (!_associations.hasOwnProperty(property)) {
-				_associations[property] = new HasOneDefinition(reflect.clazz, property, clazz, options).createProxy(this);
-			}
-			return _associations[property];
+			throw new IllegalOperationError("Entity.hasOne() is not implemented.");
 		}
 		
-		protected function hasMany(property:String, clazz:Class, options:Object = null):HasManyAssociation
+		/**
+		 * Sets up a has-many association for a property.
+		 * 
+		 * @param property The property that owns the association.
+		 * @param query The query to retrieve data for the association.
+		 * @param options Any options to configure the association.
+		 * @return The association object.
+		 */
+		protected function hasMany(property:String, query:Query, options:Object = null):HasManyAssociation
 		{
-			if (!_associations.hasOwnProperty(property)) {
-				_associations[property] = new HasManyDefinition(reflect.clazz, property, clazz, options).createProxy(this);
-			}
-			return _associations[property];
+			throw new IllegalOperationError("Entity.hasMany() is not implemented.");
+		}
+		
+		/**
+		 * Checks if an association has been defined for a property.
+		 * 
+		 * @param property The property to check.
+		 * @return <code>true</code> if the property has a defined association.
+		 */
+		protected function isAssociated(property:String):Boolean
+		{
+			return _associations.hasOwnProperty(property);
 		}
 		
 		/**
@@ -151,7 +158,7 @@ package mesh.model
 			request.addHandler({
 				success:function():void
 				{
-					translateFrom(request.translateTo());
+					deserialize(request.translateTo());
 				}
 			});
 			return request;
@@ -170,11 +177,35 @@ package mesh.model
 		}
 		
 		/**
-		 * Puts the entity into the destroyed state.
+		 * Marks this entity as destroyed and dirty.
+		 * 
+		 * @return This instance.
 		 */
-		public function destroy():void
+		public function destroy():Entity
 		{
-			state = DESTROYED | DIRTY;
+			return destroyed().dirty();
+		}
+		
+		/**
+		 * Puts the entity into the destroyed state.
+		 * 
+		 * @return This entity.
+		 */
+		public function destroyed():Entity
+		{
+			state = DESTROYED;
+			return this;
+		}
+		
+		/**
+		 * Puts this entity into a dirty state.
+		 * 
+		 * @return This instance.
+		 */
+		public function dirty():Entity
+		{
+			state = (state ^ 0xF) | DIRTY;
+			return this;
 		}
 		
 		private function handlePropertyChange(event:PropertyChangeEvent):void
@@ -246,6 +277,17 @@ package mesh.model
 		}
 		
 		/**
+		 * Marks the entity as being persisted.
+		 * 
+		 * @return This instance.
+		 */
+		public function persisted():Entity
+		{
+			state = PERSISTED;
+			return this;
+		}
+		
+		/**
 		 * Marks a property on the entity as being dirty. This method allows sub-classes to manually 
 		 * manage when a property changes.
 		 * 
@@ -288,13 +330,15 @@ package mesh.model
 			return Mesh.service(reflect.clazz).save([this]);
 		}
 		
-		private function markNonLazyAssociationsAsLoaded():void
+		/**
+		 * Marks the entity as being synced with the server.
+		 * 
+		 * @return This instance.
+		 */
+		public function synced():Entity
 		{
-			for each (var association:Association in associations) {
-				if (!association.definition.isLazy && !association.isLoaded) {
-					association.callback("afterLoad");
-				}
-			}
+			state = (state ^ 0xF) | SYNCED;
+			return this;
 		}
 		
 		/**
@@ -306,23 +350,21 @@ package mesh.model
 		}
 		
 		/**
-		 * Copies the translated values on the given object to this entity. This method is useful for
-		 * copying the values of a transfer object or XML into the entity for service calls.
+		 * Copies the deserialized values from the given object to this entity.
 		 * 
-		 * @param object The object to translate and copy.
+		 * @param object The object to deserialize and copy.
 		 */
-		public function translateFrom(object:Object):void
+		public function deserialize(object:Object):void
 		{
 			
 		}
 		
 		/**
-		 * Creates a new translation object, which is useful for creating transfer objects or XML for
-		 * service calls.
+		 * Serializes the properties of this entity for persisting the object to the server.
 		 * 
-		 * @return A new translation object.
+		 * @return The serialized object.
 		 */
-		public function translateTo():*
+		public function serialize():*
 		{
 			return null;
 		}
@@ -412,24 +454,15 @@ package mesh.model
 		}
 		public function set id(value:*):void
 		{
-			if (value == 0) {
-				value = undefined;
-			}
-			if (value == "") {
-				value = undefined;
-			}
-			if (value == null) {
-				value = undefined;
-			}
 			_id = value;
 		}
 		
 		/**
-		 * <code>true</code> if this record is in a clean state.
+		 * <code>true</code> if this record has been synced with the server.
 		 */
-		public function get isClean():Boolean
+		public function get isSynced():Boolean
 		{
-			return isInState(CLEAN);
+			return isInState(SYNCED);
 		}
 		
 		/**
@@ -484,7 +517,7 @@ package mesh.model
 		 */
 		public function get isNew():Boolean
 		{
-			return id === undefined;
+			return isInState(INITIALIZED);
 		}
 		
 		/**
@@ -493,7 +526,7 @@ package mesh.model
 		 */
 		public function get isPersisted():Boolean
 		{
-			return !isNew && !isDestroyed;
+			return isInState(PERSISTED);
 		}
 		
 		private var _reflect:Type;
@@ -514,6 +547,11 @@ package mesh.model
 		 * The current state of the entity in its lifecycle.
 		 */
 		public var state:int;
+		
+		/**
+		 * The store that owns this entity.
+		 */
+		public var store:Store;
 		
 		/**
 		 * The global unique identifier assigned to this entity by the store.

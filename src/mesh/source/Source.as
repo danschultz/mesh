@@ -97,21 +97,21 @@ package mesh.source
 		protected function destroyed(...entities):void
 		{
 			for each (var entity:Entity in entities) {
-				entity.state = Entity.DESTROYED | Entity.CLEAN;
+				entity.destroyed().synced();
 			}
 		}
 		
 		protected function saved(...entities):void
 		{
 			for each (var entity:Entity in entities) {
-				entity.state = Entity.READY | Entity.CLEAN;
+				entity.persisted().synced();
 			}
 		}
 		
 		protected function errored(...entities):void
 		{
 			for each (var entity:Entity in entities) {
-				entity.state |= Entity.ERROR;
+				entity.state |= Entity.ERRORED;
 			}
 		}
 	}

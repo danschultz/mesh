@@ -27,21 +27,21 @@ package mesh
 			super(properties);
 		}
 		
-		override public function translateTo():*
+		override public function serialize():*
 		{
-			var result:Object = super.translateTo();
+			var result:Object = super.serialize();
 			copy(this, result, {includes:["address", "accountId"]});
 			return result;
 		}
 		
 		public function get account():HasOneAssociation
 		{
-			return hasOne("account", Account, {foreignKey:"accountId", autoSave:true});
+			return hasOne("account", null, {foreignKey:"accountId", autoSave:true});
 		}
 		
 		public function get orders():HasManyAssociation
 		{
-			return hasMany("orders", Order, {inverse:"customer", autoSave:true});
+			return hasMany("orders", null, {inverse:"customer", autoSave:true});
 		}
 	}
 }

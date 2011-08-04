@@ -57,7 +57,7 @@ package mesh.source
 			if (entity.isNew) {
 				throw new IllegalOperationError("Attempted to update a new entity.");
 			}
-			_fixtures[entity.id] = entity.translateTo();
+			_fixtures[entity.id] = entity.serialize();
 			setTimeout(saved, latency, entity);
 		}
 		

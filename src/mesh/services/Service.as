@@ -81,7 +81,7 @@ package mesh.services
 			return items.map(function(item:Object, ...args):Entity
 			{
 				var entity:Entity = _options.factory != null ? _options.factory(item) : new _entity();
-				entity.translateFrom(item);
+				entity.deserialize(item);
 				return entity;
 			});
 		}
@@ -90,7 +90,7 @@ package mesh.services
 		{
 			return entities.map(function(entity:Entity, ...args):Object
 			{
-				return entity.translateTo();
+				return entity.serialize();
 			});
 		}
 		

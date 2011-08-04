@@ -131,7 +131,7 @@ package mesh.source
 		private function invokeEach(store:Store, method:String, entities:Array):void
 		{
 			var grouped:Dictionary = groupByType(entities);
-			for (var type:Class in grouped) {
+			for (var type:* in grouped) {
 				throwIfUnmapped(type);
 				sourceFor(type)[method](store, grouped[type]);
 			}
@@ -145,7 +145,7 @@ package mesh.source
 				if (result[type] == null) {
 					result[type] = [];
 				}
-				result[type].push(entity);
+				(result[type] as Array).push(entity);
 			}
 			return result;
 		}

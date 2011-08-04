@@ -20,12 +20,12 @@ package mesh
 			super();
 		}
 		
-		override public function translateFrom(object:Object):void
+		override public function deserialize(object:Object):void
 		{
 			copy(object, this);
 		}
 		
-		override public function translateTo():*
+		override public function serialize():*
 		{
 			var object:Object = {};
 			copy(this, object, {includes:["id", "number"]});
@@ -34,7 +34,7 @@ package mesh
 		
 		public function get customer():HasOneAssociation
 		{
-			return hasOne("customer", Customer);
+			return hasOne("customer", null);
 		}
 		public function set customer(value:HasOneAssociation):void
 		{

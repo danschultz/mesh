@@ -22,12 +22,12 @@ package mesh
 			super(properties);
 		}
 		
-		override public function translateFrom(object:Object):void
+		override public function deserialize(object:Object):void
 		{
 			copy(object, this);
 		}
 		
-		override public function translateTo():*
+		override public function serialize():*
 		{
 			var obj:Object = {};
 			copy(this, obj, {includes:["id", "age", "name"]});

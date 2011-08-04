@@ -48,7 +48,6 @@ package mesh.model
 			}
 			
 			if (entity.isNew) {
-				entity.storeKey = ++_keyCounter;
 				register(entity);
 			}
 			
@@ -58,7 +57,7 @@ package mesh.model
 		public function destroy(...entities):void
 		{
 			for each (var entity:Entity in entities) {
-				entity.destroy();
+				entity.destroyed().dirty();
 			}
 		}
 		
@@ -67,13 +66,23 @@ package mesh.model
 			
 		}
 		
+		/**
+		 * Returns a new globally unique store ID.
+		 * 
+		 * @return A new store ID.
+		 */
+		protected function generateStoreKey():Number
+		{
+			return ++_keyCounter;
+		}
+		
 		private function handleEntityPropertyChange(event:PropertyChangeEvent):void
 		{
 			var entity:Entity = Entity( event.source );
 			if (event.property == "state") {
 				if (entity.isDirty) {
 					_changes.add(entity);
-				} else if (entity.isClean) {
+				} else if (entity.isSynced) {
 					_changes.remove(entity);
 				}
 			}
@@ -82,6 +91,8 @@ package mesh.model
 		private function register(entity:Entity):void
 		{
 			_keyToEntity[entity.storeKey] = entity;
+			entity.store = this;
+			entity.storeKey = generateStoreKey();
 			entity.addEventListener(PropertyChangeEvent.PROPERTY_CHANGE, handleEntityPropertyChange);
 		}
 		
@@ -90,6 +101,7 @@ package mesh.model
 			if (_keyToEntity[entity.storeKey] == null) {
 				throw new ArgumentError("Entity '" + entity + "' not found in store");
 			}
+			entity.store = null;
 			entity.removeEventListener(PropertyChangeEvent.PROPERTY_CHANGE, handleEntityPropertyChange);
 			delete _keyToEntity[entity.storeKey];
 			_changes.remove(entity);
