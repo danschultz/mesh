@@ -28,6 +28,12 @@ package mesh.model
 	public class Entity extends EventDispatcher
 	{
 		/**
+		 * The generic lifecycle state for when the entity has just been
+		 * created, but not loaded.
+		 */
+		public static const EMPTY:int = 0x00000;
+		
+		/**
 		 * The generic lifecycle state for when the entity is new.
 		 */
 		public static const INITIALIZED:int = 0x00100;
@@ -45,23 +51,33 @@ package mesh.model
 		/**
 		 * The generic lifecycle state for when there are changes to be committed.
 		 */
-		public static const DIRTY:int = 0x0001;
+		public static const DIRTY:int = 0x00001;
 		
 		/**
 		 * The generic lifecycle state for when the changes have been synced with the
 		 * backend.
 		 */
-		public static const SYNCED:int = 0x0002;
+		public static const SYNCED:int = 0x00002;
 		
 		/**
 		 * The generic lifecycle state for when there's an error after a commit.
 		 */
-		public static const ERRORED:int = 0x1000;
+		public static const ERRORED:int = 0x01000;
 		
 		/**
-		 * The generic lifecycle state for when an entity is busy.
+		 * The generic lifecycle state for when an entity is loading.
 		 */
-		public static const BUSY:int = 0x01000;
+		public static const LOADING:int = 0x02000;
+		
+		/**
+		 * The generic lifecycle state for when an entity is saving its changes.
+		 */
+		public static const COMMITTING:int = 0x04000;
+		
+		/**
+		 * The generic lifecycle state for when an entity is either loading or committing.
+		 */
+		public static const BUSY:int = LOADING | COMMITTING;
 		
 		private var _associations:Object = {};
 		private var _aggregates:Aggregates = new Aggregates(this);
@@ -546,7 +562,7 @@ package mesh.model
 		/**
 		 * The current state of the entity in its lifecycle.
 		 */
-		public var state:int;
+		public var state:int = EMPTY;
 		
 		/**
 		 * The store that owns this entity.
