@@ -1,5 +1,6 @@
 package mesh.model.query
 {
+	import mesh.core.reflection.reflect;
 	import mesh.model.Entity;
 
 	/**
@@ -13,9 +14,9 @@ package mesh.model.query
 		/**
 		 * Constructor.
 		 */
-		public function Query()
+		public function Query(term:String)
 		{
-			
+			_term = term;
 		}
 		
 		/**
@@ -42,6 +43,37 @@ package mesh.model.query
 		public function contains(entity:Entity):Boolean
 		{
 			return false;
+		}
+		
+		/**
+		 * Checks if this query is the same as another query.
+		 * 
+		 * @param query The query to check.
+		 * @return <code>true</code> if the queries are the same.
+		 */
+		public function equals(query:Object):Boolean
+		{
+			return reflect(this).clazz == reflect(query).clazz && 
+				   term == Query( query ).term;
+		}
+		
+		/**
+		 * Returns the hash for this query, which is the query's term.
+		 * 
+		 * @return A hash.
+		 */
+		public function hashCode():Object
+		{
+			return term;
+		}
+		
+		private var _term:String;
+		/**
+		 * The term defining the query.
+		 */
+		public function get term():String
+		{
+			return _term;
 		}
 	}
 }
