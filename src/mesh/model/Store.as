@@ -5,7 +5,6 @@ package mesh.model
 	import flash.events.EventDispatcher;
 	import flash.utils.Dictionary;
 	
-	import mesh.core.array.flatten;
 	import mesh.core.reflection.newInstance;
 	import mesh.model.query.Queries;
 	import mesh.model.query.Query;
@@ -13,6 +12,12 @@ package mesh.model
 	
 	import mx.events.PropertyChangeEvent;
 
+	/**
+	 * The store represents a repository for all <code>Entity</code>s in your application. The store
+	 * is assigned a data source, which is responsible for persisting the changes to each entity.
+	 * 
+	 * @author Dan Schultz
+	 */
 	public class Store extends EventDispatcher
 	{
 		private var _keyCounter:Number = 0;
@@ -23,6 +28,11 @@ package mesh.model
 		
 		private var _dataSource:Source;
 		
+		/**
+		 * Constructor.
+		 * 
+		 * @param dataSource The store's data source.
+		 */
 		public function Store(dataSource:Source)
 		{
 			super();
@@ -32,35 +42,36 @@ package mesh.model
 			_dataSource = dataSource;
 		}
 		
-		public function commit(...entities):void
+		/**
+		 * Adds entities to the store. Once added, the entities will be indexed, tracked for
+		 * changes, and given a store key.
+		 * 
+		 * @param entities The entities to add.
+		 */
+		public function add(...entities):void
 		{
-			_dataSource.commit(this, flatten(entities));
-		}
-		
-		public function create(...args):*
-		{
-			var entity:Entity;
-			
-			// Create an entity from the defined class, or just use the entity they passed.
-			if (args[0] is Class) {
-				entity = newInstance.apply(null, args);
-			}
-			if (args[0] is Entity) {
-				entity = args[0];
-			}
-			
-			// Make sure the entity was created, and that it's new.
-			if (entity == null) {
-				throw new ArgumentError("Cannot create Entity with args '" + args + "'");
-			}
-			
-			if (entity.isNew) {
+			for each (var entity:Entity in entities) {
 				register(entity);
 			}
-			
-			return entity;
 		}
 		
+		/**
+		 * Commits the entities from this store to its data source. If no entities are given,
+		 * then all entities belonging to the store are committed.
+		 * 
+		 * @param entities The entities to commit, or empty if all entities should be committed.
+		 */
+		public function commit(...entities):void
+		{
+			entities = entities.length == 0 ? _index.toArray() : entities;
+			_dataSource.commit(this, entities);
+		}
+		
+		/**
+		 * Marks each entity for destruction on the next commit.
+		 * 
+		 * @param entities The entities to destroy.
+		 */
 		public function destroy(...entities):void
 		{
 			for each (var entity:Entity in entities) {
@@ -91,7 +102,15 @@ package mesh.model
 		{
 			// A single entity is being requested.
 			if (args.length == 2 && args[0] is Class) {
+				var entity:Entity = _index.withTypeAndID(args[0], args[1]);
 				
+				// The entity doesn't exist in the store yet. Load it.
+				if (entity == null) {
+					entity = newInstance(args[0]);
+					entity.id = args[1];
+					entity.reload();
+				}
+				return entity;
 			}
 			
 			// A result list is being requested.
@@ -126,6 +145,9 @@ package mesh.model
 		
 		private function register(entity:Entity):void
 		{
+			if (_index.contains(entity)) {
+				throw new ArgumentError("Entity '" + entity + "' already belongs to store");
+			}
 			entity.storeKey = generateStoreKey();
 			entity.store = this;
 			entity.addEventListener(PropertyChangeEvent.PROPERTY_CHANGE, handleEntityPropertyChange);
@@ -149,6 +171,7 @@ import collections.HashSet;
 
 import flash.utils.Dictionary;
 
+import mesh.core.reflection.reflect;
 import mesh.model.Entity;
 
 /**
@@ -159,6 +182,7 @@ import mesh.model.Entity;
 class EntityIndex extends HashSet
 {
 	private var _keyToEntity:Dictionary = new Dictionary();
+	private var _typeToEntities:Dictionary = new Dictionary();
 	
 	/**
 	 * Constructor.
@@ -175,6 +199,7 @@ class EntityIndex extends HashSet
 	{
 		if (super.add(entity)) {
 			_keyToEntity[entity.storeKey] = entity;
+			withType(entity).add(entity);
 			return true;
 		}
 		return false;
@@ -185,18 +210,7 @@ class EntityIndex extends HashSet
 	 */
 	override public function contains(entity:Entity):Boolean
 	{
-		return forKey(entity.storeKey) != null;
-	}
-	
-	/**
-	 * Returns an <code>Entity</code> that has the given store key.
-	 * 
-	 * @param key The store key mapped to an entity.
-	 * @return An entity with the given store key.
-	 */
-	public function forKey(key:Object):Entity
-	{
-		return _keyToEntity[key];
+		return withKey(entity.storeKey) != null;
 	}
 	
 	/**
@@ -206,8 +220,52 @@ class EntityIndex extends HashSet
 	{
 		if (super.remove(entity)) {
 			delete _keyToEntity[entity.storeKey];
+			withType(entity).remove(entity);
 			return true;
 		}
 		return false;
+	}
+	
+	/**
+	 * Returns an <code>Entity</code> that has the given store key.
+	 * 
+	 * @param key The store key mapped to an entity.
+	 * @return An entity with the given store key.
+	 */
+	public function withKey(key:Object):Entity
+	{
+		return _keyToEntity[key];
+	}
+	
+	/**
+	 * Returns the entity in this index with the given type and identifier.
+	 * 
+	 * @param type The type of entity.
+	 * @param id The ID of the entity.
+	 * @return An entity, or <code>null</code> if one was not found.
+	 */
+	public function withTypeAndID(type:Class, id:Object):Entity
+	{
+		for each (var entity:Entity in withType(type)) {
+			if (id === entity.id) {
+				return entity;
+			}
+		}
+		return null;
+	}
+	
+	/**
+	 * Returns a set of entities that are of the given type.
+	 * 
+	 * @param type The type of entity.
+	 * @return All entities in this index with the given type.
+	 */
+	public function withType(type:Object):HashSet
+	{
+		type = reflect(type).clazz;
+		if (_typeToEntities[type] == null) {
+			_typeToEntities[type] = new HashSet();
+		}
+		return _typeToEntities[type];
 	}
 }
