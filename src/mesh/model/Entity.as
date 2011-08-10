@@ -65,19 +65,9 @@ package mesh.model
 		public static const ERRORED:int = 0x01000;
 		
 		/**
-		 * The generic lifecycle state for when an entity is loading.
-		 */
-		public static const LOADING:int = 0x02000;
-		
-		/**
-		 * The generic lifecycle state for when an entity is saving its changes.
-		 */
-		public static const COMMITTING:int = 0x04000;
-		
-		/**
 		 * The generic lifecycle state for when an entity is either loading or committing.
 		 */
-		public static const BUSY:int = LOADING | COMMITTING;
+		public static const BUSY:int = 0x02000;
 		
 		private var _associations:Object = {};
 		private var _aggregates:Aggregates = new Aggregates(this);
@@ -161,6 +151,30 @@ package mesh.model
 		protected function isAssociated(property:String):Boolean
 		{
 			return _associations.hasOwnProperty(property);
+		}
+		
+		/**
+		 * Puts the entity into a busy lifecycle state. This state signifies that the entity is
+		 * busy either retrieving or committing data to the data source.
+		 * 
+		 * @return This instance.
+		 */
+		public function busy():Entity
+		{
+			state = (state & ~0xF000) | BUSY;
+			return this;
+		}
+		
+		/**
+		 * Puts the entity into an errored lifecycle state. This state signifies that an error 
+		 * occurred after a load or commit.
+		 * 
+		 * @return This instance.
+		 */
+		public function errored():Entity
+		{
+			state = (state & ~0xF000) | ERRORED;
+			return this;
 		}
 		
 		/**
@@ -353,7 +367,7 @@ package mesh.model
 		 */
 		public function synced():Entity
 		{
-			state = (state ^ 0xF) | SYNCED;
+			state = ((state >> 4) << 4) | SYNCED;
 			return this;
 		}
 		
