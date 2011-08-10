@@ -63,8 +63,7 @@ package mesh.model
 		 */
 		public function commit(...entities):void
 		{
-			entities = entities.length == 0 ? _index.toArray() : entities;
-			_dataSource.commit(this, entities);
+			_dataSource.commit(this, entities.length == 0 ? _index.toArray() : entities);
 		}
 		
 		/**
@@ -102,7 +101,7 @@ package mesh.model
 		{
 			// A single entity is being requested.
 			if (args.length == 2 && args[0] is Class) {
-				var entity:Entity = _index.withTypeAndID(args[0], args[1]);
+				var entity:Entity = _index.findByTypeAndID(args[0], args[1]);
 				
 				// The entity doesn't exist in the store yet. Load it.
 				if (entity == null) {
@@ -199,7 +198,7 @@ class EntityIndex extends HashSet
 	{
 		if (super.add(entity)) {
 			_keyToEntity[entity.storeKey] = entity;
-			withType(entity).add(entity);
+			findByType(entity).add(entity);
 			return true;
 		}
 		return false;
@@ -210,20 +209,7 @@ class EntityIndex extends HashSet
 	 */
 	override public function contains(entity:Entity):Boolean
 	{
-		return withKey(entity.storeKey) != null;
-	}
-	
-	/**
-	 * @inheritDoc
-	 */
-	override public function remove(entity:Entity):Boolean
-	{
-		if (super.remove(entity)) {
-			delete _keyToEntity[entity.storeKey];
-			withType(entity).remove(entity);
-			return true;
-		}
-		return false;
+		return findByKey(entity.storeKey) != null;
 	}
 	
 	/**
@@ -232,9 +218,24 @@ class EntityIndex extends HashSet
 	 * @param key The store key mapped to an entity.
 	 * @return An entity with the given store key.
 	 */
-	public function withKey(key:Object):Entity
+	public function findByKey(key:Object):Entity
 	{
 		return _keyToEntity[key];
+	}
+	
+	/**
+	 * Returns a set of entities that are of the given type.
+	 * 
+	 * @param type The type of entity.
+	 * @return All entities in this index with the given type.
+	 */
+	public function findByType(type:Object):HashSet
+	{
+		type = reflect(type).clazz;
+		if (_typeToEntities[type] == null) {
+			_typeToEntities[type] = new HashSet();
+		}
+		return _typeToEntities[type];
 	}
 	
 	/**
@@ -244,9 +245,9 @@ class EntityIndex extends HashSet
 	 * @param id The ID of the entity.
 	 * @return An entity, or <code>null</code> if one was not found.
 	 */
-	public function withTypeAndID(type:Class, id:Object):Entity
+	public function findByTypeAndID(type:Class, id:Object):Entity
 	{
-		for each (var entity:Entity in withType(type)) {
+		for each (var entity:Entity in findByType(type)) {
 			if (id === entity.id) {
 				return entity;
 			}
@@ -255,17 +256,15 @@ class EntityIndex extends HashSet
 	}
 	
 	/**
-	 * Returns a set of entities that are of the given type.
-	 * 
-	 * @param type The type of entity.
-	 * @return All entities in this index with the given type.
+	 * @inheritDoc
 	 */
-	public function withType(type:Object):HashSet
+	override public function remove(entity:Entity):Boolean
 	{
-		type = reflect(type).clazz;
-		if (_typeToEntities[type] == null) {
-			_typeToEntities[type] = new HashSet();
+		if (super.remove(entity)) {
+			delete _keyToEntity[entity.storeKey];
+			findByType(entity).remove(entity);
+			return true;
 		}
-		return _typeToEntities[type];
+		return false;
 	}
 }
