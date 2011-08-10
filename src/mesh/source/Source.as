@@ -93,26 +93,5 @@ package mesh.source
 				update(store, entity);
 			}
 		}
-		
-		protected function destroyed(...entities):void
-		{
-			for each (var entity:Entity in entities) {
-				entity.destroyed().synced();
-			}
-		}
-		
-		protected function saved(...entities):void
-		{
-			for each (var entity:Entity in entities) {
-				entity.persisted().synced();
-			}
-		}
-		
-		protected function errored(...entities):void
-		{
-			for each (var entity:Entity in entities) {
-				entity.state |= Entity.ERRORED;
-			}
-		}
 	}
 }
