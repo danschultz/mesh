@@ -5,6 +5,7 @@ package mesh.model
 	import flash.events.EventDispatcher;
 	import flash.utils.Dictionary;
 	
+	import mesh.core.array.intersection;
 	import mesh.core.reflection.newInstance;
 	import mesh.model.query.Queries;
 	import mesh.model.query.Query;
@@ -63,7 +64,7 @@ package mesh.model
 		 */
 		public function commit(...entities):void
 		{
-			_dataSource.commit(this, entities.length == 0 ? _index.toArray() : entities);
+			_dataSource.commit(this, entities.length == 0 ? _changes.toArray() : entities);
 		}
 		
 		/**
