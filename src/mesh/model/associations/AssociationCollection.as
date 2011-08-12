@@ -177,17 +177,19 @@ package mesh.model.associations
 		{
 			for each (var entity:Entity in entities) {
 				if (entity.isPersisted) {
-					_removedEntities.add(entity);
 				}
+				_removedEntities.add(entity);
 				callbackIfNotNull("afterRemove", entity);
 			}
 		}
 		
 		private function handleEntityDestroyed(entity:Entity):void
 		{
-			remove(entity);
-			_removedEntities.remove(entity);
-			unregisterObserversOnEntity(entity);
+			if (entity.isMarkedForRemoval) {
+				remove(entity);
+				_removedEntities.remove(entity);
+				unregisterObserversOnEntity(entity);
+			}
 		}
 		
 		/**

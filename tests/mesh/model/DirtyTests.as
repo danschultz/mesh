@@ -1,11 +1,12 @@
 package mesh.model
 {
 	
-	import org.flexunit.assertThat;
-	import org.hamcrest.object.equalTo;
 	import mesh.Customer;
 	import mesh.Name;
 	import mesh.Order;
+	
+	import org.flexunit.assertThat;
+	import org.hamcrest.object.equalTo;
 
 	public class DirtyTests
 	{

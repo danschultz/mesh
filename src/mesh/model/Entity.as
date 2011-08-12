@@ -49,6 +49,7 @@ package mesh.model
 			afterFind(synced);
 			
 			// add necessary callbacks for save
+			beforeSave(saving);
 			beforeSave(validate);
 			afterSave(synced);
 			
@@ -312,7 +313,11 @@ package mesh.model
 		 */
 		protected function propertyChanged(property:String, oldValue:Object, newValue:Object):void
 		{
-			changes.changed(property, oldValue, newValue);
+			if (_isSaving) {
+				_savingChanges.changed(property, oldValue, newValue);
+			} else {
+				changes.changed(property, oldValue, newValue);
+			}
 			_aggregates.changed(property);
 		}
 		
@@ -350,9 +355,19 @@ package mesh.model
 			return Mesh.service(reflect.clazz).save([this]);
 		}
 		
+		private var _isSaving:Boolean;
+		private function saving():void
+		{
+			_savingChanges = new Changes(this);
+			_isSaving = true;
+		}
+		
 		private function synced():void
 		{
-			changes.clear();
+			_isSaving = false;
+			_changes = _savingChanges == null ? new Changes(this) : _savingChanges;
+			_savingChanges = null;
+			_isDestroyed = false;
 		}
 		
 		private function markNonLazyAssociationsAsLoaded():void
@@ -454,6 +469,7 @@ package mesh.model
 		}
 		
 		private var _changes:Changes = new Changes(this);
+		private var _savingChanges:Changes;
 		/**
 		 * @copy Changes
 		 */
@@ -518,7 +534,8 @@ package mesh.model
 		public function get isDirty():Boolean
 		{
 			return (isNew && !isMarkedForRemoval) || 
-				   (isPersisted && (isMarkedForRemoval || hasPropertyChanges || hasDirtyAssociations)); 
+				   (isPersisted && (isMarkedForRemoval || hasPropertyChanges || hasDirtyAssociations)) ||
+				   (isDestroyed && !isMarkedForRemoval); 
 		}
 		
 		/**

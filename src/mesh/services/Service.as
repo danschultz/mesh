@@ -170,7 +170,7 @@ package mesh.services
 		{
 			return entities.filter(function(entity:Entity, ...args):Boolean
 			{
-				return entity.hasPropertyChanges;
+				return entity.hasPropertyChanges || (entity.isDestroyed && !entity.isMarkedForRemoval);
 			});
 		}
 		
@@ -178,7 +178,7 @@ package mesh.services
 		{
 			return entities.filter(function(entity:Entity, ...args):Boolean
 			{
-				return entity.isNew;
+				return entity.isNew && !entity.isMarkedForRemoval;
 			});
 		}
 		
@@ -194,7 +194,7 @@ package mesh.services
 		{
 			return entities.filter(function(entity:Entity, ...args):Boolean
 			{
-				return entity.isPersisted && !entity.isMarkedForRemoval && entity.isDirty;
+				return !entity.isNew && !entity.isMarkedForRemoval && entity.isDirty;
 			});
 		}
 		
@@ -210,7 +210,7 @@ package mesh.services
 		
 		public function save(entities:Array):Request
 		{
-			return insert(entities).then(update(entities)).then(destroy(entities));
+			return insert(entities).and(update(entities)).and(destroy(entities));
 		}
 		
 		public function saveAll():Request

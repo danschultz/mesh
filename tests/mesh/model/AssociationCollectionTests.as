@@ -114,6 +114,19 @@ package mesh.model
 		}
 		
 		[Test]
+		public function testDestroyingReaddedEntityDoesNotRemoveEntity():void
+		{
+			var order:Order = new Order();
+			order.id = 3;
+			order.shippingAddress = new Address("2306 Zanker Rd", "San Jose");
+			order.markForRemoval();
+			
+			_collection.addItem(order);
+			order.callback("afterDestroy");
+			assertThat(_collection.contains(order), equalTo(true));
+		}
+		
+		[Test]
 		public function testReset():void
 		{
 			var order:Order = _collection.getItemAt(0) as Order;
