@@ -9,7 +9,7 @@ package mesh.model
 	import mesh.core.reflection.newInstance;
 	import mesh.model.query.Queries;
 	import mesh.model.query.Query;
-	import mesh.source.Source;
+	import mesh.model.source.Source;
 	
 	import mx.events.PropertyChangeEvent;
 

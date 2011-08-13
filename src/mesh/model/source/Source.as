@@ -1,4 +1,4 @@
-package mesh.source
+package mesh.model.source
 {
 	import flash.errors.IllegalOperationError;
 	
