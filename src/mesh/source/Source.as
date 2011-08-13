@@ -32,7 +32,7 @@ package mesh.source
 			
 			updateEach(store, entities.filter(function(entity:Entity, ...args):Boolean
 			{
-				return !entity.isNew && !entity.isDestroyed && entity.isDirty;
+				return entity.isPersisted && entity.isDirty;
 			}));
 			
 			destroyEach(store, entities.filter(function(entity:Entity, ...args):Boolean
