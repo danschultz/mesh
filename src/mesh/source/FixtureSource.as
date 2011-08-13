@@ -46,7 +46,7 @@ package mesh.source
 				throw new IllegalOperationError("Attempted to destroy a non-existent entity.");
 			}
 			delete _fixtures[entity.id];
-			setTimeout(destroyed, latency, entity);
+			setTimeout(entity.synced, latency);
 		}
 		
 		/**
@@ -58,7 +58,7 @@ package mesh.source
 				throw new IllegalOperationError("Attempted to update a new entity.");
 			}
 			_fixtures[entity.id] = entity.serialize();
-			setTimeout(saved, latency, entity);
+			setTimeout(entity.synced, latency);
 		}
 		
 		private function get latency():Number

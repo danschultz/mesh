@@ -3,11 +3,11 @@ package mesh.model.query
 	public class RemoteQuery extends Query
 	{
 		/**
-		 * Constructor.
+		 * @copy Query#Query()
 		 */
-		public function RemoteQuery()
+		public function RemoteQuery(term:String)
 		{
-			super();
+			super(term);
 		}
 	}
 }

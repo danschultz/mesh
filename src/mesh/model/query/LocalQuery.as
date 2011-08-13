@@ -3,11 +3,11 @@ package mesh.model.query
 	public class LocalQuery extends Query
 	{
 		/**
-		 * Constructor.
+		 * @copy Query#Query()
 		 */
-		public function LocalQuery()
+		public function LocalQuery(term:String)
 		{
-			super();
+			super(term);
 		}
 	}
 }

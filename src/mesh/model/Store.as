@@ -38,7 +38,7 @@ package mesh.model
 		{
 			super();
 			
-			_index = new EntityIndex(this);
+			_index = new EntityIndex();
 			_queries = new Queries(this);
 			_dataSource = dataSource;
 		}
@@ -195,7 +195,7 @@ class EntityIndex extends HashSet
 	/**
 	 * @inheritDoc
 	 */
-	override public function add(entity:Entity):Boolean
+	override public function add(entity:Object):Boolean
 	{
 		if (super.add(entity)) {
 			_keyToEntity[entity.storeKey] = entity;
@@ -208,7 +208,7 @@ class EntityIndex extends HashSet
 	/**
 	 * @inheritDoc
 	 */
-	override public function contains(entity:Entity):Boolean
+	override public function contains(entity:Object):Boolean
 	{
 		return findByKey(entity.storeKey) != null;
 	}
@@ -259,7 +259,7 @@ class EntityIndex extends HashSet
 	/**
 	 * @inheritDoc
 	 */
-	override public function remove(entity:Entity):Boolean
+	override public function remove(entity:Object):Boolean
 	{
 		if (super.remove(entity)) {
 			delete _keyToEntity[entity.storeKey];

@@ -104,7 +104,11 @@ package mesh.core
 		 */
 		override public function get length():int
 		{
-			return isNaN(_providedLength) ? _delegate.requestLength(this) : _providedLength;
+			if (isNaN(_providedLength)) {
+				_delegate.requestLength(this);
+				return 0;
+			}
+			return _providedLength;
 		}
 	}
 }
