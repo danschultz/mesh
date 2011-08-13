@@ -64,7 +64,7 @@ package mesh.model
 		 */
 		public function commit(...entities):void
 		{
-			_dataSource.commit(this, entities.length == 0 ? _changes.toArray() : entities);
+			_dataSource.commit(this, entities.length == 0 ? _changes.toArray() : intersection(entities, _changes.toArray()));
 		}
 		
 		/**
