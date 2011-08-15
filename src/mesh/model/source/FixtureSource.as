@@ -30,11 +30,16 @@ package mesh.model.source
 		 */
 		override public function create(store:Store, entity:Entity):void
 		{
-			if (!entity.isNew) {
-				throw new ArgumentError("Attempted to create an non-new entity.");
-			}
-			entity.id = ++_idCounter;
-			update(store, entity);
+			entity.busy();
+			
+			setTimeout(function():void
+			{
+				if (!entity.isNew) {
+					update(store, entity);
+				} else {
+					synced([entity], [++_idCounter]);
+				}
+			}, latency);
 		}
 		
 		/**
@@ -42,11 +47,37 @@ package mesh.model.source
 		 */
 		override public function destroy(store:Store, entity:Entity):void
 		{
-			if (_fixtures[entity.id] == null) {
-				throw new IllegalOperationError("Attempted to destroy a non-existent entity.");
-			}
-			delete _fixtures[entity.id];
-			setTimeout(entity.synced, latency);
+			entity.busy();
+			
+			var data:Object = entity.serialize();
+			setTimeout(function():void
+			{
+				if (_fixtures[data.id] != null) {
+					delete _fixtures[data.id];
+					synced([entity]);
+				} else {
+					errored([entity]);
+				}
+			}, latency);
+		}
+		
+		/**
+		 * @inheritDoc
+		 */
+		override public function retrieve(store:Store, entity:Entity):void
+		{
+			entity.busy();
+			
+			var data:Object = entity.serialize();
+			setTimeout(function():void
+			{
+				if (_fixtures[data.id] != null) {
+					entity.deserialize(_fixtures[data.id]);
+					synced([entity]);
+				} else {
+					entity.errored();
+				}
+			}, latency);
 		}
 		
 		/**
@@ -54,11 +85,18 @@ package mesh.model.source
 		 */
 		override public function update(store:Store, entity:Entity):void
 		{
-			if (entity.isNew) {
-				throw new IllegalOperationError("Attempted to update a new entity.");
-			}
-			_fixtures[entity.id] = entity.serialize();
-			setTimeout(entity.synced, latency);
+			entity.busy();
+			
+			var data:Object = entity.serialize();
+			setTimeout(function():void
+			{
+				if (data.id != null && data.id > 0) {
+					_fixtures[data.id] = data;
+					synced([entity]);
+				} else {
+					errored([entity]);
+				}
+			}, latency);
 		}
 		
 		private function get latency():Number
