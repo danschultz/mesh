@@ -54,12 +54,6 @@ package mesh.model
 		public static const DIRTY:int = 0x00001;
 		
 		/**
-		 * The generic lifecycle state for when the changes have been synced with the
-		 * backend.
-		 */
-		public static const SYNCED:int = 0x00002;
-		
-		/**
 		 * The generic lifecycle state for when there's an error after a commit.
 		 */
 		public static const ERRORED:int = 0x01000;
@@ -68,6 +62,12 @@ package mesh.model
 		 * The generic lifecycle state for when an entity is either loading or committing.
 		 */
 		public static const BUSY:int = 0x02000;
+		
+		/**
+		 * The generic lifecycle state for when the changes have been synced with the
+		 * backend.
+		 */
+		public static const SYNCED:int = 0x04000;
 		
 		private var _associations:Object = {};
 		private var _aggregates:Aggregates = new Aggregates(this);

@@ -151,6 +151,11 @@ package mesh.model
 			entity.storeKey = generateStoreKey();
 			entity.store = this;
 			entity.addEventListener(PropertyChangeEvent.PROPERTY_CHANGE, handleEntityPropertyChange);
+			
+			if (entity.isDirty) {
+				_changes.add(entity);
+			}
+			
 			_index.add(entity);
 		}
 		
