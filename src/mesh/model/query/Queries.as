@@ -2,7 +2,7 @@ package mesh.model.query
 {
 	import collections.HashMap;
 	
-	import mesh.model.Store;
+	import mesh.model.store.Store;
 
 	/**
 	 * A class that caches the results of each query in the store.

@@ -1,4 +1,4 @@
-package mesh.model
+package mesh.model.store
 {
 	import collections.HashSet;
 	
@@ -12,6 +12,7 @@ package mesh.model
 	import mesh.model.source.Source;
 	
 	import mx.events.PropertyChangeEvent;
+	import mesh.model.Entity;
 
 	/**
 	 * The store represents a repository for all <code>Entity</code>s in your application. The store

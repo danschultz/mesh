@@ -1,6 +1,6 @@
 package mesh
 {
-	import mesh.model.Store;
+	import mesh.model.store.Store;
 	import mesh.services.Service;
 	import mesh.services.Services;
 

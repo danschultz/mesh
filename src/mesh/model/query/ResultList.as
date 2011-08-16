@@ -1,7 +1,7 @@
 package mesh.model.query
 {
 	import mesh.core.List;
-	import mesh.model.Store;
+	import mesh.model.store.Store;
 	
 	/**
 	 * The <code>ResultList</code> is a list of entities after an execution of a 

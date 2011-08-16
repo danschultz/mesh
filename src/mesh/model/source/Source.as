@@ -3,7 +3,7 @@ package mesh.model.source
 	import flash.errors.IllegalOperationError;
 	
 	import mesh.model.Entity;
-	import mesh.model.Store;
+	import mesh.model.store.Store;
 	import mesh.model.query.Query;
 
 	/**

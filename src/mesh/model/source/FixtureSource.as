@@ -6,7 +6,7 @@ package mesh.model.source
 	
 	import mesh.core.object.merge;
 	import mesh.model.Entity;
-	import mesh.model.Store;
+	import mesh.model.store.Store;
 
 	public class FixtureSource extends Source
 	{

@@ -17,6 +17,7 @@ package mesh.model
 	import mesh.services.Request;
 	
 	import mx.events.PropertyChangeEvent;
+	import mesh.model.store.Store;
 	
 	use namespace flash_proxy;
 	

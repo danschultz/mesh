@@ -5,7 +5,7 @@ package mesh.model.source
 	
 	import mesh.core.reflection.reflect;
 	import mesh.model.Entity;
-	import mesh.model.Store;
+	import mesh.model.store.Store;
 
 	/**
 	 * An entity source that maps a type of entity to its source.
