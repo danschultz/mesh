@@ -1,15 +1,11 @@
 package mesh.model.associations
 {
-	import flash.errors.IllegalOperationError;
 	import flash.utils.flash_proxy;
 	
-	import mesh.Mesh;
 	import mesh.core.inflection.humanize;
 	import mesh.core.proxy.DataProxy;
 	import mesh.core.reflection.Type;
-	import mesh.model.Callbacks;
 	import mesh.model.Entity;
-	import mesh.services.Request;
 	
 	import mx.events.PropertyChangeEvent;
 	
@@ -24,8 +20,6 @@ package mesh.model.associations
 	 */
 	public dynamic class Association extends DataProxy
 	{
-		private var _callbacks:Callbacks = new Callbacks();
-		
 		/**
 		 * Constructor.
 		 * 
@@ -35,99 +29,18 @@ package mesh.model.associations
 		public function Association(owner:Entity, definition:AssociationDefinition)
 		{
 			super();
-			
 			_owner = owner;
 			_definition = definition;
-			
-			beforeLoad(loading);
-			afterLoad(loaded);
-			
-			beforeAdd(reviveEntity);
-			beforeRemove(markEntityForRemoval);
 		}
 		
-		private function addCallback(method:String, block:Function):void
-		{
-			_callbacks.addCallback(method, block);
-		}
-		
-		protected function beforeAdd(block:Function):void
-		{
-			addCallback("beforeAdd", block);
-		}
-		
-		protected function beforeRemove(block:Function):void
-		{
-			addCallback("beforeRemove", block);
-		}
-		
-		protected function beforeLoad(block:Function):void
-		{
-			addCallback("beforeLoad", block);
-		}
-		
-		protected function afterAdd(block:Function):void
-		{
-			addCallback("afterAdd", block);
-		}
-		
-		protected function afterRemove(block:Function):void
-		{
-			addCallback("afterRemove", block);
-		}
-		
-		protected function afterLoad(block:Function):void
-		{
-			addCallback("afterLoad", block);
-		}
-		
-		public function callback(method:String, entity:Entity = null):void
-		{
-			if (entity != null) {
-				_callbacks.callback(method, entity);
-			} else {
-				_callbacks.callback(method);
-			}
-		}
-		
-		protected function callbackIfNotNull(method:String, entity:Entity):void
-		{
-			if (entity != null) {
-				callback(method, entity);
-			}
-		}
-		
-		private var _loadRequest:Request;
 		/**
 		 * Executes an operation that will load the object for this association.
 		 * 
 		 * @return An executing operation.
 		 */
-		public function load():Request
+		public function load():void
 		{
-			if (isLoading) {
-				return _loadRequest;
-			}
 			
-			if (!isLoaded) {
-				callback("beforeLoad");
-				_loadRequest = definition.hasLoadRequest ? definition.loadRequest.apply(owner) : createLoadRequest();
-				_loadRequest.addHandler({
-					success:function():void
-					{
-						object = _loadRequest.object;
-						callback("afterLoad");
-					}
-				});
-				return _loadRequest;
-			}
-			
-			return new Request(function():void {});
-		}
-		
-		protected function createLoadRequest():Request
-		{
-			throw new IllegalOperationError("Load function not implemented for " + definition);
 		}
 		
 		private function loading():void
@@ -148,33 +61,6 @@ package mesh.model.associations
 			}
 		}
 		
-		protected function markEntitiesAsFound():void
-		{
-			throw new IllegalOperationError(reflect.name + ".markEntitiesAsFound() is not implemented.");
-		}
-		
-		private function markEntityForRemoval(entity:Entity):void
-		{
-			entity.destroy();
-		}
-		
-		/**
-		 * Clears the association of its loaded data.
-		 */
-		public function reset():void
-		{
-			if (isLoading) {
-				_loadRequest.cancel();
-				_isLoading = false;
-				dispatchEvent( PropertyChangeEvent.createUpdateEvent(this, "isLoading", true, false) );
-			}
-			
-			if (isLoaded) {
-				_isLoaded = false;
-				dispatchEvent( PropertyChangeEvent.createUpdateEvent(this, "isLoaded", true, false) );
-			}
-		}
-		
 		/**
 		 * Changes the state of the object for this association back to what it was at the last save.
 		 */
@@ -183,39 +69,14 @@ package mesh.model.associations
 			
 		}
 		
-		private function reviveEntity(entity:Entity):void
+		public function save():void
 		{
-			entity.revive();
-		}
-		
-		public function save():Request
-		{
-			var toSave:Array = dirtyEntities;
-			if (toSave.length > 0) {
-				return Mesh.service((toSave[0] as Entity).reflect.clazz).save(toSave);
-			}
-			return new Request();
+			
 		}
 		
 		public function toString():String
 		{
 			return humanize(reflect.className).toLowerCase();
-		}
-		
-		/**
-		 * The set of <code>Entity</code>s that are dirty and need to be persisted.
-		 */
-		flash_proxy function get dirtyEntities():Array
-		{
-			return [];
-		}
-		
-		/**
-		 * @copy Entity#isDirty
-		 */
-		public function get isDirty():Boolean
-		{
-			return dirtyEntities.length > 0;
 		}
 		
 		private var _isLoaded:Boolean;
@@ -245,21 +106,6 @@ package mesh.model.associations
 		flash_proxy function get definition():AssociationDefinition
 		{
 			return _definition;
-		}
-		
-		/**
-		 * @inheritDoc
-		 */
-		override flash_proxy function get object():*
-		{
-			return super.object;
-		}
-		override flash_proxy function set object(value:*):void
-		{
-			if (object != value) {
-				super.object = value;
-				owner.dispatchEvent( PropertyChangeEvent.createUpdateEvent(owner, definition.property, this, this) );
-			}
 		}
 		
 		private var _owner:Entity;

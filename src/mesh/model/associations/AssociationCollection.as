@@ -6,9 +6,7 @@ package mesh.model.associations
 	import flash.errors.IllegalOperationError;
 	import flash.utils.flash_proxy;
 	
-	import mesh.core.object.copy;
 	import mesh.model.Entity;
-	import mesh.services.Request;
 	
 	import mx.collections.ArrayCollection;
 	import mx.collections.IList;
@@ -61,28 +59,7 @@ package mesh.model.associations
 		 */
 		public function addItemAt(item:Object, index:int):void
 		{
-			callbackIfNotNull("beforeAdd", Entity( item ));
 			object.addItemAt(item, index);
-		}
-		
-		/**
-		 * Returns either a new entity or an array of new entities of the associated type.
-		 * These object will be instantiated from the passed in properties and their relationships
-		 * populated. However, they will not be saved.
-		 * 
-		 * @param properties The properties for each new entity.
-		 * @return Either a new entity, or an array of new entities.
-		 */
-		public function build(...properties):*
-		{
-			var result:Array = [];
-			for each (var property:Object in properties) {
-				var entity:Entity = new definition.target();
-				copy(property, entity);
-				populateInverseAssociation(entity);
-				result.push(entity);
-			}
-			return result.length == 1 ? result.pop() : result;
 		}
 		
 		/**
@@ -95,19 +72,6 @@ package mesh.model.associations
 		public function contains(item:Object):Boolean
 		{
 			return getItemIndex(item) >= 0;
-		}
-		
-		/**
-		 * Creates a new entity of the associated type that is populated with the given properties.
-		 * 
-		 * @param properties The properties to populate the new entity with.
-		 * @return An executing operation that saves the entity to the backend.
-		 */
-		public function create(properties:Object):Request
-		{
-			var entity:Entity = build(properties);
-			add(entity);
-			return entity.save();
 		}
 		
 		/**
@@ -128,48 +92,7 @@ package mesh.model.associations
 		
 		private function handleEntitiesCollectionChange(event:CollectionEvent):void
 		{
-			switch (event.kind) {
-				case CollectionEventKind.ADD:
-					handleEntitiesAdded(event.items);
-					break;
-				case CollectionEventKind.REMOVE:
-					handleEntitiesRemoved(event.items);
-					break;
-				case CollectionEventKind.RESET:
-					handleEntitiesRemoved(_mirroredEntities.difference(object).toArray());
-					handleEntitiesAdded(toArray());
-					break;
-			}
-			
-			if (event.kind != CollectionEventKind.UPDATE) {
-				_mirroredEntities = new ArraySequence(object.source);
-			}
-			
 			dispatchEvent(event.clone());
-		}
-		
-		protected function handleEntitiesAdded(entities:Array):void
-		{
-			for each (var entity:Entity in entities) {
-				_removedEntities.remove(entity);
-				callbackIfNotNull("afterAdd", entity);
-			}
-		}
-		
-		protected function handleEntitiesRemoved(entities:Array):void
-		{
-			for each (var entity:Entity in entities) {
-				if (entity.isPersisted) {
-					_removedEntities.add(entity);
-				}
-				callbackIfNotNull("afterRemove", entity);
-			}
-		}
-		
-		private function handleEntityDestroyed(entity:Entity):void
-		{
-			remove(entity);
-			_removedEntities.remove(entity);
 		}
 		
 		/**
@@ -178,11 +101,6 @@ package mesh.model.associations
 		public function itemUpdated(item:Object, property:Object = null, oldValue:Object = null, newValue:Object = null):void
 		{
 			object.itemUpdated(item, property, oldValue, newValue);
-		}
-		
-		private function loaded():void
-		{
-			snapshot();
 		}
 		
 		private function populateInverseAssociation(entity:Entity):void
@@ -245,35 +163,7 @@ package mesh.model.associations
 		 */
 		public function removeItemAt(index:int):Object
 		{
-			callbackIfNotNull("beforeRemove", Entity( getItemAt(index) ));
 			return object.removeItemAt(index);
-		}
-		
-		/**
-		 * @inheritDoc
-		 */
-		override public function reset():void
-		{
-			object.removeEventListener(CollectionEvent.COLLECTION_CHANGE, handleEntitiesCollectionChange);
-			
-			object = undefined;
-			_removedEntities.clear();
-			
-			super.reset();
-		}
-		
-		/**
-		 * @inheritDoc
-		 */
-		override public function revert():void
-		{
-			super.revert();
-			
-			object = _originalEntities;
-			
-			for each (var entity:Entity in this) {
-				entity.revert();
-			}
 		}
 		
 		/**
@@ -316,34 +206,6 @@ package mesh.model.associations
 		/**
 		 * @inheritDoc
 		 */
-		override flash_proxy function get dirtyEntities():Array
-		{
-			var result:Array = [];
-			for each (var entity:Entity in toArray().concat(_removedEntities.toArray())) {
-				if (entity.isDirty) {
-					result.push(entity);
-				}
-			}
-			return result;
-		}
-		
-		/**
-		 * <code>true</code> if this collection contains entities that have been removed, but not
-		 * yet persisted.
-		 */
-		public function get hasUnsavedRemovedEntities():Boolean
-		{
-			for each (var entity:Entity in _removedEntities) {
-				if (entity.isPersisted) {
-					return true;
-				}
-			}
-			return false;
-		}
-		
-		/**
-		 * @inheritDoc
-		 */
 		override flash_proxy function get object():*
 		{
 			return super.object;
@@ -365,10 +227,6 @@ package mesh.model.associations
 				
 				if (value != null && value.hasOwnProperty("toArray")) {
 					value = value.toArray();
-				}
-				
-				for each (var entity:Entity in value) {
-					callbackIfNotNull("beforeAdd", entity);
 				}
 				
 				super.object = new ArrayCollection(value);
