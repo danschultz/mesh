@@ -1,5 +1,6 @@
 package mesh.model.associations
 {
+	import flash.errors.IllegalOperationError;
 	import flash.events.EventDispatcher;
 	
 	import mesh.core.inflection.humanize;
@@ -35,16 +36,18 @@ package mesh.model.associations
 		}
 		
 		/**
-		 * Executes an operation that will load the object for this association.
-		 * 
-		 * @return An executing operation.
+		 * Executes the query to load the data for this association. Sub-classes from <code>Association</code>
+		 * are required to override and implement this method.
 		 */
 		public function load():void
 		{
-			
+			throw new IllegalOperationError(reflect.name + ".load() is not implemented.");
 		}
 		
-		private function loading():void
+		/**
+		 * Called by sub-classes when the loading of the association's data has started.
+		 */
+		protected function loading():void
 		{
 			if (!_isLoading) {
 				_isLoading = true;
@@ -52,7 +55,12 @@ package mesh.model.associations
 			}
 		}
 		
-		private function loaded():void
+		/**
+		 * Called by sub-classes when the loading of the association's data has finished.
+		 * 
+		 * @param result The <code>Entity</code> or <code>ResultList</code> that was loaded.
+		 */
+		protected function loaded(result:Object):void
 		{
 			if (!_isLoaded) {
 				_isLoaded = true;
