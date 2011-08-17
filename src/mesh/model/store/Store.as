@@ -100,7 +100,6 @@ package mesh.model.store
 				if (entity == null) {
 					entity = newInstance(args[0]);
 					entity.id = args[1];
-					entity.reload();
 				}
 				return entity;
 			}

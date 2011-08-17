@@ -4,7 +4,6 @@ package mesh.model
 	import flash.events.EventDispatcher;
 	import flash.utils.flash_proxy;
 	
-	import mesh.Mesh;
 	import mesh.core.inflection.humanize;
 	import mesh.core.object.copy;
 	import mesh.core.reflection.Type;
@@ -15,7 +14,6 @@ package mesh.model
 	import mesh.model.store.Store;
 	import mesh.model.validators.Errors;
 	import mesh.model.validators.Validator;
-	import mesh.services.Request;
 	
 	import mx.events.PropertyChangeEvent;
 	
@@ -179,16 +177,6 @@ package mesh.model
 		}
 		
 		/**
-		 * Returns a request that will reload the attributes of this entity when executed.
-		 * 
-		 * @return An unexecuted request.
-		 */
-		public function reload():Request
-		{
-			return null;
-		}
-		
-		/**
 		 * Checks if two entities are equal.  By default, two entities are equal
 		 * when they are of the same type, and their ID's are the same.
 		 * 
@@ -341,17 +329,6 @@ package mesh.model
 			if (isDestroyed) {
 				id = 0;
 			}
-		}
-		
-		/**
-		 * Saves the entity by executing either a create or update operation on the entity's 
-		 * service.
-		 * 
-		 * @return An executing operation, or <code>false</code> if a validation fails.
-		 */
-		public function save():Request
-		{
-			return Mesh.service(reflect.clazz).save([this]);
 		}
 		
 		/**
