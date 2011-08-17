@@ -1,13 +1,18 @@
 package mesh.model.associations
 {
 	import flash.errors.IllegalOperationError;
+	import flash.utils.IDataInput;
+	import flash.utils.IDataOutput;
+	import flash.utils.IExternalizable;
 	import flash.utils.flash_proxy;
 	
 	import mesh.model.Entity;
 	
 	use namespace flash_proxy;
 	
-	public class HasAssociation extends Association
+	[RemoteClass(alias="mesh.model.associations.HasAssociation")]
+	
+	public class HasAssociation extends Association implements IExternalizable
 	{
 		/**
 		 * @copy AssociationProxy#AssociationProxy()
@@ -26,6 +31,22 @@ package mesh.model.associations
 					throw new IllegalOperationError("Foreign key '" + definition.foreignKey + "' is not defined on " + entity.reflect.name);
 				}
 			}
+		}
+		
+		/**
+		 * @inheritDoc
+		 */
+		public function readExternal(input:IDataInput):void
+		{
+			object = input.readObject();
+		}
+		
+		/**
+		 * @inheritDoc
+		 */
+		public function writeExternal(output:IDataOutput):void
+		{
+			output.writeObject(object);
 		}
 	}
 }

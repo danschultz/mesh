@@ -4,6 +4,9 @@ package mesh.model.associations
 	import collections.HashSet;
 	
 	import flash.errors.IllegalOperationError;
+	import flash.utils.IDataInput;
+	import flash.utils.IDataOutput;
+	import flash.utils.IExternalizable;
 	import flash.utils.flash_proxy;
 	
 	import mesh.model.Entity;
@@ -15,7 +18,9 @@ package mesh.model.associations
 	
 	use namespace flash_proxy;
 	
-	public dynamic class AssociationCollection extends Association implements IList
+	[RemoteClass(alias="mesh.model.associations.AssociationCollection")]
+	
+	public dynamic class AssociationCollection extends Association implements IList, IExternalizable
 	{
 		private var _originalEntities:Array;
 		private var _mirroredEntities:ArraySequence;
@@ -121,6 +126,14 @@ package mesh.model.associations
 		}
 		
 		/**
+		 * @inheritDoc
+		 */
+		public function readExternal(input:IDataInput):void
+		{
+			object = input.readObject();
+		}
+		
+		/**
 		 * @copy #removeItem()
 		 */
 		public function remove(item:Object):void
@@ -185,6 +198,14 @@ package mesh.model.associations
 		public function toArray():Array
 		{
 			return object.toArray();
+		}
+		
+		/**
+		 * @inheritDoc
+		 */
+		public function writeExternal(output:IDataOutput):void
+		{
+			output.writeObject(object);
 		}
 		
 		/**

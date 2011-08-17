@@ -6,6 +6,8 @@ package mesh.model.associations
 	
 	use namespace flash_proxy;
 	
+	[RemoteClass(alias="mesh.model.associations.HasOneAssociation")]
+	
 	public dynamic class HasOneAssociation extends HasAssociation
 	{
 		/**
