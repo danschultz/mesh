@@ -2,9 +2,10 @@ package mesh.model.source
 {
 	import flash.errors.IllegalOperationError;
 	
+	import mesh.core.reflection.reflect;
 	import mesh.model.Entity;
-	import mesh.model.store.Store;
 	import mesh.model.query.Query;
+	import mesh.model.store.Store;
 
 	/**
 	 * The <code>Source</code> class is responsible for persisting an <code>Entity</code>.
@@ -137,6 +138,29 @@ package mesh.model.source
 			for each (var entity:Entity in entities) {
 				entity.errored();
 			}
+		}
+		
+		/**
+		 * Serializes the entities into a format that the server expects, such as XML, JSON or
+		 * AMF.
+		 * 
+		 * @param entities The entities to serialize.
+		 * @return An array of serialized entities.
+		 */
+		protected function serialize(entities:Array):Array
+		{
+			throw new IllegalOperationError(reflect(this).name + ".serialize() is not implemented.");
+		}
+		
+		/**
+		 * Deserializes the data retrieved from the server into entities.
+		 * 
+		 * @param data The data to deserialize.
+		 * @return An array of deserialized entities.
+		 */
+		protected function deserialize(data:Array):Array
+		{
+			throw new IllegalOperationError(reflect(this).name + ".deserialize() is not implemented.");
 		}
 	}
 }

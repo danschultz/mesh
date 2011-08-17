@@ -1,6 +1,5 @@
 package mesh.model.source
 {
-	import flash.errors.IllegalOperationError;
 	import flash.utils.Dictionary;
 	import flash.utils.setTimeout;
 	
@@ -49,7 +48,7 @@ package mesh.model.source
 		{
 			entity.busy();
 			
-			var data:Object = entity.serialize();
+			var data:Object = serialize([entity])[0];
 			setTimeout(function():void
 			{
 				if (_fixtures[data.id] != null) {
@@ -68,11 +67,11 @@ package mesh.model.source
 		{
 			entity.busy();
 			
-			var data:Object = entity.serialize();
+			var data:Object = serialize([entity])[0];
 			setTimeout(function():void
 			{
 				if (_fixtures[data.id] != null) {
-					entity.deserialize(_fixtures[data.id]);
+					//entity.deserialize(_fixtures[data.id]);
 					synced([entity]);
 				} else {
 					entity.errored();
@@ -87,7 +86,7 @@ package mesh.model.source
 		{
 			entity.busy();
 			
-			var data:Object = entity.serialize();
+			var data:Object = serialize([entity])[0];
 			setTimeout(function():void
 			{
 				if (data.id != null && data.id > 0) {
