@@ -3,17 +3,18 @@ package mesh.model.store
 	import collections.HashSet;
 	
 	import flash.events.EventDispatcher;
+	import flash.utils.ByteArray;
 	import flash.utils.Dictionary;
 	
 	import mesh.core.array.intersection;
 	import mesh.core.reflection.newInstance;
+	import mesh.model.Entity;
 	import mesh.model.query.Queries;
 	import mesh.model.query.Query;
 	import mesh.model.source.Source;
 	
 	import mx.events.PropertyChangeEvent;
-	import mesh.model.Entity;
-
+	
 	/**
 	 * The store represents a repository for all <code>Entity</code>s in your application. The store
 	 * is assigned a data source, which is responsible for persisting the changes to each entity.
@@ -24,7 +25,9 @@ package mesh.model.store
 	{
 		private var _keyCounter:Number = 0;
 		private var _index:EntityIndex;
+		
 		private var _changes:HashSet = new HashSet();
+		private var _commits:Array = [];
 		
 		private var _queries:Queries;
 		
@@ -65,19 +68,7 @@ package mesh.model.store
 		 */
 		public function commit(...entities):void
 		{
-			_dataSource.commit(this, entities.length == 0 ? _changes.toArray() : intersection(entities, _changes.toArray()));
-		}
-		
-		/**
-		 * Marks each entity for destruction on the next commit.
-		 * 
-		 * @param entities The entities to destroy.
-		 */
-		public function destroy(...entities):void
-		{
-			for each (var entity:Entity in entities) {
-				entity.destroyed().dirty();
-			}
+			_commits.push( new Commit(this, _dataSource, snapshot(entities.length == 0 ? _changes.toArray() : intersection(entities, _changes.toArray()))) );
 		}
 		
 		/**
@@ -160,6 +151,14 @@ package mesh.model.store
 			_index.add(entity);
 		}
 		
+		private function snapshot(entities:Array):Array
+		{
+			var snapshot:ByteArray = new ByteArray();
+			snapshot.writeObject(entities);
+			snapshot.position = 0;
+			return snapshot.readObject();
+		}
+		
 		private function unregister(entity:Entity):void
 		{
 			if (!_index.contains(entity)) {
@@ -181,7 +180,7 @@ import mesh.core.reflection.reflect;
 import mesh.model.Entity;
 
 /**
- * An index for the entities in a store.
+ * An index of the data in a store.
  * 
  * @author Dan Schultz
  */

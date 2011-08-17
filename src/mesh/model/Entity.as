@@ -12,12 +12,12 @@ package mesh.model
 	import mesh.model.associations.HasManyAssociation;
 	import mesh.model.associations.HasOneAssociation;
 	import mesh.model.query.Query;
+	import mesh.model.store.Store;
 	import mesh.model.validators.Errors;
 	import mesh.model.validators.Validator;
 	import mesh.services.Request;
 	
 	import mx.events.PropertyChangeEvent;
-	import mesh.model.store.Store;
 	
 	use namespace flash_proxy;
 	
@@ -185,14 +185,7 @@ package mesh.model
 		 */
 		public function reload():Request
 		{
-			var request:Request = Mesh.service(reflect.clazz).find(id);
-			request.addHandler({
-				success:function():void
-				{
-					deserialize(request.translateTo());
-				}
-			});
-			return request;
+			return null;
 		}
 		
 		/**
@@ -378,26 +371,6 @@ package mesh.model
 		override public function toString():String
 		{
 			return humanize(reflect.className);
-		}
-		
-		/**
-		 * Copies the deserialized values from the given object to this entity.
-		 * 
-		 * @param object The object to deserialize and copy.
-		 */
-		public function deserialize(object:Object):void
-		{
-			
-		}
-		
-		/**
-		 * Serializes the properties of this entity for persisting the object to the server.
-		 * 
-		 * @return The serialized object.
-		 */
-		public function serialize():*
-		{
-			return null;
 		}
 		
 		/**
