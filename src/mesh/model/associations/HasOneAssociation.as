@@ -1,21 +1,16 @@
 package mesh.model.associations
 {
-	import flash.utils.flash_proxy;
-	
 	import mesh.model.Entity;
+	import mesh.model.query.Query;
 	
-	use namespace flash_proxy;
-	
-	[RemoteClass(alias="mesh.model.associations.HasOneAssociation")]
-	
-	public dynamic class HasOneAssociation extends HasAssociation
+	public class HasOneAssociation extends HasAssociation
 	{
 		/**
 		 * @copy HasAssociation#HasAssociation()
 		 */
-		public function HasOneAssociation(owner:Entity, definition:HasOneDefinition)
+		public function HasOneAssociation(owner:Entity, query:Query, options:Object = null)
 		{
-			super(owner, definition);
+			super(owner, query, options);
 		}
 	}
 }

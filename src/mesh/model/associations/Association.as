@@ -1,15 +1,13 @@
 package mesh.model.associations
 {
-	import flash.utils.flash_proxy;
+	import flash.events.EventDispatcher;
 	
 	import mesh.core.inflection.humanize;
-	import mesh.core.proxy.DataProxy;
 	import mesh.core.reflection.Type;
 	import mesh.model.Entity;
+	import mesh.model.query.Query;
 	
 	import mx.events.PropertyChangeEvent;
-	
-	use namespace flash_proxy;
 	
 	/**
 	 * An association class is a proxy object that contains the references to the objects in
@@ -18,19 +16,22 @@ package mesh.model.associations
 	 * 
 	 * @author Dan Schultz
 	 */
-	public dynamic class Association extends DataProxy
+	public class Association extends EventDispatcher
 	{
 		/**
 		 * Constructor.
 		 * 
 		 * @param owner The parent that owns the relationship.
-		 * @param relationship The relationship being represented by the proxy.
+		 * @param query The query that provides the data to this association.
+		 * @param options The options for this association.
 		 */
-		public function Association(owner:Entity, definition:AssociationDefinition)
+		public function Association(owner:Entity, query:Query, options:Object = null)
 		{
 			super();
+			
+			_query = query;
+			_options = options != null ? options : {};
 			_owner = owner;
-			_definition = definition;
 		}
 		
 		/**
@@ -74,7 +75,10 @@ package mesh.model.associations
 			
 		}
 		
-		public function toString():String
+		/**
+		 * @private
+		 */
+		override public function toString():String
 		{
 			return humanize(reflect.className).toLowerCase();
 		}
@@ -99,13 +103,26 @@ package mesh.model.associations
 			return _isLoading;
 		}
 		
-		private var _definition:AssociationDefinition;
+		private var _object:*;
 		/**
-		 * The relationship model that this association represents.
+		 * The data assigned to this association.
 		 */
-		flash_proxy function get definition():AssociationDefinition
+		public function get object():*
 		{
-			return _definition;
+			return _object;
+		}
+		public function set object(value:*):void
+		{
+			_object = value;
+		}
+		
+		private var _options:Object;
+		/**
+		 * The options defined for this association.
+		 */
+		protected function get options():Object
+		{
+			return _options;
 		}
 		
 		private var _owner:Entity;
@@ -115,6 +132,15 @@ package mesh.model.associations
 		protected function get owner():Entity
 		{
 			return _owner;
+		}
+		
+		private var _query:Query;
+		/**
+		 * The query that loads the data for this association.
+		 */
+		public function get query():Query
+		{
+			return _query;
 		}
 		
 		private var _reflect:Type;

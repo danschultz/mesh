@@ -1,13 +1,11 @@
 package mesh.model
 {
-	import flash.errors.IllegalOperationError;
 	import flash.events.EventDispatcher;
 	import flash.utils.flash_proxy;
 	
 	import mesh.core.inflection.humanize;
 	import mesh.core.object.copy;
 	import mesh.core.reflection.Type;
-	import mesh.model.associations.Association;
 	import mesh.model.associations.HasManyAssociation;
 	import mesh.model.associations.HasOneAssociation;
 	import mesh.model.query.Query;
@@ -68,8 +66,8 @@ package mesh.model
 		 */
 		public static const SYNCED:int = 0x04000;
 		
-		private var _associations:Object = {};
-		private var _aggregates:Aggregates = new Aggregates(this);
+		private var _associations:Associations;
+		private var _aggregates:Aggregates;
 		
 		/**
 		 * Constructor.
@@ -77,6 +75,10 @@ package mesh.model
 		public function Entity(values:Object = null)
 		{
 			super();
+			
+			_associations = new Associations(this);
+			_aggregates = new Aggregates(this);
+			
 			copy(values, this);
 			addEventListener(PropertyChangeEvent.PROPERTY_CHANGE, handlePropertyChange);
 		}
@@ -87,35 +89,6 @@ package mesh.model
 		}
 		
 		/**
-		 * Returns an association proxy for the given the given property. The proxy that is
-		 * returned is determined by the relationship type. For instance, if the property is
-		 * a has-many relationship, a <code>HasManyAssociation</code> is returned.
-		 * 
-		 * @param property The property of the relationship to get the proxy for.
-		 * @return An association proxy.
-		 */
-		protected function association(property:String):*
-		{
-			if (!_associations.hasOwnProperty(property)) {
-				throw new ArgumentError("Undefined association on property '" + property + "'");
-			}
-			return _associations[property];
-		}
-		
-		/**
-		 * Maps a property to an association object.
-		 * 
-		 * @param property The property to associate.
-		 * @param association The association to map.
-		 * @return The mapped association.
-		 */
-		protected function associate(property:String, association:Association):*
-		{
-			_associations[property] = association;
-			return _associations[property];
-		}
-		
-		/**
 		 * Sets up a has-one association for a property.
 		 * 
 		 * @param property The property that owns the association.
@@ -123,9 +96,9 @@ package mesh.model
 		 * @param options Any options to configure the association.
 		 * @return The association object.
 		 */
-		protected function hasOne(property:String, query:Query, options:Object = null):HasOneAssociation
+		protected function hasOne(property:String, query:Query, options:Object = null):void
 		{
-			throw new IllegalOperationError("Entity.hasOne() is not implemented.");
+			_associations.map(property, new HasOneAssociation(this, query, options));
 		}
 		
 		/**
@@ -136,20 +109,9 @@ package mesh.model
 		 * @param options Any options to configure the association.
 		 * @return The association object.
 		 */
-		protected function hasMany(property:String, query:Query, options:Object = null):HasManyAssociation
+		protected function hasMany(property:String, query:Query, options:Object = null):void
 		{
-			throw new IllegalOperationError("Entity.hasMany() is not implemented.");
-		}
-		
-		/**
-		 * Checks if an association has been defined for a property.
-		 * 
-		 * @param property The property to check.
-		 * @return <code>true</code> if the property has a defined association.
-		 */
-		protected function isAssociated(property:String):Boolean
-		{
-			return _associations.hasOwnProperty(property);
+			_associations.map(property, new HasManyAssociation(this, query, options));
 		}
 		
 		/**
@@ -393,10 +355,11 @@ package mesh.model
 		}
 		
 		/**
-		 * A hash of the associations for this entity, where the key represents the association's
-		 * property, and the value is the <code>Association</code>.
+		 * The hash the associations defined on this entity. The associations hash is defined as 
+		 * key-value pairs where the key is the property the associaiton is defined on, and the
+		 * value is the association object.
 		 */
-		public function get associations():Object
+		public function get associations():Associations
 		{
 			return _associations;
 		}
@@ -476,19 +439,6 @@ package mesh.model
 		public function get hasPropertyChanges():Boolean
 		{
 			return changes.hasChanges;
-		}
-		
-		/**
-		 * <code>true</code> if this entity contains an association marked for auto-save that is dirty.
-		 */
-		public function get hasDirtyAssociations():Boolean
-		{
-			for each (var association:Association in associations) {
-				if (association.definition.autoSave && association.isDirty) {
-					return true;
-				}
-			}
-			return false;
 		}
 		
 		/**
