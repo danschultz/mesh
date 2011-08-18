@@ -9,6 +9,7 @@ package mesh.core
 	import mx.collections.ArrayList;
 	import mx.collections.IList;
 	import mx.events.CollectionEvent;
+	import mx.events.CollectionEventKind;
 	
 	/**
 	 * Dispatched when the IList has been updated in some way.
@@ -36,9 +37,7 @@ package mesh.core
 		{
 			super();
 			_dispatcher = new EventDispatcher(this);
-			
-			_list = new ArrayList(source);
-			_list.addEventListener(CollectionEvent.COLLECTION_CHANGE, handleListCollectionChange);
+			list = new ArrayList(source);
 		}
 		
 		/**
@@ -207,6 +206,13 @@ package mesh.core
 		public function toArray():Array
 		{
 			return _list.toArray();
+		}
+		
+		protected function set list(value:IList):void
+		{
+			_list = value != null ? value : new ArrayList();
+			_list.addEventListener(CollectionEvent.COLLECTION_CHANGE, handleListCollectionChange);
+			dispatchEvent( new CollectionEvent(CollectionEvent.COLLECTION_CHANGE, false, false, CollectionEventKind.RESET) );
 		}
 		
 		/**

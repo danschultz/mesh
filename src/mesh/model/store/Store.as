@@ -29,8 +29,6 @@ package mesh.model.store
 		private var _changes:HashSet = new HashSet();
 		private var _commits:Array = [];
 		
-		private var _queries:Queries;
-		
 		private var _dataSource:Source;
 		
 		/**
@@ -106,7 +104,7 @@ package mesh.model.store
 			
 			// A result list is being requested.
 			if (args[0] is Query) {
-				return _queries.result(args[0]);
+				return query.results(args[0]);
 			}
 			
 			throw new ArgumentError("Invalid find arguments: " + args);
@@ -167,6 +165,15 @@ package mesh.model.store
 			entity.removeEventListener(PropertyChangeEvent.PROPERTY_CHANGE, handleEntityPropertyChange);
 			_index.remove(entity);
 			_changes.remove(entity);
+		}
+		
+		private var _queries:Queries;
+		/**
+		 * The queries and their cached results that have been invoked on this store.
+		 */
+		public function get query():Queries
+		{
+			return _queries;
 		}
 	}
 }
