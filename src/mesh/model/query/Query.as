@@ -1,6 +1,5 @@
 package mesh.model.query
 {
-	import mesh.core.reflection.reflect;
 	import mesh.model.Entity;
 
 	/**
@@ -12,11 +11,21 @@ package mesh.model.query
 	public class Query
 	{
 		/**
+		 * The default language to use when parsing a query string. Your application can 
+		 * define its own language.
+		 */
+		public static var defaultLanguage:Object;
+		
+		private var _subject:Class;
+		private var _conditions:Array = [];
+		private var _comparators:Array = [];
+		
+		/**
 		 * Constructor.
 		 */
-		public function Query(term:String)
+		public function Query()
 		{
-			_term = term;
+			
 		}
 		
 		/**
@@ -53,27 +62,42 @@ package mesh.model.query
 		 */
 		public function equals(query:Object):Boolean
 		{
-			return reflect(this).clazz == reflect(query).clazz && 
-				   term == Query( query ).term;
+			return this === query;
 		}
 		
 		/**
-		 * Returns the hash for this query, which is the query's term.
+		 * Sets the type of entity that the query runs on.
 		 * 
-		 * @return A hash.
+		 * @param entity The type of entity.
+		 * @return This instance.
 		 */
-		public function hashCode():Object
+		public function on(entity:Class):Query
 		{
-			return term;
+			_subject = entity;
 		}
 		
-		private var _term:String;
 		/**
-		 * The term defining the query.
+		 * Sets a condition for this query.
+		 * 
+		 * @param conditions The conditions to filter on.
+		 * @return This instance.
 		 */
-		public function get term():String
+		public function where(...conditions):Query
 		{
-			return _term;
+			_conditions = _conditions.concat(conditions);
+			return this;
+		}
+		
+		/**
+		 * Sets a sort for this query.
+		 * 
+		 * @param comparators The comparators.
+		 * @return This instance.
+		 */
+		public function sort(...comparators):Query
+		{
+			_comparators = _comparators.concat(comparators);
+			return this;
 		}
 	}
 }

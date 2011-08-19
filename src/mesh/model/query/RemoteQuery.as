@@ -5,9 +5,9 @@ package mesh.model.query
 		/**
 		 * @copy Query#Query()
 		 */
-		public function RemoteQuery(term:String)
+		public function RemoteQuery()
 		{
-			super(term);
+			super();
 		}
 	}
 }

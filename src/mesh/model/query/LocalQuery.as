@@ -5,9 +5,9 @@ package mesh.model.query
 		/**
 		 * @copy Query#Query()
 		 */
-		public function LocalQuery(term:String)
+		public function LocalQuery()
 		{
-			super(term);
+			super();
 		}
 	}
 }
