@@ -1,4 +1,4 @@
-package mesh.model.query
+package mesh.model.store
 {
 	import mesh.model.Entity;
 
@@ -16,9 +16,8 @@ package mesh.model.query
 		 */
 		public static var defaultLanguage:Object;
 		
-		private var _subject:Class;
-		private var _conditions:Array = [];
-		private var _comparators:Array = [];
+		private var _condition:Function;
+		private var _comparator:Function;
 		
 		/**
 		 * Constructor.
@@ -39,7 +38,7 @@ package mesh.model.query
 		 */
 		public function compare(entity1:Entity, entity2:Entity):int
 		{
-			return 0;
+			return _comparator != null ? _comparator(entity1, entity2) : 0;
 		}
 		
 		/**
@@ -51,7 +50,7 @@ package mesh.model.query
 		 */
 		public function contains(entity:Entity):Boolean
 		{
-			return false;
+			return _condition != null ? _condition(entity) : false;
 		}
 		
 		/**
@@ -68,12 +67,12 @@ package mesh.model.query
 		/**
 		 * Sets the type of entity that the query runs on.
 		 * 
-		 * @param entity The type of entity.
+		 * @param entityType The type of entity.
 		 * @return This instance.
 		 */
-		public function on(entity:Class):Query
+		public function on(entityType:Class):Query
 		{
-			_subject = entity;
+			_entityType = entityType;
 		}
 		
 		/**
@@ -82,9 +81,9 @@ package mesh.model.query
 		 * @param conditions The conditions to filter on.
 		 * @return This instance.
 		 */
-		public function where(...conditions):Query
+		public function where(condition:Function):Query
 		{
-			_conditions = _conditions.concat(conditions);
+			_condition = condition;
 			return this;
 		}
 		
@@ -94,10 +93,19 @@ package mesh.model.query
 		 * @param comparators The comparators.
 		 * @return This instance.
 		 */
-		public function sort(...comparators):Query
+		public function sort(comparator):Query
 		{
-			_comparators = _comparators.concat(comparators);
+			_comparator = comparator;
 			return this;
+		}
+		
+		private var _entityType:Class;
+		/**
+		 * The type of <code>Entity</code> being queried on.
+		 */
+		public function get entityType():Class
+		{
+			return _entityType;
 		}
 	}
 }

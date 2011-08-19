@@ -4,13 +4,10 @@ package mesh.model.store
 	
 	import flash.events.EventDispatcher;
 	import flash.utils.ByteArray;
-	import flash.utils.Dictionary;
 	
 	import mesh.core.array.intersection;
 	import mesh.core.reflection.newInstance;
 	import mesh.model.Entity;
-	import mesh.model.query.Queries;
-	import mesh.model.query.Query;
 	import mesh.model.source.Source;
 	
 	import mx.events.PropertyChangeEvent;
@@ -24,12 +21,9 @@ package mesh.model.store
 	public class Store extends EventDispatcher
 	{
 		private var _keyCounter:Number = 0;
-		private var _index:EntityIndex;
 		
 		private var _changes:HashSet = new HashSet();
 		private var _commits:Array = [];
-		
-		private var _dataSource:Source;
 		
 		/**
 		 * Constructor.
@@ -92,7 +86,7 @@ package mesh.model.store
 		{
 			// A single entity is being requested.
 			if (args.length == 2 && args[0] is Class) {
-				var entity:Entity = _index.findByTypeAndID(args[0], args[1]);
+				var entity:Entity = index.findByTypeAndID(args[0], args[1]);
 				
 				// The entity doesn't exist in the store yet. Load it.
 				if (entity == null) {
@@ -107,7 +101,7 @@ package mesh.model.store
 				return query.results(args[0]);
 			}
 			
-			throw new ArgumentError("Invalid find arguments: " + args);
+			throw new ArgumentError("Invalid arguments for find(): " + args);
 		}
 		
 		/**
@@ -134,7 +128,7 @@ package mesh.model.store
 		
 		private function register(entity:Entity):void
 		{
-			if (_index.contains(entity)) {
+			if (index.contains(entity)) {
 				throw new ArgumentError("Entity '" + entity + "' already belongs to store");
 			}
 			entity.storeKey = generateStoreKey();
@@ -145,7 +139,7 @@ package mesh.model.store
 				_changes.add(entity);
 			}
 			
-			_index.add(entity);
+			index.add(entity);
 		}
 		
 		private function snapshot(entities:Array):Array
@@ -158,13 +152,32 @@ package mesh.model.store
 		
 		private function unregister(entity:Entity):void
 		{
-			if (!_index.contains(entity)) {
+			if (!index.contains(entity)) {
 				throw new ArgumentError("Entity '" + entity + "' not found in store");
 			}
 			entity.store = null;
 			entity.removeEventListener(PropertyChangeEvent.PROPERTY_CHANGE, handleEntityPropertyChange);
-			_index.remove(entity);
+			index.remove(entity);
 			_changes.remove(entity);
+		}
+		
+		private var _dataSource:Source;
+		/**
+		 * The data source assigned to this store, which is responsible for persisting changed entities
+		 * to a backend.
+		 */
+		internal function get dataSource():Source
+		{
+			return _dataSource;
+		}
+		
+		private var _index:EntityIndex;
+		/**
+		 * The internal index of <code>Entity</code>s used by the store.
+		 */
+		internal function get index():EntityIndex
+		{
+			return _index;
 		}
 		
 		private var _queries:Queries;
@@ -175,108 +188,5 @@ package mesh.model.store
 		{
 			return _queries;
 		}
-	}
-}
-
-import collections.HashSet;
-
-import flash.utils.Dictionary;
-
-import mesh.core.reflection.reflect;
-import mesh.model.Entity;
-
-/**
- * An index of the data in a store.
- * 
- * @author Dan Schultz
- */
-class EntityIndex extends HashSet
-{
-	private var _keyToEntity:Dictionary = new Dictionary();
-	private var _typeToEntities:Dictionary = new Dictionary();
-	
-	/**
-	 * Constructor.
-	 */
-	public function EntityIndex()
-	{
-		
-	}
-	
-	/**
-	 * @inheritDoc
-	 */
-	override public function add(entity:Object):Boolean
-	{
-		if (super.add(entity)) {
-			_keyToEntity[entity.storeKey] = entity;
-			findByType(entity).add(entity);
-			return true;
-		}
-		return false;
-	}
-	
-	/**
-	 * @inheritDoc
-	 */
-	override public function contains(entity:Object):Boolean
-	{
-		return findByKey(entity.storeKey) != null;
-	}
-	
-	/**
-	 * Returns an <code>Entity</code> that has the given store key.
-	 * 
-	 * @param key The store key mapped to an entity.
-	 * @return An entity with the given store key.
-	 */
-	public function findByKey(key:Object):Entity
-	{
-		return _keyToEntity[key];
-	}
-	
-	/**
-	 * Returns a set of entities that are of the given type.
-	 * 
-	 * @param type The type of entity.
-	 * @return All entities in this index with the given type.
-	 */
-	public function findByType(type:Object):HashSet
-	{
-		type = reflect(type).clazz;
-		if (_typeToEntities[type] == null) {
-			_typeToEntities[type] = new HashSet();
-		}
-		return _typeToEntities[type];
-	}
-	
-	/**
-	 * Returns the entity in this index with the given type and identifier.
-	 * 
-	 * @param type The type of entity.
-	 * @param id The ID of the entity.
-	 * @return An entity, or <code>null</code> if one was not found.
-	 */
-	public function findByTypeAndID(type:Class, id:Object):Entity
-	{
-		for each (var entity:Entity in findByType(type)) {
-			if (id === entity.id) {
-				return entity;
-			}
-		}
-		return null;
-	}
-	
-	/**
-	 * @inheritDoc
-	 */
-	override public function remove(entity:Object):Boolean
-	{
-		if (super.remove(entity)) {
-			delete _keyToEntity[entity.storeKey];
-			findByType(entity).remove(entity);
-			return true;
-		}
-		return false;
 	}
 }

@@ -208,8 +208,17 @@ package mesh.core
 			return _list.toArray();
 		}
 		
+		/**
+		 * Allows sub-classes to supply their own list implementation.
+		 * 
+		 * @param value The list to wrap.
+		 */
 		protected function set list(value:IList):void
 		{
+			if (_list != null) {
+				_list.removeEventListener(CollectionEvent.COLLECTION_CHANGE, handleListCollectionChange);
+			}
+			
 			_list = value != null ? value : new ArrayList();
 			_list.addEventListener(CollectionEvent.COLLECTION_CHANGE, handleListCollectionChange);
 			dispatchEvent( new CollectionEvent(CollectionEvent.COLLECTION_CHANGE, false, false, CollectionEventKind.RESET) );

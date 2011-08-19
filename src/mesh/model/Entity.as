@@ -8,7 +8,7 @@ package mesh.model
 	import mesh.core.reflection.Type;
 	import mesh.model.associations.HasManyAssociation;
 	import mesh.model.associations.HasOneAssociation;
-	import mesh.model.query.Query;
+	import mesh.model.store.Query;
 	import mesh.model.store.Store;
 	import mesh.model.validators.Errors;
 	import mesh.model.validators.Validator;

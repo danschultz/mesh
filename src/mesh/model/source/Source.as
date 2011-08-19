@@ -4,7 +4,7 @@ package mesh.model.source
 	
 	import mesh.core.reflection.reflect;
 	import mesh.model.Entity;
-	import mesh.model.query.Query;
+	import mesh.model.store.Query;
 	import mesh.model.store.Store;
 
 	/**

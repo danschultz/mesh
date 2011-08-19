@@ -6,7 +6,7 @@ package mesh.model.associations
 	import mesh.core.inflection.humanize;
 	import mesh.core.reflection.Type;
 	import mesh.model.Entity;
-	import mesh.model.query.Query;
+	import mesh.model.store.Query;
 	
 	import mx.events.PropertyChangeEvent;
 	

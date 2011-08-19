@@ -1,7 +1,7 @@
 package mesh.model.associations
 {
 	import mesh.model.Entity;
-	import mesh.model.query.Query;
+	import mesh.model.store.Query;
 	
 	public class HasAssociation extends Association
 	{

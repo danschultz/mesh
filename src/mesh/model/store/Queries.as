@@ -1,9 +1,8 @@
-package mesh.model.query
+package mesh.model.store
 {
 	import flash.utils.Dictionary;
 	
 	import mesh.model.source.Source;
-	import mesh.model.store.Store;
 	
 	import mx.collections.IList;
 
@@ -15,20 +14,16 @@ package mesh.model.query
 	public class Queries
 	{
 		private var _cache:Dictionary = new Dictionary();
-		
 		private var _store:Store;
-		private var _dataSource:Source;
 		
 		/**
 		 * Constructor.
 		 * 
 		 * @param store The store that owns these queries.
-		 * @param dataSource The store's data source.
 		 */
-		public function Queries(store:Store, dataSource:Source)
+		public function Queries(store:Store)
 		{
 			_store = store;
-			_dataSource = dataSource;
 		}
 		
 		/**
@@ -37,7 +32,7 @@ package mesh.model.query
 		 * @param query The query to check.
 		 * @return <code>true</code> if the query was found.
 		 */
-		public function contains(query:Query):Boolean
+		internal function contains(query:Query):Boolean
 		{
 			return _cache[query] != null;
 		}
@@ -48,7 +43,7 @@ package mesh.model.query
 		 * @param query The query that was loaded.
 		 * @param entities The entities that were fetched.
 		 */
-		public function loaded(query:Query, entities:IList):void
+		public function loaded(query:Query, entities:IList = null):void
 		{
 			if (!contains(query)) {
 				throw new ArgumentError("Query '" + query + "' not found in cache."); 
@@ -63,10 +58,10 @@ package mesh.model.query
 		 * @param query The query to get the results for.
 		 * @return The query's result.
 		 */
-		public function results(query:Query):ResultList
+		internal function results(query:Query):ResultList
 		{
 			if (!contains(query)) {
-				_cache[query] = new ResultList(query, _dataSource).refresh();
+				_cache[query] = new ResultList(query, _store).refresh();
 			}
 			return _cache[query];
 		}
