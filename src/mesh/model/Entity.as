@@ -372,6 +372,10 @@ package mesh.model
 		{
 			return _changes;
 		}
+		public function set changes(value:Changes):void
+		{
+			_changes = value;
+		}
 		
 		private var _errors:Errors;
 		/**

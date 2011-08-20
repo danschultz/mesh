@@ -2,13 +2,19 @@ package mesh.model
 {
 	import collections.Collection;
 	
+	import flash.utils.IDataInput;
+	import flash.utils.IDataOutput;
+	import flash.utils.IExternalizable;
+	
+	[RemoteClass(alias="mesh.model.Changes")]
+	
 	/**
 	 * The <code>Changes</code> class represents a storage container for values that have
 	 * changed on an instance of an <code>Entity</code>.
 	 * 
 	 * @author Dan Schultz
 	 */
-	public class Changes
+	public class Changes implements IExternalizable
 	{
 		private var _host:Object;
 		private var _oldValues:Object = {};
@@ -69,6 +75,15 @@ package mesh.model
 		}
 		
 		/**
+		 * @inheritDoc
+		 */
+		public function readExternal(input:IDataInput):void
+		{
+			_host = input.readObject();
+			_oldValues = input.readObject();
+		}
+		
+		/**
 		 * Sets all properties on the host back to their original values.
 		 */
 		public function revert():void
@@ -100,6 +115,15 @@ package mesh.model
 		public function whatWas(property:String):*
 		{
 			return _oldValues.hasOwnProperty(property) ? _oldValues[property] : whatIs(property);
+		}
+		
+		/**
+		 * @inheritDoc
+		 */
+		public function writeExternal(output:IDataOutput):void
+		{
+			output.writeObject(_host);
+			output.writeObject(_oldValues);
 		}
 		
 		/**
