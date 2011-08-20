@@ -5,7 +5,10 @@ package mesh.model.source
 	
 	import mesh.core.object.merge;
 	import mesh.model.Entity;
+	import mesh.model.store.Commit;
 	import mesh.model.store.Store;
+	
+	import mx.rpc.Fault;
 
 	public class FixtureSource extends Source
 	{
@@ -27,16 +30,17 @@ package mesh.model.source
 		/**
 		 * @inheritDoc
 		 */
-		override public function create(store:Store, entity:Entity):void
+		override public function create(commit:Commit, entity:Entity):void
 		{
-			entity.busy();
-			
+			var data:Object = serialize([entity])[0];
 			setTimeout(function():void
 			{
 				if (!entity.isNew) {
-					update(store, entity);
+					update(commit, entity);
 				} else {
-					synced([entity], [++_idCounter]);
+					entity.id = ++_idCounter;
+					_fixtures[entity.id] = data;
+					commit.completed([entity]);
 				}
 			}, latency);
 		}
@@ -44,18 +48,16 @@ package mesh.model.source
 		/**
 		 * @inheritDoc
 		 */
-		override public function destroy(store:Store, entity:Entity):void
+		override public function destroy(commit:Commit, entity:Entity):void
 		{
-			entity.busy();
-			
 			var data:Object = serialize([entity])[0];
 			setTimeout(function():void
 			{
 				if (_fixtures[data.id] != null) {
 					delete _fixtures[data.id];
-					synced([entity]);
+					commit.completed([entity]);
 				} else {
-					errored([entity]);
+					commit.failed([entity], new Fault("", "Entity '" + entity.reflect.name + "' with ID=" + data.id + " does not exist"));
 				}
 			}, latency);
 		}
@@ -65,14 +67,11 @@ package mesh.model.source
 		 */
 		override public function retrieve(store:Store, entity:Entity):void
 		{
-			entity.busy();
-			
 			var data:Object = serialize([entity])[0];
 			setTimeout(function():void
 			{
 				if (_fixtures[data.id] != null) {
 					//entity.deserialize(_fixtures[data.id]);
-					synced([entity]);
 				} else {
 					entity.errored();
 				}
@@ -82,18 +81,16 @@ package mesh.model.source
 		/**
 		 * @inheritDoc
 		 */
-		override public function update(store:Store, entity:Entity):void
+		override public function update(commit:Commit, entity:Entity):void
 		{
-			entity.busy();
-			
 			var data:Object = serialize([entity])[0];
 			setTimeout(function():void
 			{
-				if (data.id != null && data.id > 0) {
-					_fixtures[data.id] = data;
-					synced([entity]);
+				if (_fixtures[data.id] == null) {
+					commit.failed([entity], new Fault("", "Entity '" + entity.reflect.name + "' with ID=" + data.id + " does not exist"));
 				} else {
-					errored([entity]);
+					_fixtures[data.id] = data;
+					commit.completed([entity]);
 				}
 			}, latency);
 		}

@@ -3,9 +3,7 @@ package mesh.model.store
 	import collections.HashSet;
 	
 	import flash.events.EventDispatcher;
-	import flash.utils.ByteArray;
 	
-	import mesh.core.array.intersection;
 	import mesh.core.reflection.newInstance;
 	import mesh.model.Entity;
 	import mesh.model.source.Source;
@@ -21,9 +19,7 @@ package mesh.model.store
 	public class Store extends EventDispatcher
 	{
 		private var _keyCounter:Number = 0;
-		
 		private var _changes:HashSet = new HashSet();
-		private var _commits:Array = [];
 		
 		/**
 		 * Constructor.
@@ -36,6 +32,7 @@ package mesh.model.store
 			
 			_index = new EntityIndex();
 			_queries = new Queries(this);
+			_commits = new Commits(this, _changes);
 			_dataSource = dataSource;
 		}
 		
@@ -53,14 +50,14 @@ package mesh.model.store
 		}
 		
 		/**
-		 * Commits the entities from this store to its data source. If no entities are given,
+		 * Commits the entities from this store to their data source. If no entities are given,
 		 * then all entities belonging to the store are committed.
 		 * 
 		 * @param entities The entities to commit, or empty if all entities should be committed.
 		 */
 		public function commit(...entities):void
 		{
-			_commits.push( new Commit(this, _dataSource, snapshot(entities.length == 0 ? _changes.toArray() : intersection(entities, _changes.toArray()))) );
+			_commits.commit(entities);
 		}
 		
 		/**
@@ -142,14 +139,6 @@ package mesh.model.store
 			index.add(entity);
 		}
 		
-		private function snapshot(entities:Array):Array
-		{
-			var snapshot:ByteArray = new ByteArray();
-			snapshot.writeObject(entities);
-			snapshot.position = 0;
-			return snapshot.readObject();
-		}
-		
 		private function unregister(entity:Entity):void
 		{
 			if (!index.contains(entity)) {
@@ -159,6 +148,15 @@ package mesh.model.store
 			entity.removeEventListener(PropertyChangeEvent.PROPERTY_CHANGE, handleEntityPropertyChange);
 			index.remove(entity);
 			_changes.remove(entity);
+		}
+		
+		private var _commits:Commits;
+		/**
+		 * The history of commits that the store has made.
+		 */
+		public function get commits():Commits
+		{
+			return _commits;
 		}
 		
 		private var _dataSource:Source;

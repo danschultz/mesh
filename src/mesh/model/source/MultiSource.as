@@ -5,6 +5,7 @@ package mesh.model.source
 	
 	import mesh.core.reflection.reflect;
 	import mesh.model.Entity;
+	import mesh.model.store.Commit;
 	import mesh.model.store.Store;
 
 	/**
@@ -48,33 +49,33 @@ package mesh.model.source
 		/**
 		 * @inheritDoc
 		 */
-		override public function create(store:Store, entity:Entity):void
+		override public function create(commit:Commit, entity:Entity):void
 		{
-			invoke(store, "create", entity);
+			invoke(commit, "create", entity);
 		}
 		
 		/**
 		 * @inheritDoc
 		 */
-		override public function createEach(store:Store, entities:Array):void
+		override public function createEach(commit:Commit, entities:Array):void
 		{
-			invokeEach(store, "createEach", entities);
+			invokeEach(commit, "createEach", entities);
 		}
 		
 		/**
 		 * @inheritDoc
 		 */
-		override public function destroy(store:Store, entity:Entity):void
+		override public function destroy(commit:Commit, entity:Entity):void
 		{
-			invoke(store, "destroy", entity);
+			invoke(commit, "destroy", entity);
 		}
 		
 		/**
 		 * @inheritDoc
 		 */
-		override public function destroyEach(store:Store, entities:Array):void
+		override public function destroyEach(commit:Commit, entities:Array):void
 		{
-			invokeEach(store, "destroyEach", entities);
+			invokeEach(commit, "destroyEach", entities);
 		}
 		
 		/**
@@ -96,17 +97,17 @@ package mesh.model.source
 		/**
 		 * @inheritDoc
 		 */
-		override public function update(store:Store, entity:Entity):void
+		override public function update(commit:Commit, entity:Entity):void
 		{
-			invoke(store, "update", entity);
+			invoke(commit, "update", entity);
 		}
 		
 		/**
 		 * @inheritDoc
 		 */
-		override public function updateEach(store:Store, entities:Array):void
+		override public function updateEach(commit:Commit, entities:Array):void
 		{
-			invokeEach(store, "updateEach", entities);
+			invokeEach(commit, "updateEach", entities);
 		}
 		
 		/**
@@ -121,19 +122,19 @@ package mesh.model.source
 			return _mapping[entity];
 		}
 		
-		private function invoke(store:Store, method:String, entity:Entity):void
+		private function invoke(storeOrCommit:Object, method:String, entity:Entity):void
 		{
 			var type:Class = entity.reflect.clazz;
 			throwIfUnmapped(type);
-			sourceFor(type)[method](store, entity);
+			sourceFor(type)[method](storeOrCommit, entity);
 		}
 		
-		private function invokeEach(store:Store, method:String, entities:Array):void
+		private function invokeEach(storeOrCommit:Object, method:String, entities:Array):void
 		{
 			var grouped:Dictionary = groupByType(entities);
 			for (var type:* in grouped) {
 				throwIfUnmapped(type);
-				sourceFor(type)[method](store, grouped[type]);
+				sourceFor(type)[method](storeOrCommit, grouped[type]);
 			}
 		}
 		

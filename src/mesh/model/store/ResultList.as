@@ -97,17 +97,5 @@ package mesh.model.store
 		{
 			return null;
 		}
-		
-		/**
-		 * @inheritDoc
-		 */
-		override public function get source():Array
-		{
-			return super.source.concat();
-		}
-		override public function set source(value:Array):void
-		{
-			// Don't allow clients to set the source.
-		}
 	}
 }

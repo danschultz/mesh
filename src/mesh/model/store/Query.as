@@ -73,6 +73,7 @@ package mesh.model.store
 		public function on(entityType:Class):Query
 		{
 			_entityType = entityType;
+			return this;
 		}
 		
 		/**
@@ -93,7 +94,7 @@ package mesh.model.store
 		 * @param comparators The comparators.
 		 * @return This instance.
 		 */
-		public function sort(comparator):Query
+		public function sort(comparator:Function):Query
 		{
 			_comparator = comparator;
 			return this;

@@ -28,7 +28,7 @@ package mesh.core
 	public class List extends Proxy implements IList, IEventDispatcher
 	{
 		private var _dispatcher:EventDispatcher;
-		private var _list:ArrayList;
+		private var _list:IList;
 		
 		/**
 		 * @copy mx.collections.ArrayList#ArrayList()
@@ -230,18 +230,6 @@ package mesh.core
 		public function get length():int
 		{
 			return _list.length;
-		}
-		
-		/**
-		 * @copy mx.collections.ArrayList#source
-		 */
-		public function get source():Array
-		{
-			return _list.source;
-		}
-		public function set source(value:Array):void
-		{
-			_list.source = value;
 		}
 		
 		// Proxy methods to support for each..in loops.
