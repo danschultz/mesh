@@ -1,12 +1,10 @@
 package mesh
 {
-	import mesh.model.Entity;
 	import mesh.core.object.copy;
-	import mesh.model.validators.LengthValidator;
 	import mesh.model.validators.NumericValidator;
 	import mesh.model.validators.PresenceValidator;
 	
-	public class Person extends Entity
+	public class Person extends TestEntity
 	{
 		public static var validate:Object = 
 		{
@@ -22,15 +20,10 @@ package mesh
 			super(properties);
 		}
 		
-		override public function deserialize(object:Object):void
+		override public function toObject():Object
 		{
-			copy(object, this);
-		}
-		
-		override public function serialize():*
-		{
-			var obj:Object = {};
-			copy(this, obj, {includes:["id", "age", "name"]});
+			var obj:Object = super.toObject();
+			copy(this, obj, {includes:["age", "name"]});
 			return obj;
 		}
 	}

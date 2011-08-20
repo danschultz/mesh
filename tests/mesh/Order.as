@@ -1,27 +1,11 @@
 package mesh
 {
-	import flash.utils.flash_proxy;
-	
 	import mesh.core.object.copy;
-	import mesh.model.Entity;
-	import mesh.model.associations.HasOneAssociation;
-	import mesh.services.TestService;
 	
-	use namespace flash_proxy;
-	
-	public class Order extends Entity
+	public class Order extends TestEntity
 	{
-		Mesh.services.map(Order, new TestService(Order, function(belongingTo:Entity, entities:Array):Array
-		{
-			return entities.filter(function(entity:Object, ...args):Boolean
-			{
-				if (belongingTo is Customer) {
-					return entity.customerId == belongingTo.id;
-				}
-				return false;
-			});
-		}));
-		
+		public var customerId:int;
+		[Bindable] public var customer:Customer;
 		[Bindable] public var shippingAddress:Address;
 		[Bindable] public var total:Number;
 		
@@ -30,27 +14,11 @@ package mesh
 			super(properties);
 		}
 		
-		override public function deserialize(object:Object):void
+		override public function toObject():Object
 		{
-			copy(object, this);
-		}
-		
-		override public function serialize():*
-		{
-			var object:Object = {};
-			copy(this, object, {includes:["id", "customerId", "shippingAddress", "total"]});
+			var object:Object = super.toObject();
+			copy(this, object, {includes:["customerId", "shippingAddress", "total"]});
 			return object;
-		}
-		
-		public var customerId:int;
-		
-		public function get customer():HasOneAssociation
-		{
-			return hasOne("customer", null, {foreignKey:"customerId"});
-		}
-		public function set customer(value:HasOneAssociation):void
-		{
-			customer.object = value;
 		}
 	}
 }
