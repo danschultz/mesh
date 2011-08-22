@@ -6,7 +6,6 @@ package mesh.model.associations
 	import mesh.core.inflection.humanize;
 	import mesh.core.reflection.Type;
 	import mesh.model.Entity;
-	import mesh.model.store.Query;
 	
 	import mx.events.PropertyChangeEvent;
 	
@@ -23,16 +22,24 @@ package mesh.model.associations
 		 * Constructor.
 		 * 
 		 * @param owner The parent that owns the relationship.
-		 * @param query The query that provides the data to this association.
 		 * @param options The options for this association.
 		 */
-		public function Association(owner:Entity, query:Query, options:Object = null)
+		public function Association(owner:Entity, options:Object = null)
 		{
 			super();
-			
-			_query = query;
-			_options = options != null ? options : {};
 			_owner = owner;
+			_options = options != null ? options : {};
+		}
+		
+		/**
+		 * Called by sub-classes when an entity is added to an association.
+		 * 
+		 * @param entity The entity that was associated.
+		 */
+		protected function associate(entity:Entity):void
+		{
+			owner.store.add(entity);
+			populateInverseRelationship(entity);
 		}
 		
 		/**
@@ -70,15 +77,18 @@ package mesh.model.associations
 			}
 		}
 		
+		private function populateInverseRelationship(entity:Entity):void
+		{
+			if (inverse != null) {
+				if (entity.hasOwnProperty(inverse)) entity[inverse] = owner;
+				else throw new IllegalOperationError("Inverse property '" + entity.reflect.name + "." + inverse + "' does not exist.");
+			}
+		}
+		
 		/**
 		 * Changes the state of the object for this association back to what it was at the last save.
 		 */
 		public function revert():void
-		{
-			
-		}
-		
-		public function save():void
 		{
 			
 		}
@@ -89,6 +99,24 @@ package mesh.model.associations
 		override public function toString():String
 		{
 			return humanize(reflect.className).toLowerCase();
+		}
+		
+		/**
+		 * Called by a sub-class when an entity has been removed from an association.
+		 * 
+		 * @param entity The entity to unassociate.
+		 */
+		protected function unassociate(entity:Entity):void
+		{
+			
+		}
+		
+		/**
+		 * The property on each associated object that maps back to the owner of the association.
+		 */
+		protected function get inverse():String
+		{
+			return options.inverse;
 		}
 		
 		private var _isLoaded:Boolean;
@@ -142,20 +170,11 @@ package mesh.model.associations
 			return _owner;
 		}
 		
-		private var _query:Query;
-		/**
-		 * The query that loads the data for this association.
-		 */
-		public function get query():Query
-		{
-			return _query;
-		}
-		
 		private var _reflect:Type;
 		/**
 		 * A reflection on this object.
 		 */
-		protected function get reflect():Type
+		public function get reflect():Type
 		{
 			if (_reflect == null) {
 				_reflect = Type.reflect(this);

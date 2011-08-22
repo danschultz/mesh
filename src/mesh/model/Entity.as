@@ -8,7 +8,6 @@ package mesh.model
 	import mesh.core.reflection.Type;
 	import mesh.model.associations.HasManyAssociation;
 	import mesh.model.associations.HasOneAssociation;
-	import mesh.model.store.Query;
 	import mesh.model.store.Store;
 	import mesh.model.validators.Errors;
 	import mesh.model.validators.Validator;
@@ -96,9 +95,9 @@ package mesh.model
 		 * @param options Any options to configure the association.
 		 * @return The association object.
 		 */
-		protected function hasOne(property:String, query:Query, options:Object = null):void
+		protected function hasOne(property:String, options:Object = null):void
 		{
-			_associations.map(property, new HasOneAssociation(this, query, options));
+			_associations.map(property, new HasOneAssociation(this, options));
 		}
 		
 		/**
@@ -109,9 +108,9 @@ package mesh.model
 		 * @param options Any options to configure the association.
 		 * @return The association object.
 		 */
-		protected function hasMany(property:String, query:Query, options:Object = null):void
+		protected function hasMany(property:String, options:Object = null):void
 		{
-			_associations.map(property, new HasManyAssociation(this, query, options));
+			_associations.map(property, new HasManyAssociation(this, options));
 		}
 		
 		/**
