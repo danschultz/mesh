@@ -55,41 +55,6 @@ package mesh.model.associations
 			}
 		}
 		
-		/**
-		 * Executes the query to load the data for this association. Sub-classes from <code>Association</code>
-		 * are required to override and implement this method.
-		 */
-		public function load():void
-		{
-			throw new IllegalOperationError(reflect.name + ".load() is not implemented.");
-		}
-		
-		/**
-		 * Called by sub-classes when the loading of the association's data has started.
-		 */
-		protected function loading():void
-		{
-			if (!_isLoading) {
-				_isLoading = true;
-				dispatchEvent( PropertyChangeEvent.createUpdateEvent(this, "isLoading", false, true) );
-			}
-		}
-		
-		/**
-		 * Called by sub-classes when the loading of the association's data has finished.
-		 * 
-		 * @param result The <code>Entity</code> or <code>ResultList</code> that was loaded.
-		 */
-		protected function loaded(result:Object):void
-		{
-			if (!_isLoaded) {
-				_isLoaded = true;
-				_isLoading = false;
-				dispatchEvent( PropertyChangeEvent.createUpdateEvent(this, "isLoading", true, false) );
-				dispatchEvent( PropertyChangeEvent.createUpdateEvent(this, "isLoaded", false, true) );
-			}
-		}
-		
 		private function populateInverseRelationship(entity:Entity):void
 		{
 			if (inverse != null) {
@@ -130,26 +95,6 @@ package mesh.model.associations
 		protected function get inverse():String
 		{
 			return options.inverse;
-		}
-		
-		private var _isLoaded:Boolean;
-		[Bindable(event="propertyChange")]
-		/**
-		 * <code>true</code> if the association objects for this relationship have been loaded.
-		 */
-		public function get isLoaded():Boolean
-		{
-			return _isLoaded;
-		}
-		
-		private var _isLoading:Boolean;
-		[Bindable(event="propertyChange")]
-		/**
-		 * <code>true</code> if this association is in the process of loading its data.
-		 */
-		public function get isLoading():Boolean
-		{
-			return _isLoading;
 		}
 		
 		private var _object:*;
