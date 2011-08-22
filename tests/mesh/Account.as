@@ -2,6 +2,8 @@ package mesh
 {
 	import mesh.core.object.copy;
 	
+	[RemoteClass(alias="mesh.Account")]
+	
 	public class Account extends TestEntity
 	{
 		[Bindable] public var customer:Customer;

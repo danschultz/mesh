@@ -97,6 +97,14 @@ package mesh.model.associations
 			return options.inverse;
 		}
 		
+		/**
+		 * Indicates that this side of the association is the parent.
+		 */
+		protected function get isMaster():Boolean
+		{
+			return options.isMaster;
+		}
+		
 		private var _object:*;
 		/**
 		 * The data assigned to this association.

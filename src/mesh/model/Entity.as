@@ -24,12 +24,6 @@ package mesh.model
 	public class Entity extends EventDispatcher
 	{
 		/**
-		 * The generic lifecycle state for when the entity has just been
-		 * created, but not loaded.
-		 */
-		public static const EMPTY:int = 0x00000;
-		
-		/**
 		 * The generic lifecycle state for when the entity is new.
 		 */
 		public static const INITIALIZED:int = 0x00100;
@@ -270,8 +264,11 @@ package mesh.model
 		 */
 		protected function propertyChanged(property:String, oldValue:Object, newValue:Object):void
 		{
-			changes.changed(property, oldValue, newValue);
-			_aggregates.changed(property);
+			if (property != "state") {
+				changes.changed(property, oldValue, newValue);
+				_aggregates.changed(property);
+				dirty();
+			}
 		}
 		
 		/**
@@ -476,11 +473,23 @@ package mesh.model
 			return _reflect;
 		}
 		
+		private var  _state:int = Entity.INITIALIZED | Entity.DIRTY;
 		[Bindable]
 		/**
 		 * The current state of the entity in its lifecycle.
 		 */
-		public var state:int = EMPTY;
+		public function get state():int
+		{
+			return _state;
+		}
+		public function set state(value:int):void
+		{
+			_state = value;
+			
+			if (isSynced) {
+				changes.clear();
+			}
+		}
 		
 		/**
 		 * The store that owns this entity.

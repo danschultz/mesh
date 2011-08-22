@@ -2,6 +2,8 @@ package mesh
 {
 	import mesh.core.object.copy;
 	
+	[RemoteClass(alias="mesh.Order")]
+	
 	public class Order extends TestEntity
 	{
 		public var customerId:int;

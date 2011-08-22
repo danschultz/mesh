@@ -5,6 +5,8 @@ package mesh
 	
 	import mx.collections.IList;
 	
+	[RemoteClass(alias="mesh.Customer")]
+	
 	public class Customer extends Person
 	{
 		public static var validate:Object = 

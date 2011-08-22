@@ -24,7 +24,7 @@ package mesh.model
 		 * 
 		 * @param host The object to hold changes for.
 		 */
-		public function Changes(host:Object)
+		public function Changes(host:Object = null)
 		{
 			_host = host;
 		}

@@ -2,6 +2,7 @@ package mesh.model.store
 {
 	import flash.events.EventDispatcher;
 	
+	import mesh.core.object.copy;
 	import mesh.model.Entity;
 	import mesh.operations.FaultOperationEvent;
 	import mesh.operations.FinishedOperationEvent;
@@ -44,14 +45,62 @@ package mesh.model.store
 		}
 		
 		/**
-		 * The data source calls this method when an entity was successfully committed to
-		 * the backend.
+		 * The data source calls this method when an entity was successfully created or updated on
+		 * the backend. The data source may also supply an array of data objects. If this argument
+		 * is given, the data from each element in the array will be copied to the entity.
 		 * 
 		 * @param entities The entities that were successful.
+		 * @param data A list of data to copy onto each entity.
+		 * @param copier A function that copies data from an object to the entity. This method should
+		 * 	have the following signature: <code>function(entity:Entity, data:Object):void</code>. If
+		 * 	empty, the method will use <code>mesh.core.object.copy()</code>.
 		 */
-		public function completed(entities:Array):void
+		public function saved(entities:Array, data:Array = null, copier:Function = null):void
+		{
+			copyData(entities, data, copier);
+			completed(entities, Entity.PERSISTED | Entity.SYNCED);
+		}
+		
+		/**
+		 * The data source calls this method when an entity was successfully destroyed from the
+		 * backend.
+		 * 
+		 * @param entities The entities that were destroyed.
+		 */
+		public function destroyed(entities:Array):void
+		{
+			completed(entities, Entity.DESTROYED | Entity.SYNCED);
+		}
+		
+		/**
+		 * The data source calls this method when an entity was successfully committed to
+		 * the backend. The data source may also supply an array of data objects. If this argument
+		 * is given, the data from each element in the array will be copied to the entity.
+		 * 
+		 * @param entities The entities that were successful.
+		 * @param data A list of data to copy onto each entity.
+		 * @param copier A function that copies data from an object to the entity. This method should
+		 * 	have the following signature: <code>function(entity:Entity, data:Object):void</code>. If
+		 * 	empty, the method will use <code>mesh.core.object.copy()</code>.
+		 */
+		private function copyData(entities:Array, data:Array = null, copier:Function = null):void
+		{
+			if (data != null) {
+				entities = storeEntities(entities);
+				for (var i:int = 0; i < data.length; i++) {
+					if (copier != null) copier(entities[i], data[i]);
+					else copy(data[i], entities[i]);
+				}
+			}
+		}
+		
+		private function completed(entities:Array, state:int):void
 		{
 			_operation.completed(entities);
+			
+			for each (var entity:Entity in storeEntities(entities)) {
+				entity.state = state;
+			}
 		}
 		
 		/**
@@ -64,6 +113,10 @@ package mesh.model.store
 		public function failed(entities:Array, fault:Fault):void
 		{
 			_operation.failed(fault);
+			
+			for each (var entity:Entity in storeEntities(entities)) {
+				entity.errored();
+			}
 		}
 		
 		private function handleOperationFinishedEvent(event:FinishedOperationEvent):void
@@ -74,6 +127,14 @@ package mesh.model.store
 		private function handleOperationFaultEvent(event:FaultOperationEvent):void
 		{
 			dispatchEvent(event.clone());
+		}
+		
+		private function storeEntities(entities:Array):Array
+		{
+			return entities.map(function(entity:Entity, ...args):Entity
+			{
+				return _store.index.findByKey(entity.storeKey);
+			});
 		}
 		
 		private var _operation:CommitOperation;

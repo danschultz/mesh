@@ -132,7 +132,7 @@ package mesh.model.store
 			entity.store = this;
 			entity.addEventListener(PropertyChangeEvent.PROPERTY_CHANGE, handleEntityPropertyChange);
 			
-			if (entity.isDirty) {
+			if (entity.isNew) {
 				_changes.add(entity);
 			}
 			
