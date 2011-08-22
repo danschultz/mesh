@@ -62,8 +62,8 @@ package mesh.model.associations
 		private function handleEntitiesReplaced(items:Array):void
 		{
 			for each (var change:PropertyChangeEvent in items) {
-				handleEntitiesRemoved(change.oldValue);
-				handleEntitiesAdded(change.newValue);
+				handleEntitiesRemoved([change.oldValue]);
+				handleEntitiesAdded([change.newValue]);
 			}
 		}
 		

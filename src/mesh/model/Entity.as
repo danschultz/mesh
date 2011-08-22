@@ -97,7 +97,7 @@ package mesh.model
 		 */
 		protected function hasOne(property:String, options:Object = null):void
 		{
-			_associations.map(property, new HasOneAssociation(this, options));
+			_associations.map(property, new HasOneAssociation(this, property, options));
 		}
 		
 		/**
@@ -110,7 +110,7 @@ package mesh.model
 		 */
 		protected function hasMany(property:String, options:Object = null):void
 		{
-			_associations.map(property, new HasManyAssociation(this, options));
+			_associations.map(property, new HasManyAssociation(this, property, options));
 		}
 		
 		/**
