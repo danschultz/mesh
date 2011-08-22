@@ -2,21 +2,25 @@ package mesh.model.associations
 {
 	import mesh.model.Entity;
 	
-	import mx.collections.IList;
+	import mx.collections.ListCollectionView;
 	import mx.events.CollectionEvent;
 	import mx.events.CollectionEventKind;
 	import mx.events.PropertyChangeEvent;
 	
 	public class AssociationCollection extends Association
 	{
+		private var _list:ListCollectionView;
 		private var _snapshot:Array = [];
 		
 		/**
 		 * @copy AssociationProxy#AssociationProxy()
 		 */
-		public function AssociationCollection(source:Entity, options:Object = null)
+		public function AssociationCollection(source:Entity, property:String, options:Object = null)
 		{
-			super(source, options);
+			super(source, property, options);
+			
+			_list = new ListCollectionView();
+			_list.addEventListener(CollectionEvent.COLLECTION_CHANGE, handleListCollectionChange);
 		}
 		
 		private function handleListCollectionChange(event:CollectionEvent):void
@@ -37,7 +41,7 @@ package mesh.model.associations
 			}
 			
 			if (event.kind != CollectionEventKind.UPDATE) {
-				_snapshot = list.toArray();
+				_snapshot = _list.toArray();
 			}
 		}
 		
@@ -66,12 +70,12 @@ package mesh.model.associations
 		private function handleEntitiesReset():void
 		{
 			for each (var oldEntity:Entity in _snapshot) {
-				if (list.getItemIndex(oldEntity) == -1) {
+				if (_list.getItemIndex(oldEntity) == -1) {
 					handleEntitiesRemoved([oldEntity]);
 				}
 			}
 			
-			for each (var newEntity:Entity in list.toArray()) {
+			for each (var newEntity:Entity in _list.toArray()) {
 				if (_snapshot.indexOf(newEntity) == -1) {
 					handleEntitiesAdded([newEntity]);
 				}
@@ -79,21 +83,12 @@ package mesh.model.associations
 		}
 		
 		/**
-		 * The list that this association is managing.
-		 */
-		protected function get list():IList
-		{
-			return IList( object );
-		}
-		
-		/**
 		 * @inheritDoc
 		 */
 		override public function set object(value:*):void
 		{
-			if (list != null) list.removeEventListener(CollectionEvent.COLLECTION_CHANGE, handleListCollectionChange);
 			super.object = value;
-			if (list != null) list.addEventListener(CollectionEvent.COLLECTION_CHANGE, handleListCollectionChange);
+			_list.list = value;
 		}
 	}
 }

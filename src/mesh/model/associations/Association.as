@@ -22,13 +22,19 @@ package mesh.model.associations
 		 * Constructor.
 		 * 
 		 * @param owner The parent that owns the relationship.
+		 * @param property The property name on the owner that association is mapped to.
 		 * @param options The options for this association.
 		 */
-		public function Association(owner:Entity, options:Object = null)
+		public function Association(owner:Entity, property:String, options:Object = null)
 		{
 			super();
 			_owner = owner;
+			_property = property;
 			_options = options != null ? options : {};
+			
+			// Watch for assignments to the mapped property on the owner. If the property is reassigned,
+			// then we'll need the association to wrap the new object.
+			owner.addEventListener(PropertyChangeEvent.PROPERTY_CHANGE, handleOwnerPropertyChange);
 		}
 		
 		/**
@@ -40,6 +46,13 @@ package mesh.model.associations
 		{
 			owner.store.add(entity);
 			populateInverseRelationship(entity);
+		}
+		
+		private function handleOwnerPropertyChange(event:PropertyChangeEvent):void
+		{
+			if (event.property is String && event.property.toString() == property) {
+				object = event.newValue;
+			}
 		}
 		
 		/**
@@ -168,6 +181,15 @@ package mesh.model.associations
 		protected function get owner():Entity
 		{
 			return _owner;
+		}
+		
+		private var _property:String;
+		/**
+		 * The property name on the owner that this association is mapped to.
+		 */
+		public function get property():String
+		{
+			return _property;
 		}
 		
 		private var _reflect:Type;

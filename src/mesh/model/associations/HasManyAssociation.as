@@ -7,9 +7,9 @@ package mesh.model.associations
 		/**
 		 * @copy AssociationCollection#AssociationCollection()
 		 */
-		public function HasManyAssociation(source:Entity, options:Object = null)
+		public function HasManyAssociation(source:Entity, property:String, options:Object = null)
 		{
-			super(source, options);
+			super(source, property, options);
 		}
 	}
 }

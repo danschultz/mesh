@@ -7,9 +7,9 @@ package mesh.model.associations
 		/**
 		 * @copy AssociationProxy#AssociationProxy()
 		 */
-		public function HasAssociation(owner:Entity, options:Object = null)
+		public function HasAssociation(owner:Entity, property:String, options:Object = null)
 		{
-			super(owner, options);
+			super(owner, property, options);
 		}
 	}
 }
