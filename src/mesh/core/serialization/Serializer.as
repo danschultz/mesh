@@ -100,7 +100,7 @@ package mesh.core.serialization
 		protected function findFixed(object:Object):Array
 		{
 			var properties:Array = [];
-			for (var property:Property in reflect(object).properties) {
+			for each (var property:Property in reflect(object).properties) {
 				if (!property.isStatic && property.isReadable) {
 					properties.push(property.name);
 				}
