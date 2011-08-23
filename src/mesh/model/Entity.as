@@ -1,11 +1,16 @@
 package mesh.model
 {
+	import com.brokenfunction.json.decodeJson;
+	import com.brokenfunction.json.encodeJson;
+	
 	import flash.events.EventDispatcher;
 	import flash.utils.flash_proxy;
 	
 	import mesh.core.inflection.humanize;
 	import mesh.core.object.copy;
 	import mesh.core.reflection.Type;
+	import mesh.core.serialization.ObjectSerializerDelegate;
+	import mesh.core.serialization.Serializer;
 	import mesh.model.associations.Association;
 	import mesh.model.associations.HasManyAssociation;
 	import mesh.model.associations.HasOneAssociation;
@@ -176,6 +181,26 @@ package mesh.model
 			return this;
 		}
 		
+		/**
+		 * Copies the values from an object to this entity.
+		 * 
+		 * @param object The object to copy from.
+		 */
+		public function fromObject(object:Object):void
+		{
+			copy(object, this);
+		}
+		
+		/**
+		 * Decodes a JSON string and copies the result to this entity.
+		 * 
+		 * @param json A JSON string.
+		 */
+		public function fromJSON(json:String):void
+		{
+			fromObject(decodeJson(json));
+		}
+		
 		private function handlePropertyChange(event:PropertyChangeEvent):void
 		{
 			propertyChanged(event.property.toString(), event.oldValue, event.newValue);
@@ -298,6 +323,16 @@ package mesh.model
 		}
 		
 		/**
+		 * Returns a new serializer that will serialize the properties of this entity.
+		 * 
+		 * @return A new serializer.
+		 */
+		protected function serializer():Serializer
+		{
+			return new Serializer();
+		}
+		
+		/**
 		 * Marks the entity as being synced with the server.
 		 * 
 		 * @return This instance.
@@ -306,6 +341,27 @@ package mesh.model
 		{
 			state = ((state >> 4) << 4) | SYNCED;
 			return this;
+		}
+		
+		/**
+		 * Returns an AS3 <code>Object</code> that contains the values of the serialized properties
+		 * on this entity.
+		 * 
+		 * @return An object.
+		 */
+		public function toObject():Object
+		{
+			return serializer().marshal(this, new ObjectSerializerDelegate());
+		}
+		
+		/**
+		 * Returns a JSON encoded string from this entity.
+		 * 
+		 * @return A JSON encoded string.
+		 */
+		public function toJSON():String
+		{
+			return encodeJson(toObject());
 		}
 		
 		/**
