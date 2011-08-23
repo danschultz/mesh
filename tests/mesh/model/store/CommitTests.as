@@ -8,6 +8,8 @@ package mesh.model.store
 	import mesh.model.source.FixtureSource;
 	import mesh.model.source.MultiSource;
 	
+	import mx.collections.ArrayList;
+	
 	import org.flexunit.assertThat;
 	import org.hamcrest.object.equalTo;
 	import org.hamcrest.object.notNullValue;
@@ -27,6 +29,13 @@ package mesh.model.store
 			_store = new Store(multiSource);
 		}
 		
+		private function checkIfPersisted(entity:Entity):void
+		{
+			assertThat(entity.id, notNullValue());
+			assertThat(entity.hasPropertyChanges, equalTo(false));
+			assertThat(entity.state, equalTo(Entity.PERSISTED | Entity.SYNCED));
+		}
+		
 		private function createCustomer(properties:Object):Customer
 		{
 			var customer:Customer = new Customer(properties);
@@ -43,9 +52,31 @@ package mesh.model.store
 				age: 67
 			});
 			
-			assertThat(customer.id, notNullValue());
-			assertThat(customer.hasPropertyChanges, equalTo(false));
-			assertThat(customer.state, equalTo(Entity.PERSISTED | Entity.SYNCED));
+			checkIfPersisted(customer);
+		}
+		
+		[Test]
+		public function testCreateGraph():void
+		{
+			var customer:Customer = createCustomer({
+				name: new Name("Jimmy", "Page"),
+				age: 67,
+				orders: new ArrayList([
+					new Order({
+						total:5
+					}),
+					new Order({
+						total:10
+					})
+				]),
+				account: new Account({number:"001-001"})
+			});
+			
+			checkIfPersisted(customer);
+			checkIfPersisted(customer.account);
+			for each (var order:Order in customer.orders.toArray()) {
+				checkIfPersisted(order);
+			}
 		}
 		
 		[Test]
@@ -59,8 +90,7 @@ package mesh.model.store
 			customer.age = 68;
 			_store.commit();
 			
-			assertThat(customer.hasPropertyChanges, equalTo(false));
-			assertThat(customer.state, equalTo(Entity.PERSISTED | Entity.SYNCED));
+			checkIfPersisted(customer);
 		}
 		
 		[Test]

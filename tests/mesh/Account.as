@@ -9,9 +9,10 @@ package mesh
 		[Bindable] public var customer:Customer;
 		[Bindable] public var number:String;
 		
-		public function Account()
+		public function Account(properties:Object = null)
 		{
-			super();
+			super(properties);
+			hasOne("customer");
 		}
 		
 		override public function toObject():Object

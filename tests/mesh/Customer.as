@@ -23,8 +23,8 @@ package mesh
 		{
 			super(properties);
 			
-			hasOne("account", {inverse:"customer"});
-			hasMany("orders", {inverse:"customer"});
+			hasOne("account", {inverse:"customer", isMaster:true});
+			hasMany("orders", {inverse:"customer", isMaster:true});
 		}
 		
 		override public function toObject():Object

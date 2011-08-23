@@ -1,9 +1,12 @@
 package mesh.model.store
 {
+	import collections.HashSet;
+	
 	import flash.events.EventDispatcher;
 	
 	import mesh.core.object.copy;
 	import mesh.model.Entity;
+	import mesh.model.associations.Association;
 	import mesh.operations.FaultOperationEvent;
 	import mesh.operations.FinishedOperationEvent;
 	import mesh.operations.Operation;
@@ -32,6 +35,9 @@ package mesh.model.store
 		private var _store:Store;
 		private var _entities:Array;
 		
+		private var _committed:HashSet = new HashSet();
+		private var _dependencies:Dependencies = new Dependencies();
+		
 		/**
 		 * Constructor.
 		 * 
@@ -42,6 +48,7 @@ package mesh.model.store
 		{
 			_store = store;
 			_entities = entities;
+			createDependencies();
 		}
 		
 		/**
@@ -96,10 +103,31 @@ package mesh.model.store
 		
 		private function completed(entities:Array, state:int):void
 		{
+			_committed.addAll(entities);
 			_operation.completed(entities);
 			
 			for each (var entity:Entity in storeEntities(entities)) {
 				entity.state = state;
+			}
+			
+			commitDependents(entities);
+		}
+		
+		private function commitDependents(entities:Array):void
+		{
+			var dependents:HashSet = new HashSet();
+			for each (var entity:Entity in entities) {
+				dependents.addAll(_dependencies.dependentsFor(entity));
+			}
+			commit(dependents.toArray());
+		}
+		
+		private function createDependencies():void
+		{
+			for each (var entity:Entity in _entities) {
+				for each (var association:Association in entity.associations) {
+					_dependencies.addDependents(entity, association.dependents);
+				}
 			}
 		}
 		
@@ -156,7 +184,42 @@ package mesh.model.store
 		 */
 		public function save():void
 		{
-			_store.dataSource.commit(this);
+			commit();
+		}
+		
+		private function commit(entities:Array = null):void
+		{
+			entities = entities == null ? _entities : entities;
+			
+			// Nothing left commit.
+			if (entities.length == 0) {
+				return;
+			}
+			
+			var create:Array = entities.filter(function(entity:Entity, ...args):Boolean
+			{
+				return !_committed.contains(entity) && entity.isNew && entity.isDirty && _committed.containsAll(_dependencies.dependenciesFor(entity));
+			});
+			var update:Array = entities.filter(function(entity:Entity, ...args):Boolean
+			{
+				return !_committed.contains(entity) && entity.isPersisted && entity.isDirty;
+			});
+			var destroy:Array = entities.filter(function(entity:Entity, ...args):Boolean
+			{
+				return !_committed.contains(entity) && entity.isDestroyed && entity.isDirty;
+			});
+			
+			if (create.length > 0) {
+				_store.dataSource.createEach(this, create);
+			}
+			
+			if (update.length > 0) {
+				_store.dataSource.updateEach(this, update);
+			}
+			
+			if (destroy.length > 0) {
+				_store.dataSource.destroyEach(this, destroy);
+			}
 		}
 		
 		/**
@@ -166,54 +229,14 @@ package mesh.model.store
 		{
 			return _entities.length;
 		}
-		
-		private var _create:Array;
-		/**
-		 * The set of entities in this store that need to be created in the backend.
-		 */
-		public function get create():Array
-		{
-			if (_create == null) {
-				_create = _entities.filter(function(entity:Entity, ...args):Boolean
-				{
-					return entity.isNew && entity.isDirty;
-				});
-			}
-			return _create.concat();
-		}
-		
-		private var _update:Array;
-		/**
-		 * The set of entities in this store that need to be updated in the backend.
-		 */
-		public function get update():Array
-		{
-			if (_update == null) {
-				_update = _entities.filter(function(entity:Entity, ...args):Boolean
-				{
-					return entity.isPersisted && entity.isDirty;
-				});
-			}
-			return _update.concat();
-		}
-		
-		private var _destroy:Array;
-		/**
-		 * The set of entities in this store that need to be destroyed in the backend.
-		 */
-		public function get destroy():Array
-		{
-			if (_destroy == null) {
-				_destroy = _entities.filter(function(entity:Entity, ...args):Boolean
-				{
-					return entity.isDestroyed && entity.isDirty;
-				});
-			}
-			return _destroy.concat();
-		}
 	}
 }
 
+import collections.HashSet;
+
+import flash.utils.Dictionary;
+
+import mesh.model.Entity;
 import mesh.model.store.Commit;
 import mesh.operations.Operation;
 
@@ -279,5 +302,67 @@ class CommitOperation extends Operation
 	override protected function get unitsTotal():Number
 	{
 		return _commit.count;
+	}
+}
+
+/**
+ * An index of commit dependencies. A dependency defines that an entity cannot be committed
+ * until its dependency is committed.
+ * 
+ * @author Dan Schultz
+ */
+class Dependencies
+{
+	private var _entityToDependencies:Dictionary = new Dictionary();
+	private var _entityToDependents:Dictionary = new Dictionary();
+	
+	/**
+	 * Constructor.
+	 */
+	public function Dependencies()
+	{
+		
+	}
+	
+	public function addDependents(target:Entity, dependents:Array):void
+	{
+		if (_entityToDependents[target] == null) {
+			_entityToDependents[target] = new HashSet();
+		}
+		_entityToDependents[target].addAll(dependents);
+		
+		for each (var dependent:Entity in dependents) {
+			addDependency(dependent, target);
+		}
+	}
+	
+	private function addDependency(target:Entity, dependency:Entity):void
+	{
+		if (_entityToDependencies[target] == null) {
+			_entityToDependencies[target] = new HashSet();
+		}
+		_entityToDependencies[target].add(dependency);
+	}
+	
+	/**
+	 * Returns the dependencies for an entity.
+	 * 
+	 * @param entity The entity.
+	 * @return A list of entities.
+	 */
+	public function dependenciesFor(entity:Entity):Array
+	{
+		return _entityToDependencies[entity] != null ? _entityToDependencies[entity].toArray() : [];
+	}
+	
+	/**
+	 * Returns the dependents for an entity.
+	 * 
+	 * @param entity The entity.
+	 * @return A list of entities.
+	 */
+	public function dependentsFor(entity:Entity):Array
+	{
+		return _entityToDependents[entity] != null ? _entityToDependents[entity].toArray() : [];
 	}
 }

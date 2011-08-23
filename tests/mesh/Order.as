@@ -14,6 +14,7 @@ package mesh
 		public function Order(properties:Object = null)
 		{
 			super(properties);
+			hasOne("customer");
 		}
 		
 		override public function toObject():Object

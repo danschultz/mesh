@@ -25,21 +25,6 @@ package mesh.model.source
 			
 		}
 		
-		public function commit(commit:Commit):void
-		{
-			if (commit.create.length > 0) {
-				createEach(commit, commit.create);
-			}
-			
-			if (commit.update.length > 0) {
-				updateEach(commit, commit.update);
-			}
-			
-			if (commit.destroy.length > 0) {
-				destroyEach(commit, commit.destroy);
-			}
-		}
-		
 		public function create(commit:Commit, entity:Entity):void
 		{
 			throw new IllegalOperationError("EntitySource.create() is not implemented.");

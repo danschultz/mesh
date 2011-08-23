@@ -6,6 +6,7 @@ package mesh.model
 	import mesh.core.inflection.humanize;
 	import mesh.core.object.copy;
 	import mesh.core.reflection.Type;
+	import mesh.model.associations.Association;
 	import mesh.model.associations.HasManyAssociation;
 	import mesh.model.associations.HasOneAssociation;
 	import mesh.model.store.Store;
@@ -289,6 +290,13 @@ package mesh.model
 			}
 		}
 		
+		private function initializeAssociations():void
+		{
+			for each (var association:Association in associations) {
+				association.object = this[association.property];
+			}
+		}
+		
 		/**
 		 * Marks the entity as being synced with the server.
 		 * 
@@ -491,10 +499,19 @@ package mesh.model
 			}
 		}
 		
+		private var _store:Store;
 		/**
 		 * The store that owns this entity.
 		 */
-		public var store:Store;
+		public function get store():Store
+		{
+			return _store;
+		}
+		public function set store(value:Store):void
+		{
+			_store = value;
+			initializeAssociations();
+		}
 		
 		/**
 		 * The global unique identifier assigned to this entity by the store.

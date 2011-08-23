@@ -1,5 +1,7 @@
 package mesh.model.associations
 {
+	import collections.HashSet;
+	
 	import flash.errors.IllegalOperationError;
 	import flash.events.EventDispatcher;
 	
@@ -44,7 +46,8 @@ package mesh.model.associations
 		 */
 		protected function associate(entity:Entity):void
 		{
-			owner.store.add(entity);
+			if (owner.store) owner.store.add(entity);
+			_entities.add(entity);
 			populateInverseRelationship(entity);
 		}
 		
@@ -86,13 +89,31 @@ package mesh.model.associations
 		 */
 		protected function unassociate(entity:Entity):void
 		{
-			
+			_entities.remove(entity);
+		}
+		
+		/**
+		 * The set of entities belonging to this association that are dependent on the owner being 
+		 * committed first.
+		 */
+		public function get dependents():Array
+		{
+			return isMaster && owner.isNew ? entities : [];
+		}
+		
+		private var _entities:HashSet = new HashSet();
+		/**
+		 * The set of entities belonging to this association.
+		 */
+		public function get entities():Array
+		{
+			return _entities.toArray();
 		}
 		
 		/**
 		 * The property on each associated object that maps back to the owner of the association.
 		 */
-		protected function get inverse():String
+		public function get inverse():String
 		{
 			return options.inverse;
 		}
@@ -100,7 +121,7 @@ package mesh.model.associations
 		/**
 		 * Indicates that this side of the association is the parent.
 		 */
-		protected function get isMaster():Boolean
+		public function get isMaster():Boolean
 		{
 			return options.isMaster;
 		}
