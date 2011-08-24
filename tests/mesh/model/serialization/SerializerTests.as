@@ -43,7 +43,7 @@ package mesh.model.serialization
 		[Test]
 		public function testSerializeUnnested():void
 		{
-			var serialized:Object = _customer.serialize();
+			var serialized:Object = _customer.serialize({});
 			
 			assertThat(serialized.id, equalTo(_customer.id));
 			assertThat(serialized.age, equalTo(_customer.age));
@@ -76,9 +76,7 @@ package mesh.model.serialization
 		{
 			var serialized:Object = _customer.serialize({
 				includes:{
-					name:{
-						only:["firstName", "lastName"]
-					},
+					name:true,
 					address:{only:["street"]},
 					orders:{
 						includes:{

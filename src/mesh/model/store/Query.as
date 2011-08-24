@@ -50,7 +50,15 @@ package mesh.model.store
 		 */
 		public function contains(entity:Entity):Boolean
 		{
-			return _condition != null ? _condition(entity) : false;
+			if (_condition != null) {
+				return _condition(entity);
+			}
+			
+			if (entityType != null) {
+				return entity.reflect.isA(entityType);
+			}
+			
+			return false;
 		}
 		
 		/**

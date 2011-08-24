@@ -6,6 +6,7 @@ package mesh.model.source
 	import mesh.core.reflection.reflect;
 	import mesh.model.Entity;
 	import mesh.model.store.Commit;
+	import mesh.model.store.Query;
 	import mesh.model.store.Store;
 
 	/**
@@ -76,6 +77,16 @@ package mesh.model.source
 		override public function destroyEach(commit:Commit, entities:Array):void
 		{
 			invokeEach(commit, "destroyEach", entities);
+		}
+		
+		/**
+		 * @inheritDoc
+		 */
+		override public function fetch(store:Store, query:Query):void
+		{
+			for each (var source:Source in _mapping) {
+				source.fetch(store, query);
+			}
 		}
 		
 		/**

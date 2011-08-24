@@ -2,8 +2,6 @@ package mesh.model.store
 {
 	import flash.utils.Dictionary;
 	
-	import mesh.model.source.Source;
-	
 	import mx.collections.IList;
 
 	/**
@@ -48,7 +46,12 @@ package mesh.model.store
 			if (!contains(query)) {
 				throw new ArgumentError("Query '" + query + "' not found in cache."); 
 			}
-			results(query).loaded(entities);
+			
+			if (entities != null) _store.add.apply(null, entities.toArray());
+			
+			if (query is RemoteQuery) {
+				results(query).loaded(entities);
+			}
 		}
 		
 		/**
@@ -61,7 +64,9 @@ package mesh.model.store
 		internal function results(query:Query):ResultList
 		{
 			if (!contains(query)) {
-				_cache[query] = new ResultList(query, _store).refresh();
+				var result:ResultList = new ResultList(query, _store);
+				_cache[query] = result;
+				result.refresh();
 			}
 			return _cache[query];
 		}

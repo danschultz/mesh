@@ -79,7 +79,7 @@ package mesh.model.store
 		 */
 		public function refresh():ResultList
 		{
-			_store.dataSource.fetch(_query);
+			_store.dataSource.fetch(_store, _query);
 			
 			if (_query is LocalQuery) {
 				createList(_store.index.findByType(_query.entityType));

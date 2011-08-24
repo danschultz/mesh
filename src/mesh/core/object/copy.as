@@ -42,6 +42,8 @@ package mesh.core.object
 				}
 			} catch (e:ReferenceError) {
 				
+			} catch (e:TypeError) {
+				
 			}
 		}
 	}

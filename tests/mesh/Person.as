@@ -21,5 +21,21 @@ package mesh
 		{
 			super(properties);
 		}
+		
+		override public function fromObject(object:Object):void
+		{
+			super.fromObject(object);
+			name = object.name != null ? new Name(object.name.firstName, object.name.lastName) : null;
+		}
+		
+		override protected function get serializableOptions():Object
+		{
+			return {
+				exclude:["state", "storeKey"],
+				includes:{
+					name:true
+				}
+			};
+		}
 	}
 }

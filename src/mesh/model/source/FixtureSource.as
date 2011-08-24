@@ -4,10 +4,13 @@ package mesh.model.source
 	import flash.utils.setTimeout;
 	
 	import mesh.core.object.merge;
+	import mesh.core.reflection.newInstance;
 	import mesh.model.Entity;
 	import mesh.model.store.Commit;
+	import mesh.model.store.Query;
 	import mesh.model.store.Store;
 	
+	import mx.collections.ArrayList;
 	import mx.rpc.Fault;
 
 	public class FixtureSource extends Source
@@ -53,6 +56,22 @@ package mesh.model.source
 					commit.saved([entity], [{id:data.id}]);
 				}
 			});
+		}
+		
+		/**
+		 * @inheritDoc
+		 */
+		override public function fetch(store:Store, query:Query):void
+		{
+			if (query.entityType == _entityType) {
+				var entities:Array = [];
+				for each (var hash:Object in _fixtures) {
+					var entity:Entity = newInstance(_entityType);
+					entity.fromObject(hash);
+					entities.push(entity);
+				}
+				store.query.loaded(query, new ArrayList(entities));
+			}
 		}
 		
 		/**

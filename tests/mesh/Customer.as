@@ -1,6 +1,6 @@
 package mesh
 {
-	import mesh.core.object.copy;
+	import mesh.core.object.merge;
 	import mesh.model.validators.PresenceValidator;
 	
 	import mx.collections.IList;
@@ -27,11 +27,17 @@ package mesh
 			hasMany("orders", {inverse:"customer", isMaster:true});
 		}
 		
-		override public function toObject(options:Object = null):Object
+		override public function fromObject(object:Object):void
 		{
-			var result:Object = super.toObject();
-			copy(this, result, {includes:["address", "accountId"]});
-			return result;
+			super.fromObject(object);
+			address = object.address != null ? new Address(object.address.street, object.address.city) : null;
+		}
+		
+		override protected function get serializableOptions():Object
+		{
+			var inherited:Object = super.serializableOptions;
+			inherited.includes = merge(inherited.includes, {address:true});
+			return inherited;
 		}
 	}
 }

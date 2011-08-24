@@ -49,7 +49,7 @@ package mesh.model.source
 			}
 		}
 		
-		public function fetch(query:Query):void
+		public function fetch(store:Store, query:Query):void
 		{
 			throw new IllegalOperationError("EntitySource.fetch() is not implemented.");
 		}
