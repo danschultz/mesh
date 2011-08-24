@@ -1,12 +1,12 @@
 package mesh
 {
-	import mesh.core.object.copy;
+	import mesh.model.Entity;
 	import mesh.model.validators.NumericValidator;
 	import mesh.model.validators.PresenceValidator;
 	
 	[RemoteClass(alias="mesh.Person")]
 	
-	public class Person extends TestEntity
+	public class Person extends Entity
 	{
 		public static var validate:Object = 
 		{
@@ -20,13 +20,6 @@ package mesh
 		public function Person(properties:Object = null)
 		{
 			super(properties);
-		}
-		
-		override public function toObject():Object
-		{
-			var obj:Object = super.toObject();
-			copy(this, obj, {includes:["age", "name"]});
-			return obj;
 		}
 	}
 }

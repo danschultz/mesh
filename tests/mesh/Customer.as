@@ -27,7 +27,7 @@ package mesh
 			hasMany("orders", {inverse:"customer", isMaster:true});
 		}
 		
-		override public function toObject():Object
+		override public function toObject(options:Object = null):Object
 		{
 			var result:Object = super.toObject();
 			copy(this, result, {includes:["address", "accountId"]});

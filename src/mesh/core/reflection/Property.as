@@ -44,7 +44,7 @@ package mesh.core.reflection
 		 */
 		public function get isStatic():Boolean
 		{
-			return description.parent().name() == "type";
+			return description.parent().name() == "type" && description.parent().@isStatic == "true";
 		}
 		
 		/**

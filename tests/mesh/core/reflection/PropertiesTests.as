@@ -30,6 +30,14 @@ package mesh.core.reflection
 		}
 		
 		[Test]
+		public function testInstanceVariableIsNotStaticThroughInstance():void
+		{
+			var property:Property = new Type(new Point()).property("x");
+			assertThat(property, notNullValue());
+			assertThat(property.isStatic, equalTo(false));
+		}
+		
+		[Test]
 		public function testPropertiesContainsGettersAndSetters():void
 		{
 			var property:Property = new Type(Event).property("type");

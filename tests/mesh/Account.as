@@ -1,10 +1,10 @@
 package mesh
 {
-	import mesh.core.object.copy;
+	import mesh.model.Entity;
 	
 	[RemoteClass(alias="mesh.Account")]
 	
-	public class Account extends TestEntity
+	public class Account extends Entity
 	{
 		[Bindable] public var customer:Customer;
 		[Bindable] public var number:String;
@@ -13,13 +13,6 @@ package mesh
 		{
 			super(properties);
 			hasOne("customer");
-		}
-		
-		override public function toObject():Object
-		{
-			var object:Object = super.toObject();
-			copy(this, object, {includes:["number"]});
-			return object;
 		}
 	}
 }

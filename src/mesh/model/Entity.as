@@ -9,11 +9,10 @@ package mesh.model
 	import mesh.core.inflection.humanize;
 	import mesh.core.object.copy;
 	import mesh.core.reflection.Type;
-	import mesh.core.serialization.ObjectSerializerDelegate;
-	import mesh.core.serialization.Serializer;
 	import mesh.model.associations.Association;
 	import mesh.model.associations.HasManyAssociation;
 	import mesh.model.associations.HasOneAssociation;
+	import mesh.model.serialization.Serializer;
 	import mesh.model.store.Store;
 	import mesh.model.validators.Errors;
 	import mesh.model.validators.Validator;
@@ -323,13 +322,14 @@ package mesh.model
 		}
 		
 		/**
-		 * Returns a new serializer that will serialize the properties of this entity.
+		 * Returns a hash of the serialized properties of this entity.
 		 * 
-		 * @return A new serializer.
+		 * @param options An options hash to configure the serialization.
+		 * @return A serialized hash.
 		 */
-		protected function serializer():Serializer
+		public function serialize(options:Object = null):Object
 		{
-			return new Serializer();
+			return new Serializer(this, options == null ? serializableOptions : options).serialize();
 		}
 		
 		/**
@@ -349,9 +349,9 @@ package mesh.model
 		 * 
 		 * @return An object.
 		 */
-		public function toObject():Object
+		public function toObject(options:Object = null):Object
 		{
-			return serializer().marshal(this, new ObjectSerializerDelegate());
+			return serialize(options);
 		}
 		
 		/**
@@ -359,9 +359,9 @@ package mesh.model
 		 * 
 		 * @return A JSON encoded string.
 		 */
-		public function toJSON():String
+		public function toJSON(options:Object = null):String
 		{
-			return encodeJson(toObject());
+			return encodeJson(serialize(options));
 		}
 		
 		/**
@@ -452,15 +452,15 @@ package mesh.model
 			return _errors;
 		}
 		
-		private var _id:*;
+		private var _id:Object;
 		/**
 		 * An object that represents the ID for this entity.
 		 */
-		public function get id():*
+		public function get id():Object
 		{
 			return _id;
 		}
-		public function set id(value:*):void
+		public function set id(value:Object):void
 		{
 			_id = value;
 		}
@@ -535,6 +535,19 @@ package mesh.model
 				_reflect = Type.reflect(this);
 			}
 			return _reflect;
+		}
+		
+		/**
+		 * The default options to use when <code>serialize()</code> is called. By default, this property is 
+		 * <code>null</code> and falls back to the <code>Serializer</code>s default behavior. Sub-classes may 
+		 * override this and supply their own default options.
+		 * 
+		 * @copy mesh.model.serialization.Serializer
+		 * @see mesh.model.serialization.Serializer 
+		 */
+		protected function get serializableOptions():Object
+		{
+			return null;
 		}
 		
 		private var  _state:int = Entity.INITIALIZED | Entity.DIRTY;

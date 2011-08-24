@@ -1,6 +1,5 @@
 package mesh.model.source
 {
-	import flash.utils.ByteArray;
 	import flash.utils.Dictionary;
 	import flash.utils.setTimeout;
 	
@@ -82,7 +81,7 @@ package mesh.model.source
 			invoke(function():void
 			{
 				if (_fixtures[data.id] != null) {
-					//entity.deserialize(_fixtures[data.id]);
+					entity.fromObject(_fixtures[data.id]);
 				} else {
 					entity.errored();
 				}
@@ -109,20 +108,12 @@ package mesh.model.source
 		/**
 		 * @inheritDoc
 		 */
-		override protected function deserialize(entities:Array):Array
-		{
-			return entities.concat();
-		}
-		
-		/**
-		 * @inheritDoc
-		 */
 		override protected function serialize(entities:Array):Array
 		{
-			var bytes:ByteArray = new ByteArray();
-			bytes.writeObject(entities);
-			bytes.position = 0;
-			return bytes.readObject();
+			return entities.map(function(entity:Entity, ...args):Object
+			{
+				return entity.toObject();
+			});
 		}
 		
 		private function get latency():Number
