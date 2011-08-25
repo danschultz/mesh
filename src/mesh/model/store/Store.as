@@ -126,17 +126,15 @@ package mesh.model.store
 		
 		private function register(entity:Entity):void
 		{
-			if (!index.contains(entity)) {
-				entity.storeKey = generateStoreKey();
-				entity.store = this;
-				entity.addEventListener(PropertyChangeEvent.PROPERTY_CHANGE, handleEntityPropertyChange);
-				
-				if (entity.isNew) {
-					_changes.add(entity);
-				}
-				
-				index.add(entity);
+			entity.storeKey = generateStoreKey();
+			entity.store = this;
+			entity.addEventListener(PropertyChangeEvent.PROPERTY_CHANGE, handleEntityPropertyChange);
+			
+			if (entity.isNew) {
+				_changes.add(entity);
 			}
+			
+			index.add(entity);
 		}
 		
 		private function unregister(entity:Entity):void

@@ -46,7 +46,7 @@ package mesh.model.associations
 		 */
 		protected function associate(entity:Entity):void
 		{
-			if (owner.store) owner.store.add(entity);
+			if (owner.store && entity.store == null) owner.store.add(entity);
 			_entities.add(entity);
 			populateInverseRelationship(entity);
 		}

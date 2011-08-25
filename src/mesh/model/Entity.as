@@ -3,8 +3,8 @@ package mesh.model
 	import com.brokenfunction.json.decodeJson;
 	import com.brokenfunction.json.encodeJson;
 	
+	import flash.errors.IllegalOperationError;
 	import flash.events.EventDispatcher;
-	import flash.utils.Dictionary;
 	import flash.utils.flash_proxy;
 	
 	import mesh.core.inflection.humanize;
@@ -581,13 +581,28 @@ package mesh.model
 		}
 		public function set store(value:Store):void
 		{
+			if (store != null && value != null) {
+				throw new IllegalOperationError("Cannot reassign an entity's store.");
+			}
+			
 			_store = value;
 			initializeAssociations();
 		}
 		
+		private var _storeKey:Object;
 		/**
 		 * The global unique identifier assigned to this entity by the store.
 		 */
-		public var storeKey:Object;
+		public function get storeKey():Object
+		{
+			return _storeKey;
+		}
+		public function set storeKey(value:Object):void
+		{
+			if (storeKey != null) {
+				throw new IllegalOperationError("Cannot reassign an entity's store key.");
+			}
+			_storeKey = value;
+		}
 	}
 }
