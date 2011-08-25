@@ -4,6 +4,7 @@ package mesh.model
 	import com.brokenfunction.json.encodeJson;
 	
 	import flash.events.EventDispatcher;
+	import flash.utils.Dictionary;
 	import flash.utils.flash_proxy;
 	
 	import mesh.core.inflection.humanize;
@@ -279,6 +280,7 @@ package mesh.model
 			return this;
 		}
 		
+		private static const IGNORED_PROPERTY_CHANGES:Object = {state:true, id:true};
 		/**
 		 * Marks a property on the entity as being dirty. This method allows sub-classes to manually 
 		 * manage when a property changes.
@@ -289,7 +291,7 @@ package mesh.model
 		 */
 		protected function propertyChanged(property:String, oldValue:Object, newValue:Object):void
 		{
-			if (property != "state") {
+			if (!IGNORED_PROPERTY_CHANGES.hasOwnProperty(property)) {
 				changes.changed(property, oldValue, newValue);
 				_aggregates.changed(property);
 				dirty();
@@ -453,6 +455,7 @@ package mesh.model
 		}
 		
 		private var _id:Object;
+		[Bindable]
 		/**
 		 * An object that represents the ID for this entity.
 		 */

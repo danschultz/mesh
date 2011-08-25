@@ -31,7 +31,7 @@ package mesh.model.source
 		{
 			super();
 			_entityType = entityType;
-			_options = merge({latency:250}, options);
+			_options = merge({latency:0}, options);
 		}
 		
 		private function invoke(block:Function):void
