@@ -33,7 +33,7 @@ package mesh.model.store
 		{
 			assertThat(entity.id, notNullValue());
 			assertThat(entity.hasPropertyChanges, equalTo(false));
-			assertThat(entity.state, equalTo(Entity.PERSISTED | Entity.SYNCED));
+			assertThat(entity.status.isPersisted && entity.status.isSynced, equalTo(true));
 		}
 		
 		private function createCustomer(properties:Object):Customer
@@ -104,7 +104,7 @@ package mesh.model.store
 			customer.destroy();
 			_store.commit();
 			
-			assertThat(customer.state, equalTo(Entity.DESTROYED | Entity.SYNCED));
+			assertThat(customer.status.isDestroyed && customer.status.isSynced, equalTo(true));
 		}
 	}
 }

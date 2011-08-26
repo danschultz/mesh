@@ -5,10 +5,9 @@ package mesh.model.store
 	import flash.events.EventDispatcher;
 	
 	import mesh.core.reflection.newInstance;
+	import mesh.core.state.StateEvent;
 	import mesh.model.Entity;
 	import mesh.model.source.Source;
-	
-	import mx.events.PropertyChangeEvent;
 	
 	/**
 	 * The store represents a repository for all <code>Entity</code>s in your application. The store
@@ -112,15 +111,13 @@ package mesh.model.store
 			return ++_keyCounter;
 		}
 		
-		private function handleEntityPropertyChange(event:PropertyChangeEvent):void
+		private function handleEntityStatusStateChange(event:StateEvent):void
 		{
-			var entity:Entity = Entity( event.source );
-			if (event.property == "state") {
-				if (entity.isDirty) {
-					_changes.add(entity);
-				} else if (entity.isSynced) {
-					_changes.remove(entity);
-				}
+			var entity:Entity = Entity( event.target );
+			if (entity.status.isDirty) {
+				_changes.add(entity);
+			} else if (entity.status.isSynced) {
+				_changes.remove(entity);
 			}
 		}
 		
@@ -128,9 +125,9 @@ package mesh.model.store
 		{
 			entity.storeKey = generateStoreKey();
 			entity.store = this;
-			entity.addEventListener(PropertyChangeEvent.PROPERTY_CHANGE, handleEntityPropertyChange);
+			entity.addEventListener(StateEvent.ENTER, handleEntityStatusStateChange);
 			
-			if (entity.isNew) {
+			if (entity.status.isNew) {
 				_changes.add(entity);
 			}
 			
@@ -143,7 +140,7 @@ package mesh.model.store
 				throw new ArgumentError("Entity '" + entity + "' not found in store");
 			}
 			entity.store = null;
-			entity.removeEventListener(PropertyChangeEvent.PROPERTY_CHANGE, handleEntityPropertyChange);
+			entity.removeEventListener(StateEvent.ENTER, handleEntityStatusStateChange);
 			index.remove(entity);
 			_changes.remove(entity);
 		}

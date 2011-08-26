@@ -10,6 +10,7 @@ package mesh.model
 	import mesh.core.inflection.humanize;
 	import mesh.core.object.copy;
 	import mesh.core.reflection.Type;
+	import mesh.core.state.StateEvent;
 	import mesh.model.associations.Association;
 	import mesh.model.associations.HasManyAssociation;
 	import mesh.model.associations.HasOneAssociation;
@@ -29,42 +30,6 @@ package mesh.model
 	 */
 	public class Entity extends EventDispatcher
 	{
-		/**
-		 * The generic lifecycle state for when the entity is new.
-		 */
-		public static const INITIALIZED:int = 0x00100;
-		
-		/**
-		 * The generic lifecyle state for when an entity exists locally and on the server.
-		 */
-		public static const PERSISTED:int = 0x00200;
-		
-		/**
-		 * The generic lifecycle state for when the entity has been destroyed.
-		 */
-		public static const DESTROYED:int = 0x00400;
-		
-		/**
-		 * The generic lifecycle state for when there are changes to be committed.
-		 */
-		public static const DIRTY:int = 0x00001;
-		
-		/**
-		 * The generic lifecycle state for when there's an error after a commit.
-		 */
-		public static const ERRORED:int = 0x01000;
-		
-		/**
-		 * The generic lifecycle state for when an entity is either loading or committing.
-		 */
-		public static const BUSY:int = 0x02000;
-		
-		/**
-		 * The generic lifecycle state for when the changes have been synced with the
-		 * backend.
-		 */
-		public static const SYNCED:int = 0x04000;
-		
 		private var _associations:Associations;
 		private var _aggregates:Aggregates;
 		
@@ -77,6 +42,12 @@ package mesh.model
 			
 			_associations = new Associations(this);
 			_aggregates = new Aggregates(this);
+			
+			_status = new EntityStatus(this);
+			_status.addEventListener(StateEvent.ENTER, function(event:StateEvent):void
+			{
+				dispatchEvent(event.clone());
+			});
 			
 			copy(values, this);
 			addEventListener(PropertyChangeEvent.PROPERTY_CHANGE, handlePropertyChange);
@@ -114,14 +85,13 @@ package mesh.model
 		}
 		
 		/**
-		 * Puts the entity into a busy lifecycle state. This state signifies that the entity is
-		 * busy either retrieving or committing data to the data source.
+		 * Marks this entity as destroyed and dirty.
 		 * 
 		 * @return This instance.
 		 */
-		public function busy():Entity
+		public function destroy():Entity
 		{
-			state = (state & ~0xF000) | BUSY;
+			status.destroy();
 			return this;
 		}
 		
@@ -133,8 +103,7 @@ package mesh.model
 		 */
 		public function errored():Entity
 		{
-			state = (state & ~0xF000) | ERRORED;
-			return this;
+			throw new IllegalOperationError("Entity.errored() is not implemented.");
 		}
 		
 		/**
@@ -146,39 +115,7 @@ package mesh.model
 		 */
 		public function equals(obj:Object):Boolean
 		{
-			return obj != null && (this === obj || (obj is Entity && isPersisted && id === obj.id));
-		}
-		
-		/**
-		 * Marks this entity as destroyed and dirty.
-		 * 
-		 * @return This instance.
-		 */
-		public function destroy():Entity
-		{
-			return destroyed().dirty();
-		}
-		
-		/**
-		 * Puts the entity into the destroyed state.
-		 * 
-		 * @return This entity.
-		 */
-		public function destroyed():Entity
-		{
-			state = DESTROYED;
-			return this;
-		}
-		
-		/**
-		 * Puts this entity into a dirty state.
-		 * 
-		 * @return This instance.
-		 */
-		public function dirty():Entity
-		{
-			state = (state ^ 0xF) | DIRTY;
-			return this;
+			return obj != null && (this === obj || (obj is Entity && status.isPersisted && id === obj.id));
 		}
 		
 		/**
@@ -230,18 +167,6 @@ package mesh.model
 		}
 		
 		/**
-		 * Performs a check to see if this entity is in the given state. This method uses the
-		 * logical <code>&</code> operator when testing the status.
-		 * 
-		 * @param state The state to test against.
-		 * @return <code>true</code> if the states match.
-		 */
-		public function isInState(value:int):Boolean
-		{
-			return (state & value) != 0;
-		}
-		
-		/**
 		 * Runs the validations defined for this entity and returns <code>true</code> if any
 		 * validations failed.
 		 * 
@@ -269,18 +194,7 @@ package mesh.model
 			return validate().length == 0;
 		}
 		
-		/**
-		 * Marks the entity as being persisted.
-		 * 
-		 * @return This instance.
-		 */
-		public function persisted():Entity
-		{
-			state = PERSISTED;
-			return this;
-		}
-		
-		private static const IGNORED_PROPERTY_CHANGES:Object = {state:true, id:true};
+		private static const IGNORED_PROPERTY_CHANGES:Object = {id:true};
 		/**
 		 * Marks a property on the entity as being dirty. This method allows sub-classes to manually 
 		 * manage when a property changes.
@@ -294,7 +208,7 @@ package mesh.model
 			if (!IGNORED_PROPERTY_CHANGES.hasOwnProperty(property)) {
 				changes.changed(property, oldValue, newValue);
 				_aggregates.changed(property);
-				dirty();
+				status.dirty();
 			}
 		}
 		
@@ -311,7 +225,7 @@ package mesh.model
 		 */
 		public function revive():void
 		{
-			if (isDestroyed) {
+			if (status.isDestroyed) {
 				id = 0;
 			}
 		}
@@ -341,7 +255,7 @@ package mesh.model
 		 */
 		public function synced():Entity
 		{
-			state = ((state >> 4) << 4) | SYNCED;
+			status.synced();
 			return this;
 		}
 		
@@ -469,34 +383,6 @@ package mesh.model
 		}
 		
 		/**
-		 * <code>true</code> if this record has been synced with the server.
-		 */
-		public function get isSynced():Boolean
-		{
-			return isInState(SYNCED);
-		}
-		
-		/**
-		 * <code>true</code> if this record has been destroyed.
-		 */
-		public function get isDestroyed():Boolean
-		{
-			return isInState(DESTROYED);
-		}
-		
-		/**
-		 * <code>true</code> if this entity is dirty and needs to be persisted. An object is dirty
-		 * if any of its properties have changed since its last save or if its a new record. An
-		 * entity is also dirty if any association that is marked for auto-save is dirty.
-		 * 
-		 * @see #hasPropertyChanges
-		 */
-		public function get isDirty():Boolean
-		{
-			return isInState(DIRTY); 
-		}
-		
-		/**
 		 * <code>true</code> if this entity has any changes to its properties that need to be 
 		 * persisted. This does not include auto-saved associations. To check if any associations
 		 * need to be persisted, use <code>isDirty</code>.
@@ -506,25 +392,6 @@ package mesh.model
 		public function get hasPropertyChanges():Boolean
 		{
 			return changes.hasChanges;
-		}
-		
-		/**
-		 * <code>true</code> if this entity is a new record that needs to be persisted. By default, 
-		 * an entity is considered new if its ID is 0. Sub-classes may override this implementation
-		 * and provide their own.
-		 */
-		public function get isNew():Boolean
-		{
-			return isInState(INITIALIZED);
-		}
-		
-		/**
-		 * <code>true</code> if the entity is persisted in the entity's service. An entity is persisted
-		 * when it hasn't been destroyed and its not a new record.
-		 */
-		public function get isPersisted():Boolean
-		{
-			return isInState(PERSISTED);
 		}
 		
 		private var _reflect:Type;
@@ -553,22 +420,13 @@ package mesh.model
 			return null;
 		}
 		
-		private var  _state:int = Entity.INITIALIZED | Entity.DIRTY;
-		[Bindable]
+		private var _status:EntityStatus;
 		/**
 		 * The current state of the entity in its lifecycle.
 		 */
-		public function get state():int
+		public function get status():EntityStatus
 		{
-			return _state;
-		}
-		public function set state(value:int):void
-		{
-			_state = value;
-			
-			if (isSynced) {
-				changes.clear();
-			}
+			return _status;
 		}
 		
 		private var _store:Store;

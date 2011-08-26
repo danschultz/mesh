@@ -48,7 +48,7 @@ package mesh.model.source
 			var data:Object = serialize([entity])[0];
 			invoke(function():void
 			{
-				if (!entity.isNew) {
+				if (!entity.status.isNew) {
 					update(commit, entity);
 				} else {
 					data.id = ++_idCounter;

@@ -65,7 +65,7 @@ package mesh.model.store
 		public function saved(entities:Array, data:Array = null, copier:Function = null):void
 		{
 			copyData(entities, data, copier);
-			completed(entities, Entity.PERSISTED | Entity.SYNCED);
+			completed(entities);
 		}
 		
 		/**
@@ -76,7 +76,7 @@ package mesh.model.store
 		 */
 		public function destroyed(entities:Array):void
 		{
-			completed(entities, Entity.DESTROYED | Entity.SYNCED);
+			completed(entities);
 		}
 		
 		/**
@@ -101,13 +101,13 @@ package mesh.model.store
 			}
 		}
 		
-		private function completed(entities:Array, state:int):void
+		private function completed(entities:Array):void
 		{
 			_committed.addAll(entities);
 			_operation.completed(entities);
 			
 			for each (var entity:Entity in storeEntities(entities)) {
-				entity.state = state;
+				entity.synced();
 			}
 			
 			commitDependents(entities);
@@ -198,15 +198,15 @@ package mesh.model.store
 			
 			var create:Array = entities.filter(function(entity:Entity, ...args):Boolean
 			{
-				return !_committed.contains(entity) && entity.isNew && entity.isDirty && _committed.containsAll(_dependencies.dependenciesFor(entity));
+				return !_committed.contains(entity) && entity.status.isNew && entity.status.isDirty && _committed.containsAll(_dependencies.dependenciesFor(entity));
 			});
 			var update:Array = entities.filter(function(entity:Entity, ...args):Boolean
 			{
-				return !_committed.contains(entity) && entity.isPersisted && entity.isDirty;
+				return !_committed.contains(entity) && entity.status.isPersisted && entity.status.isDirty;
 			});
 			var destroy:Array = entities.filter(function(entity:Entity, ...args):Boolean
 			{
-				return !_committed.contains(entity) && entity.isDestroyed && entity.isDirty;
+				return !_committed.contains(entity) && entity.status.isDestroyed && entity.status.isDirty;
 			});
 			
 			if (create.length > 0) {

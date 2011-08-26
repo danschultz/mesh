@@ -98,7 +98,7 @@ package mesh.model.associations
 		 */
 		public function get dependents():Array
 		{
-			return isMaster && owner.isNew ? entities : [];
+			return isMaster && owner.status.isNew ? entities : [];
 		}
 		
 		private var _entities:HashSet = new HashSet();
