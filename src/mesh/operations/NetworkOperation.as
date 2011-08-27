@@ -54,7 +54,7 @@ package mesh.operations
 				throw new IllegalOperationError(this + " cannot attempt anymore requests.");
 			}
 			
-			_attemptTimer.delay = _attempt.getDelayForAttempt(attempt);
+			_attemptTimer.delay = _attempt.getDelayForAttemptInMilliseconds(attempt);
 			_attemptTimer.start();
 		}
 		
@@ -109,7 +109,11 @@ package mesh.operations
 		 */
 		final override public function fault(summary:String, detail:String = "", code:String = ""):void
 		{
-			super.fault(summary, detail, code);
+			if (attemptsCount < _attempt.maxAttempts) {
+				executeRequest();
+			} else {
+				super.fault(summary, detail, code);
+			}
 		}
 		
 		private function handleAttemptTimerComplete(event:TimerEvent):void
@@ -212,118 +216,5 @@ package mesh.operations
 		{
 			return _attemptsCount;
 		}
-	}
-}
-
-import mesh.operations.NetworkOperation;
-
-class Timeout
-{
-	private var _operation:NetworkOperation;
-	private var _scale:Number;
-	
-	public function Timeout(milliseconds:Number, operation:NetworkOperation)
-	{
-		_scale = 1;
-		_value = milliseconds;
-		_operation = operation;
-	}
-	
-	/**
-	 * Sets the timeout to be interpreted as milliseconds.
-	 * 
-	 * @return The network operation.
-	 */
-	public function milliseconds():NetworkOperation
-	{
-		return _operation;
-	}
-	
-	/**
-	 * Sets the timeout to be interpreted as minutes.
-	 * 
-	 * @return The network operation.
-	 */
-	public function minutes():NetworkOperation
-	{
-		_scale = 60000;
-		return _operation;
-	}
-	
-	/**
-	 * Sets the timeout to be interpreted as seconds.
-	 * 
-	 * @return The network operation.
-	 */
-	public function seconds():NetworkOperation
-	{
-		_scale = 1000;
-		return _operation;
-	}
-	
-	public function toString():String
-	{
-		return (value/1000).toString() + " seconds";
-	}
-	
-	public function valueOf():Object
-	{
-		return value;
-	}
-	
-	private var _value:Number;
-	public function get value():Number
-	{
-		return _value / _scale;
-	}
-}
-
-class Attempt
-{
-	private var _operation:NetworkOperation;
-	private var _delays:Array = [0];
-	
-	public function Attempt(maxAttempts:int, operation:NetworkOperation)
-	{
-		_maxAttempts = Math.max(1, maxAttempts);
-		_operation = operation;
-	}
-	
-	public function getDelayForAttempt(attempt:int):Number
-	{
-		attempt = Math.min(_delays.length, attempt);
-		return _delays[attempt-1];
-	}
-	
-	/**
-	 * Sets the delay, in seconds, for each retry attempt. The delay for the first
-	 * retry is the first argument, the delay for the second retry is the second
-	 * argument and so on. To set the delay for all attempts, pass in a single
-	 * argument.
-	 * 
-	 * @param delays The delays for each retry attempt.
-	 * @return The operation.
-	 */
-	public function withDelay(... delays):NetworkOperation
-	{
-		_delays = delays;
-		return _operation;
-	}
-	
-	/**
-	 * Removes the delay between each retry attempt.
-	 * 
-	 * @return The operation.
-	 */
-	public function withoutDelay():NetworkOperation
-	{
-		_delays = [0];
-		return _operation;
-	}
-	
-	private var _maxAttempts:int;
-	public function get maxAttempts():int
-	{
-		return _maxAttempts;
 	}
 }

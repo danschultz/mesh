@@ -40,7 +40,7 @@ package mesh.operations
 			};
 			
 			var operation:MockNetworkOperation = new MockNetworkOperation(true, false);
-			operation.attempts(5).withDelay(50);
+			operation.attempts(5).withDelay(50/1000);
 			operation.addEventListener(FaultOperationEvent.FAULT, handleOperationFault);
 			operation.addEventListener(FinishedOperationEvent.FINISHED, Async.asyncHandler(this, handleOperationFinished, 500, null, handleTimeout));
 			operation.execute();
@@ -97,7 +97,7 @@ package mesh.operations
 			};
 			
 			var operation:MockNetworkOperation = new MockNetworkOperation(false, true);
-			operation.attempts(3).withDelay(50);
+			operation.attempts(3).withDelay(50/1000);
 			operation.addEventListener(ResultOperationEvent.RESULT, handleOperationResult);
 			operation.addEventListener(FinishedOperationEvent.FINISHED, Async.asyncHandler(this, handleOperationFinished, 200, null, handleTimeout));
 			operation.execute();
@@ -123,7 +123,7 @@ class MockNetworkOperation extends NetworkOperation
 		_requestCount++;
 		
 		if (_fails) {
-			retry("Error");
+			fault("Error");
 		}
 		
 		if (_results) {
