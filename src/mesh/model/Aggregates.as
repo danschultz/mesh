@@ -4,16 +4,81 @@ package mesh.model
 	
 	import mesh.core.reflection.Type;
 
+	/**
+	 * The <code>Aggregates</code> class contains the logic for aggregating properties on an object. Aggregates 
+	 * allow your models to group related sets of properties into value objects. This feature allows you to 
+	 * express relationships such as a <em>Person is composed of an Address</em>. Each aggregate describes how 
+	 * to construct a value object from an entity's properties, and how value objects are turned back into values 
+	 * on the entity.
+	 * 
+	 * <p>
+	 * Whenever an aggregated property on the entity changes, the aggregate will also be updated.
+	 * </p>
+	 * 
+	 * <p>
+	 * <strong>Example:</strong> Defining an address aggregate for a person:
+	 * 
+	 * <listing version="3.0">
+	 * public class Person extends Entity
+	 * {
+	 * 	[Bindable] public var address:Address;
+	 * 	[Bindable] public var street:String;
+	 * 	[Bindable] public var city:String;
+	 * 	
+	 * 	public function Customer()
+	 * 	{
+	 * 		super();
+	 * 		aggregate("address", Address, ["street","city"]);
+	 * 	}
+	 * }
+	 * 
+	 * public class Address
+	 * {
+	 * 	public function Address(street:String, city:String)
+	 * 	{
+	 * 		_street = street;
+	 * 		_city = city;
+	 * 	}
+	 * 
+	 * 	private var _street:String;
+	 * 	public function get street():String 
+	 * 	{
+	 * 		return _street;
+	 * 	}
+	 * 
+	 * 	private var _city:String;
+	 * 	public function get city():String {
+	 * 		return _city;
+	 * 	}
+	 * }
+	 * </listing>
+	 * </p>
+	 * 
+	 * @author Dan Schultz
+	 */
 	public class Aggregates
 	{
 		private var _host:Object;
 		private var _propertyToAggregate:Object = {};
 		
+		/**
+		 * Constructor.
+		 * 
+		 * @param host The object that contains the properties to aggregate.
+		 */
 		public function Aggregates(host:Object)
 		{
 			_host = host;
 		}
 		
+		/**
+		 * Defines an aggregated property on this object.
+		 * 
+		 * @param property The aggregate property.
+		 * @param type The type of class.
+		 * @param mappings The list of properties on the entity to aggregate. The list must be in the same order
+		 * 	as the argument's to the aggregate classes' constructor.
+		 */
 		public function add(property:String, type:Class, mappings:Array):void
 		{
 			if (_propertyToAggregate.hasOwnProperty(property)) {
@@ -28,6 +93,11 @@ package mesh.model
 			}
 		}
 		
+		/**
+		 * The host object calls this method to update the aggregate mapped to a property.
+		 * 
+		 * @param property The property to update.
+		 */
 		public function changed(property:String):void
 		{
 			if (_propertyToAggregate.hasOwnProperty(property)) {

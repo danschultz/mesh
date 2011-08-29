@@ -53,6 +53,9 @@ package mesh.model
 			addEventListener(PropertyChangeEvent.PROPERTY_CHANGE, handlePropertyChange);
 		}
 		
+		/**
+		 * @copy mesh.model.Aggregates#add()
+		 */
 		protected function aggregate(property:String, type:Class, mappings:Array):void
 		{
 			_aggregates.add(property, type, mappings);
