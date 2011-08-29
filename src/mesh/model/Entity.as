@@ -35,6 +35,8 @@ package mesh.model
 		
 		/**
 		 * Constructor.
+		 * 
+		 * @param values A hash of values to set on the entity.
 		 */
 		public function Entity(values:Object = null)
 		{
@@ -62,7 +64,7 @@ package mesh.model
 		}
 		
 		/**
-		 * Sets up a has-one association for a property.
+		 * Maps a has-one association to a property on this entity.
 		 * 
 		 * @param property The property that owns the association.
 		 * @param query The query to retrieve data for the association.
@@ -75,7 +77,7 @@ package mesh.model
 		}
 		
 		/**
-		 * Sets up a has-many association for a property.
+		 * Maps up a has-many association to a property on this entity.
 		 * 
 		 * @param property The property that owns the association.
 		 * @param query The query to retrieve data for the association.
