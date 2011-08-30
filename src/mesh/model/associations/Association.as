@@ -7,6 +7,7 @@ package mesh.model.associations
 	
 	import mesh.core.inflection.humanize;
 	import mesh.core.reflection.Type;
+	import mesh.core.state.StateEvent;
 	import mesh.model.Entity;
 	
 	import mx.events.PropertyChangeEvent;
@@ -43,12 +44,52 @@ package mesh.model.associations
 		 * Called by sub-classes when an entity is added to an association.
 		 * 
 		 * @param entity The entity that was associated.
+		 * @param revive Indicates if the entity should be revived when associated.
 		 */
-		protected function associate(entity:Entity):void
+		protected function associate(entity:Entity, revive:Boolean):void
 		{
 			if (owner.store && entity.store == null) owner.store.add(entity);
+			
+			entity.addEventListener(StateEvent.ENTER, handleEntityStatusChange);
+			if (revive) entity.revive();
+			
 			_entities.add(entity);
 			populateInverseRelationship(entity);
+		}
+		
+		private function handleEntityStatusChange(event:StateEvent):void
+		{
+			var entity:Entity = Entity( event.target );
+			
+			if (_entities.contains(entity)) {
+				if (entity.status.isDestroyed) {
+					entityDestroyed(entity);
+				} else {
+					entityRevived(entity);
+				}
+			}
+		}
+		
+		/**
+		 * Called when the entity's status changes from a destroyed to non-destroyed state. This allows
+		 * the association to add the entity back to its host.
+		 * 
+		 * @param entity The entity that changed.
+		 */
+		protected function entityRevived(entity:Entity):void
+		{
+			
+		}
+		
+		/**
+		 * Called when the entity's status changes from a non-destroyed state to a destroyed state. This
+		 * allows the association to remove the entity from its host.
+		 * 
+		 * @param entity The entity that changed.
+		 */
+		protected function entityDestroyed(entity:Entity):void
+		{
+			
 		}
 		
 		private function handleOwnerPropertyChange(event:PropertyChangeEvent):void
@@ -89,6 +130,7 @@ package mesh.model.associations
 		 */
 		protected function unassociate(entity:Entity):void
 		{
+			entity.removeEventListener(StateEvent.ENTER, handleEntityStatusChange);
 			_entities.remove(entity);
 		}
 		

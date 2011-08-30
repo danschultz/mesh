@@ -241,9 +241,10 @@ package mesh.model
 		 */
 		public function revive():void
 		{
-			if (status.isDestroyed) {
-				id = 0;
+			if (status.isDestroyed && status.isSynced) {
+				id = null;
 			}
+			status.revive();
 		}
 		
 		private function initializeAssociations():void
