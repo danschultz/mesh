@@ -20,6 +20,7 @@ package mesh.model
 	import mesh.model.validators.Validator;
 	
 	import mx.events.PropertyChangeEvent;
+	import mx.utils.ObjectUtil;
 	
 	use namespace flash_proxy;
 	
@@ -87,6 +88,16 @@ package mesh.model
 		protected function hasMany(property:String, options:Object = null):void
 		{
 			_associations.map(property, new HasManyAssociation(this, property, options));
+		}
+		
+		/**
+		 * Clones the entity using native AMF3 serialization.
+		 * 
+		 * @return A cloned entity.
+		 */
+		public function clone():*
+		{
+			return ObjectUtil.copy(this);
 		}
 		
 		/**
@@ -373,16 +384,16 @@ package mesh.model
 			return _errors;
 		}
 		
-		private var _id:Object;
+		private var _id:*;
 		[Bindable]
 		/**
 		 * An object that represents the ID for this entity.
 		 */
-		public function get id():Object
+		public function get id():*
 		{
 			return _id;
 		}
-		public function set id(value:Object):void
+		public function set id(value:*):void
 		{
 			_id = value;
 		}
