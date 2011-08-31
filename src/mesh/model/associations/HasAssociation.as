@@ -40,24 +40,6 @@ package mesh.model.associations
 			entity.addEventListener(PropertyChangeEvent.PROPERTY_CHANGE, handleAssociatedEntityPropertyChange);
 		}
 		
-		/**
-		 * @inheritDoc
-		 */
-		override protected function entityDestroyed(entity:Entity):void
-		{
-			super.entityDestroyed(entity);
-			owner[property] = null;
-		}
-		
-		/**
-		 * @inheritDoc
-		 */
-		override protected function entityRevived(entity:Entity):void
-		{
-			super.entityRevived(entity);
-			owner[property] = entity;
-		}
-		
 		private function handleAssociatedEntityPropertyChange(event:PropertyChangeEvent):void
 		{
 			if (event.property == "id") {

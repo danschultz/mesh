@@ -7,7 +7,6 @@ package mesh.model.associations
 	
 	import org.flexunit.assertThat;
 	import org.hamcrest.object.equalTo;
-	import org.hamcrest.object.nullValue;
 
 	public class HasOneAssociationTests
 	{
@@ -42,45 +41,6 @@ package mesh.model.associations
 			_customer.account = account;
 			
 			assertThat(account.customer, equalTo(_customer));
-		}
-		
-		[Test]
-		public function testDestroyedEntityIsRemovedFromAssociation():void
-		{
-			_customer.account.destroy();
-			assertThat(_customer.accountId, equalTo(0));
-			assertThat(_customer.account, nullValue());
-		}
-		
-		[Test]
-		public function testRevivedEntityIsAddedBackToAssociation():void
-		{
-			var account:Account = _customer.account;
-			account.destroy();
-			account.revive();
-			assertThat(_customer.accountId, equalTo(account.id));
-			assertThat(_customer.account, equalTo(account));
-		}
-		
-		[Test]
-		public function testRevivedEntityIsNotAddedBackToAssociationWhenDestroyedRemotely():void
-		{
-			var account:Account = _customer.account;
-			account.destroy();
-			_store.commit();
-			
-			account.revive();
-			assertThat(_customer.accountId, equalTo(0));
-			assertThat(_customer.account, nullValue());
-		}
-		
-		[Test]
-		public function testEntityIsRevivedWhenAddedBackToAssociation():void
-		{
-			var account:Account = _customer.account;
-			account.destroy();
-			_customer.account = account;
-			assertThat(account.status.isPersisted, equalTo(true));
 		}
 		
 		[Test]

@@ -32,7 +32,6 @@ package mesh.model
 		private var _synced:Action;
 		
 		private var _entity:Entity;
-		private var _revive:Action;
 		
 		/**
 		 * Constructor.
@@ -90,16 +89,6 @@ package mesh.model
 		}
 		
 		/**
-		 * Puts the entity into either a new dirty state or persisted state. If the entity has destroyed
-		 * from its data source, then the entity is put into a new dirty state. Otherwise its put into
-		 * a persisted state and marked as dirty if it has property changes.
-		 */
-		public function revive():void
-		{
-			_revive.trigger();
-		}
-		
-		/**
 		 * Puts the entity into a synced state. The synced state represents that the application and
 		 * the remote source are the same.
 		 */
@@ -128,21 +117,6 @@ package mesh.model
 			_synced = _state.createAction("synced");
 			_synced.transitionTo(persistedState, [loadingBusyState, newDirtyState, persistedDirtyState]);
 			_synced.transitionTo(destroyedState, destroyedDirtyState);
-			
-			_revive = _state.createAction("revive");
-			_revive.transitionTo(newDirtyState, destroyedState);
-			_revive.transitionTo(newDirtyState, destroyedDirtyState, function():Boolean
-			{
-				return _entity.id == null;
-			});
-			_revive.transitionTo(persistedState, destroyedDirtyState, function():Boolean
-			{
-				return !_entity.hasPropertyChanges;
-			});
-			_revive.transitionTo(persistedDirtyState, destroyedDirtyState, function():Boolean
-			{
-				return _entity.hasPropertyChanges;
-			});
 		}
 		
 		[Bindable(event="enter")]

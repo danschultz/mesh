@@ -68,58 +68,9 @@ package mesh.model.associations
 		 */
 		protected function associate(entity:Entity):void
 		{
-			if (entity.status.isDestroyed) {
-				entity.revive();
-			} else {
-				if (owner.store && entity.store == null) owner.store.add(entity);
-				listenForStatusChanges(entity);
-				_entities.add(entity);
-				populateInverseRelationship(entity);
-			}
-		}
-		
-		private function handleEntityStatusChange(event:StateEvent):void
-		{
-			var entity:Entity = Entity( event.target );
-			if (entity.status.isDestroyed) {
-				handleEntityDestroyed(entity);
-			} else {
-				handleEntityRevived(entity);
-			}
-		}
-		
-		/**
-		 * Called when the entity's status changes from a destroyed to non-destroyed state. This allows
-		 * the association to add the entity back to its host.
-		 * 
-		 * @param entity The entity that changed.
-		 */
-		protected function entityRevived(entity:Entity):void
-		{
-			
-		}
-		
-		/**
-		 * Called when the entity's status changes from a non-destroyed state to a destroyed state. This
-		 * allows the association to remove the entity from its host.
-		 * 
-		 * @param entity The entity that changed.
-		 */
-		protected function entityDestroyed(entity:Entity):void
-		{
-			listenForStatusChanges(entity);
-		}
-		
-		private function handleEntityDestroyed(entity:Entity):void
-		{
-			entityDestroyed(entity);
-		}
-		
-		private function handleEntityRevived(entity:Entity):void
-		{
-			if (!_entities.contains(entity)) {
-				entityRevived(entity);
-			}
+			if (owner.store && entity.store == null) owner.store.add(entity);
+			_entities.add(entity);
+			populateInverseRelationship(entity);
 		}
 		
 		private function handleOwnerPropertyChange(event:PropertyChangeEvent):void
@@ -140,12 +91,6 @@ package mesh.model.associations
 			} else {
 				object = data;
 			}
-		}
-		
-		private function listenForStatusChanges(entity:Entity):void
-		{
-			entity.removeEventListener(StateEvent.ENTER, handleEntityStatusChange);
-			entity.addEventListener(StateEvent.ENTER, handleEntityStatusChange);
 		}
 		
 		/**
@@ -219,7 +164,6 @@ package mesh.model.associations
 		 */
 		protected function unassociate(entity:Entity):void
 		{
-			entity.removeEventListener(StateEvent.ENTER, handleEntityStatusChange);
 			_entities.remove(entity);
 		}
 		

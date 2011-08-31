@@ -236,17 +236,6 @@ package mesh.model
 			changes.revert();
 		}
 		
-		/**
-		 * Marks the entity as a new entity if the entity has been destroyed.
-		 */
-		public function revive():void
-		{
-			if (status.isDestroyed && status.isSynced) {
-				id = null;
-			}
-			status.revive();
-		}
-		
 		private function initializeAssociations():void
 		{
 			for each (var association:Association in associations) {

@@ -30,27 +30,6 @@ package mesh.model.associations
 			_list.addEventListener(CollectionEvent.COLLECTION_CHANGE, handleListCollectionChange);
 		}
 		
-		/**
-		 * @inheritDoc
-		 */
-		override protected function entityDestroyed(entity:Entity):void
-		{
-			super.entityDestroyed(entity);
-			_list.removeItemAt(_list.getItemIndex(entity));
-		}
-		
-		/**
-		 * @inheritDoc
-		 */
-		override protected function entityRevived(entity:Entity):void
-		{
-			super.entityRevived(entity);
-			
-			if (!_list.contains(entity)) {
-				_list.addItem(entity);
-			}
-		}
-		
 		private function handleListCollectionChange(event:CollectionEvent):void
 		{
 			switch (event.kind) {
