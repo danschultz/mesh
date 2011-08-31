@@ -7,7 +7,10 @@ package mesh.model.associations
 	
 	import mesh.core.inflection.humanize;
 	import mesh.core.reflection.Type;
+	import mesh.core.state.Action;
+	import mesh.core.state.State;
 	import mesh.core.state.StateEvent;
+	import mesh.core.state.StateMachine;
 	import mesh.model.Entity;
 	
 	import mx.events.PropertyChangeEvent;
@@ -21,6 +24,15 @@ package mesh.model.associations
 	 */
 	public class Association extends EventDispatcher
 	{
+		private var _state:StateMachine;
+		
+		private var _initializedState:State;
+		private var _loadingState:State;
+		private var _loadedState:State;
+		
+		private var _loading:Action;
+		private var _loaded:Action;
+		
 		/**
 		 * Constructor.
 		 * 
@@ -31,9 +43,17 @@ package mesh.model.associations
 		public function Association(owner:Entity, property:String, options:Object = null)
 		{
 			super();
+			
 			_owner = owner;
 			_property = property;
 			_options = options != null ? options : {};
+			
+			_state = new StateMachine();
+			_state.addEventListener(StateEvent.ENTER, function(event:StateEvent):void
+			{
+				dispatchEvent(event.clone());
+			});
+			setupStates(_state);
 			
 			// Watch for assignments to the mapped property on the owner. If the property is reassigned,
 			// then we'll need the association to wrap the new object.
@@ -99,6 +119,49 @@ package mesh.model.associations
 			}
 		}
 		
+		/**
+		 * Used internally by the entity to initialize the association with its data.
+		 */
+		public function initialize():void
+		{
+			var data:Object = owner[property];
+			if (!isLazy) {
+				loaded(data);
+			} else {
+				object = data;
+			}
+		}
+		
+		/**
+		 * Loads the data for this association. If this is a non-lazy association, then nothing happens.
+		 */
+		public function load():void
+		{
+			_loading.trigger();
+		}
+		
+		/**
+		 * Called when the association needs to load its data. Sub-classes must override this method in
+		 * order to load the data.
+		 */
+		protected function loadRequested():void
+		{
+			
+		}
+		
+		/**
+		 * Called by sub-classes when the data for this association has been loaded. The loaded data will
+		 * replace any data on the associated property.
+		 * 
+		 * @param data The loaded data.
+		 */
+		protected function loaded(data:Object):void
+		{
+			owner[property] = data;
+			object = data;
+			_loaded.trigger();
+		}
+		
 		private function populateInverseRelationship(entity:Entity):void
 		{
 			if (inverse != null) {
@@ -115,12 +178,22 @@ package mesh.model.associations
 			
 		}
 		
+		private function setupStates(states:StateMachine):void
+		{
+			_initializedState = states.createState("initialized");
+			_loadedState = states.createState("loaded");
+			_loadingState = states.createState("loading").onEnter(loadRequested);
+			
+			_loading = states.createAction("loading").transitionTo(_loadingState, [_initializedState, _loadedState]);
+			_loaded = states.createAction("loaded").transitionTo(_loadedState, [_loadingState, _initializedState]);
+		}
+		
 		/**
 		 * @private
 		 */
 		override public function toString():String
 		{
-			return humanize(reflect.className).toLowerCase();
+			return humanize(reflect.className).toLowerCase() + " on " + owner.reflect.name + "." + property
 		}
 		
 		/**
@@ -158,6 +231,32 @@ package mesh.model.associations
 		public function get inverse():String
 		{
 			return options.inverse;
+		}
+		
+		/**
+		 * Indicates that the data has not been loaded for this association when the owner was loaded.
+		 */
+		public function get isLazy():Boolean
+		{
+			return options.isLazy || options.lazy;
+		}
+		
+		[Bindable(event="enter")]
+		/**
+		 * Indicates if the data for this association has been loaded.
+		 */
+		public function get isLoaded():Boolean
+		{
+			return _state.current.name == "loaded";
+		}
+		
+		[Bindable(event="enter")]
+		/**
+		 * Indicates if the association is loading its data.
+		 */
+		public function get isLoading():Boolean
+		{
+			return _state.current.name == "loading";
 		}
 		
 		/**

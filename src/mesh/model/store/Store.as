@@ -88,6 +88,7 @@ package mesh.model.store
 				if (entity == null) {
 					entity = newInstance(args[0]);
 					entity.id = args[1];
+					add(entity);
 					dataSource.retrieve(this, entity);
 				}
 				return entity;

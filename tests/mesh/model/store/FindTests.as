@@ -44,6 +44,7 @@ package mesh.model.store
 		public function testFindEntity():void
 		{
 			var customer:Person = _store.find(Person, _jimmyPage.id);
+			assertThat(_store.index.contains(customer), equalTo(true));
 			assertThat(customer.id, equalTo(_jimmyPage.id));
 			assertThat(customer.name, hasProperties({firstName:_jimmyPage.name.firstName, lastName:_jimmyPage.name.lastName}));
 		}

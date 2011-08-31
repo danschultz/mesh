@@ -250,7 +250,7 @@ package mesh.model
 		private function initializeAssociations():void
 		{
 			for each (var association:Association in associations) {
-				association.object = this[association.property];
+				association.initialize();
 			}
 		}
 		

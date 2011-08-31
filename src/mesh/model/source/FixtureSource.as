@@ -8,6 +8,7 @@ package mesh.model.source
 	import mesh.model.Entity;
 	import mesh.model.store.Commit;
 	import mesh.model.store.Query;
+	import mesh.model.store.RemoteQuery;
 	import mesh.model.store.Store;
 	
 	import mx.collections.ArrayList;
@@ -70,6 +71,14 @@ package mesh.model.source
 					entity.fromObject(hash);
 					entities.push(entity);
 				}
+				
+				if (query is RemoteQuery) {
+					entities = entities.filter(function(entity:Entity, ...args):Boolean
+					{
+						return query.contains(entity);
+					});
+				}
+				
 				store.query.loaded(query, new ArrayList(entities));
 			}
 		}

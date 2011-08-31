@@ -1,6 +1,10 @@
 package mesh.model.store
 {
 	import mesh.core.List;
+	import mesh.core.state.Action;
+	import mesh.core.state.State;
+	import mesh.core.state.StateEvent;
+	import mesh.core.state.StateMachine;
 	import mesh.model.Entity;
 	
 	import mx.collections.IList;
@@ -24,6 +28,12 @@ package mesh.model.store
 		private var _store:Store;
 		private var _list:ListCollectionView;
 		
+		private var _state:StateMachine;
+		private var _refreshingState:State;
+		private var _loadedState:State;
+		private var _refreshing:Action;
+		private var _loaded:Action;
+		
 		/**
 		 * Constructor.
 		 * 
@@ -33,8 +43,20 @@ package mesh.model.store
 		public function ResultList(query:Query, store:Store)
 		{
 			super();
+			
 			_query = query;
 			_store = store;
+			
+			_state = new StateMachine();
+			_state.addEventListener(StateEvent.ENTER, function(event:StateEvent):void
+			{
+				dispatchEvent(event.clone());
+			});
+			
+			_refreshingState = _state.createState("refreshing");
+			_loadedState = _state.createState("loaded");
+			_refreshing = _state.createAction("refreshing").transitionTo(_loadedState, _refreshingState);
+			_loaded = _state.createAction("loaded").transitionTo(_loadedState, _refreshingState);
 		}
 		
 		/**
@@ -70,6 +92,7 @@ package mesh.model.store
 		internal function loaded(results:IList):void
 		{
 			createList(results);
+			_loaded.trigger();
 		}
 		
 		/**
@@ -79,6 +102,7 @@ package mesh.model.store
 		 */
 		public function refresh():ResultList
 		{
+			_refreshing.trigger();
 			_store.dataSource.fetch(_store, _query);
 			
 			if (_query is LocalQuery) {
@@ -96,6 +120,24 @@ package mesh.model.store
 		override public function removeItemAt(index:int):Object
 		{
 			return null;
+		}
+		
+		[Bindable(event="enter")]
+		/**
+		 * Indicates if the data for this result has been loaded.
+		 */
+		public function get isLoaded():Boolean
+		{
+			return _state.current.name == "loaded";
+		}
+		
+		[Bindable(event="enter")]
+		/**
+		 * Indicates if the data for this result is currently loading.
+		 */
+		public function get isRefreshing():Boolean
+		{
+			return _state.current.name == "refreshing";
 		}
 	}
 }

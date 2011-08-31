@@ -145,36 +145,43 @@ package mesh.model
 			});
 		}
 		
+		[Bindable(event="enter")]
 		public function get isBusy():Boolean
 		{
 			return isInState("busy");
 		}
 		
+		[Bindable(event="enter")]
 		public function get isDirty():Boolean
 		{
 			return isInState("dirty");
 		}
 		
+		[Bindable(event="enter")]
 		public function get isDestroyed():Boolean
 		{
 			return isInState("destroy");
 		}
 		
+		[Bindable(event="enter")]
 		private function get isLocked():Boolean
 		{
 			return isInState("locked");
 		}
 		
+		[Bindable(event="enter")]
 		public function get isNew():Boolean
 		{
 			return isInState("new");
 		}
 		
+		[Bindable(event="enter")]
 		public function get isPersisted():Boolean
 		{
 			return isInState("persisted");
 		}
 		
+		[Bindable(event="enter")]
 		public function get isSynced():Boolean
 		{
 			return !isDirty && !isBusy;
