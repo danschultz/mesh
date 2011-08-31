@@ -19,6 +19,7 @@ package mesh
 			hasMany("employees", {
 				lazy:true,
 				isMaster:true,
+				inverse:"employer",
 				query:new RemoteQuery().on(Employee).where(function(employee:Employee):Boolean
 				{
 					return id == employee.employerId;

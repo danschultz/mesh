@@ -4,6 +4,7 @@ package mesh.model.store
 	import mesh.Customer;
 	import mesh.Name;
 	import mesh.Order;
+	import mesh.TestSource;
 	import mesh.model.Entity;
 	import mesh.model.source.FixtureSource;
 	import mesh.model.source.MultiSource;
@@ -21,12 +22,7 @@ package mesh.model.store
 		[Before]
 		public function setup():void
 		{
-			var multiSource:MultiSource = new MultiSource();
-			multiSource.map(Customer, new FixtureSource(Customer, {latency:0}));
-			multiSource.map(Account, new FixtureSource(Account, {latency:0}));
-			multiSource.map(Order, new FixtureSource(Order, {latency:0}));
-			
-			_store = new Store(multiSource);
+			_store = new Store(new TestSource());
 		}
 		
 		private function checkIfPersisted(entity:Entity):void

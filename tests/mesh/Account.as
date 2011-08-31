@@ -6,6 +6,7 @@ package mesh
 	
 	public class Account extends Entity
 	{
+		[Bindable] public var customerId:int;
 		[Bindable] public var customer:Customer;
 		[Bindable] public var number:String;
 		

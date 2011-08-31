@@ -3,7 +3,6 @@ package mesh.model.associations
 	import flash.errors.IllegalOperationError;
 	import flash.events.Event;
 	
-	import mesh.core.inflection.humanize;
 	import mesh.model.Entity;
 	import mesh.model.store.LocalQuery;
 	import mesh.model.store.Query;
@@ -36,8 +35,8 @@ package mesh.model.associations
 		 */
 		override protected function entityDestroyed(entity:Entity):void
 		{
+			super.entityDestroyed(entity);
 			_list.removeItemAt(_list.getItemIndex(entity));
-			associate(entity, false);
 		}
 		
 		/**
@@ -45,6 +44,8 @@ package mesh.model.associations
 		 */
 		override protected function entityRevived(entity:Entity):void
 		{
+			super.entityRevived(entity);
+			
 			if (!_list.contains(entity)) {
 				_list.addItem(entity);
 			}
@@ -75,7 +76,7 @@ package mesh.model.associations
 		private function handleEntitiesAdded(items:Array):void
 		{
 			for each (var entity:Entity in items) {
-				associate(entity, true);
+				associate(entity);
 			}
 		}
 		

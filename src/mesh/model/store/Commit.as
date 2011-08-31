@@ -93,10 +93,15 @@ package mesh.model.store
 		private function copyData(entities:Array, data:Array = null, copier:Function = null):void
 		{
 			if (data != null) {
-				entities = storeEntities(entities);
+				var entitiesFromStore:Array = storeEntities(entities);
 				for (var i:int = 0; i < data.length; i++) {
-					if (copier != null) copier(entities[i], data[i]);
-					else copy(data[i], entities[i]);
+					if (copier != null) {
+						copier(entities[i], data[i]);
+						copier(entitiesFromStore[i], data[i]);
+					} else {
+						copy(data[i], entities[i]);
+						copy(data[i], entitiesFromStore[i]);
+					}
 				}
 			}
 		}
@@ -106,8 +111,14 @@ package mesh.model.store
 			_committed.addAll(entities);
 			_operation.completed(entities);
 			
-			for each (var entity:Entity in storeEntities(entities)) {
-				entity.synced();
+			for each (var entity:Entity in entities) {
+				entityInStore(entity).synced();
+				
+				// Notify dependencies that their dependents have been committed, and any foreign keys 
+				// should be synced now.
+				for each (var depenency:Entity in storeEntities(_dependencies.dependenciesFor(entity))) {
+					entityInStore(depenency).synced();
+				}
 			}
 			
 			commitDependents(entities);
@@ -129,6 +140,11 @@ package mesh.model.store
 					_dependencies.addDependents(entity, association.dependents);
 				}
 			}
+		}
+		
+		private function entityInStore(entity:Entity):Entity
+		{
+			return _store.index.findByKey(entity.storeKey);
 		}
 		
 		/**

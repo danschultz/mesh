@@ -434,7 +434,7 @@ package mesh.model
 		 */
 		protected function get serializableOptions():Object
 		{
-			return null;
+			return {exclude:["storeKey"]};
 		}
 		
 		private var _status:EntityStatus;

@@ -37,7 +37,6 @@ package mesh.model.store
 		
 		private var _queue:OperationQueue;
 		private var _commits:Array = [];
-		private var _checkpoint:Commit;
 		
 		/**
 		 * Constructor.
@@ -112,6 +111,15 @@ package mesh.model.store
 			snapshot.writeObject(entities);
 			snapshot.position = 0;
 			return snapshot.readObject();
+		}
+		
+		private var _checkpoint:Commit;
+		/**
+		 * The last successful commit of the store.
+		 */
+		public function get checkpoint():Commit
+		{
+			return _checkpoint;
 		}
 		
 		private var _failed:Commit;

@@ -9,7 +9,7 @@ package mesh
 	public class Employee extends Person
 	{
 		[Bindable] public var employer:Organization;
-		public var employerId:int;
+		[Bindable] public var employerId:int;
 		[Bindable] public var tasks:IList;
 		
 		public function Employee(properties:Object=null)

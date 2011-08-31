@@ -66,27 +66,25 @@ package mesh.model.associations
 		 * @param entity The entity that was associated.
 		 * @param revive Indicates if the entity should be revived when associated.
 		 */
-		protected function associate(entity:Entity, revive:Boolean):void
+		protected function associate(entity:Entity):void
 		{
-			if (owner.store && entity.store == null) owner.store.add(entity);
-			
-			entity.addEventListener(StateEvent.ENTER, handleEntityStatusChange);
-			if (revive) entity.revive();
-			
-			_entities.add(entity);
-			populateInverseRelationship(entity);
+			if (entity.status.isDestroyed) {
+				entity.revive();
+			} else {
+				if (owner.store && entity.store == null) owner.store.add(entity);
+				listenForStatusChanges(entity);
+				_entities.add(entity);
+				populateInverseRelationship(entity);
+			}
 		}
 		
 		private function handleEntityStatusChange(event:StateEvent):void
 		{
 			var entity:Entity = Entity( event.target );
-			
-			if (_entities.contains(entity)) {
-				if (entity.status.isDestroyed) {
-					entityDestroyed(entity);
-				} else {
-					entityRevived(entity);
-				}
+			if (entity.status.isDestroyed) {
+				handleEntityDestroyed(entity);
+			} else {
+				handleEntityRevived(entity);
 			}
 		}
 		
@@ -109,7 +107,19 @@ package mesh.model.associations
 		 */
 		protected function entityDestroyed(entity:Entity):void
 		{
-			
+			listenForStatusChanges(entity);
+		}
+		
+		private function handleEntityDestroyed(entity:Entity):void
+		{
+			entityDestroyed(entity);
+		}
+		
+		private function handleEntityRevived(entity:Entity):void
+		{
+			if (!_entities.contains(entity)) {
+				entityRevived(entity);
+			}
 		}
 		
 		private function handleOwnerPropertyChange(event:PropertyChangeEvent):void
@@ -130,6 +140,12 @@ package mesh.model.associations
 			} else {
 				object = data;
 			}
+		}
+		
+		private function listenForStatusChanges(entity:Entity):void
+		{
+			entity.removeEventListener(StateEvent.ENTER, handleEntityStatusChange);
+			entity.addEventListener(StateEvent.ENTER, handleEntityStatusChange);
 		}
 		
 		/**

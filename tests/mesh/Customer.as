@@ -23,7 +23,7 @@ package mesh
 		{
 			super(properties);
 			
-			hasOne("account", {inverse:"customer", isMaster:true});
+			hasOne("account", {inverse:"customer", isMaster:true, foreignKey:"accountId"});
 			hasMany("orders", {inverse:"customer", isMaster:true});
 		}
 		

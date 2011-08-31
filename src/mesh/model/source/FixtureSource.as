@@ -110,6 +110,7 @@ package mesh.model.source
 			{
 				if (_fixtures[data.id] != null) {
 					entity.fromObject(_fixtures[data.id]);
+					entity.synced();
 				} else {
 					entity.errored();
 				}

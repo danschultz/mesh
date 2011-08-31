@@ -6,6 +6,7 @@ package mesh.model.associations
 	import mesh.model.Entity;
 	
 	import mx.binding.utils.ChangeWatcher;
+	import mx.events.PropertyChangeEvent;
 	
 	/**
 	 * The base class for any association that links to a single entity.
@@ -20,6 +21,23 @@ package mesh.model.associations
 		public function HasAssociation(owner:Entity, property:String, options:Object = null)
 		{
 			super(owner, property, options);
+			checkForRequiredFields();
+		}
+		
+		private function checkForRequiredFields():void
+		{
+			if (entityType == null) throw new IllegalOperationError("Undefined entity type for " + this);
+			if (foreignKey != null && !owner.hasOwnProperty(foreignKey)) throw new IllegalOperationError("Undefined foreign key for " + this);
+		}
+		
+		/**
+		 * @inheritDoc
+		 */
+		override protected function associate(entity:Entity):void
+		{
+			super.associate(entity);
+			populateForeignKey();
+			entity.addEventListener(PropertyChangeEvent.PROPERTY_CHANGE, handleAssociatedEntityPropertyChange);
 		}
 		
 		/**
@@ -27,8 +45,8 @@ package mesh.model.associations
 		 */
 		override protected function entityDestroyed(entity:Entity):void
 		{
+			super.entityDestroyed(entity);
 			owner[property] = null;
-			associate(entity, false);
 		}
 		
 		/**
@@ -36,7 +54,15 @@ package mesh.model.associations
 		 */
 		override protected function entityRevived(entity:Entity):void
 		{
+			super.entityRevived(entity);
 			owner[property] = entity;
+		}
+		
+		private function handleAssociatedEntityPropertyChange(event:PropertyChangeEvent):void
+		{
+			if (event.property == "id") {
+				populateForeignKey();
+			}
 		}
 		
 		private var _loadingEntity:Entity;
@@ -50,10 +76,15 @@ package mesh.model.associations
 			
 			if (_loadingEntity == null) {
 				_loadingEntity = owner.store.find(entityType, owner[foreignKey]);
+				
 				_loadingEntityWatcher = ChangeWatcher.watch(_loadingEntity.status, "isSynced", function(event:Event):void
 				{
 					loaded(_loadingEntity);
 				});
+				
+				if (_loadingEntity.status.isSynced) {
+					loaded(_loadingEntity);
+				}
 			}
 		}
 		
@@ -71,14 +102,31 @@ package mesh.model.associations
 			}
 		}
 		
+		private function populateForeignKey():void
+		{
+			// If the foreign key is undefined, try to automagically set it.
+			var key:String = foreignKey != null ? foreignKey : property + "Id";
+			
+			if (owner.hasOwnProperty(key)) {
+				owner[key] = object.id;
+			}
+		}
+		
+		/**
+		 * @inheritDoc
+		 */
+		override protected function unassociate(entity:Entity):void
+		{
+			super.unassociate(entity);
+			entity.removeEventListener(PropertyChangeEvent.PROPERTY_CHANGE, handleAssociatedEntityPropertyChange);
+			if (foreignKey != null) owner[foreignKey] = null;
+		}
+		
 		/**
 		 * The property on the owner that defines the foreign key to load this association.
 		 */
 		protected function get foreignKey():String
 		{
-			if (options.foreignKey == null || !owner.hasOwnProperty(options.foreignKey)) {
-				throw new IllegalOperationError("Undefined foreign key for " + this);
-			}
 			return options.foreignKey;
 		}
 		
@@ -93,7 +141,7 @@ package mesh.model.associations
 			} catch (e:Error) {
 				
 			}
-			throw new IllegalOperationError("Undefined entity type for " + this);
+			return null;
 		}
 		
 		/**
@@ -103,7 +151,7 @@ package mesh.model.associations
 		{
 			if (object != null) unassociate(object);
 			super.object = value;
-			if (object != null) associate(object, true);
+			if (object != null) associate(object);
 		}
 	}
 }

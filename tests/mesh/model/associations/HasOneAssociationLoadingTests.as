@@ -44,7 +44,7 @@ package mesh.model.associations
 			
 			employee.associations.employer.load();
 			assertThat(employee.employer, notNullValue());
-			assertThat(employee.associations.employees.isLoaded, equalTo(true));
+			assertThat(employee.associations.employer.isLoaded, equalTo(true));
 		}
 	}
 }
