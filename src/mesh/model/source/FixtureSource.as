@@ -111,7 +111,7 @@ package mesh.model.source
 					entity.fromObject(_fixtures[data.id]);
 					entity.synced();
 				} else {
-					entity.errored();
+					entity.failed();
 				}
 			});
 		}

@@ -158,7 +158,7 @@ package mesh.model.store
 			_operation.failed(fault);
 			
 			for each (var entity:Entity in storeEntities(entities)) {
-				entity.errored();
+				entity.failed();
 			}
 		}
 		

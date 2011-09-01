@@ -4,6 +4,7 @@ package mesh.model
 	import com.brokenfunction.json.encodeJson;
 	
 	import flash.errors.IllegalOperationError;
+	import flash.events.Event;
 	import flash.events.EventDispatcher;
 	import flash.utils.flash_proxy;
 	
@@ -14,7 +15,11 @@ package mesh.model
 	import mesh.model.associations.Association;
 	import mesh.model.associations.HasManyAssociation;
 	import mesh.model.associations.HasOneAssociation;
+	import mesh.model.load.LoadEvent;
+	import mesh.model.load.LoadFailedEvent;
+	import mesh.model.load.LoadSuccessEvent;
 	import mesh.model.serialization.Serializer;
+	import mesh.model.source.SourceFault;
 	import mesh.model.store.Store;
 	import mesh.model.validators.Errors;
 	import mesh.model.validators.Validator;
@@ -23,6 +28,21 @@ package mesh.model
 	import mx.utils.ObjectUtil;
 	
 	use namespace flash_proxy;
+	
+	/**
+	 * Dispatched when the result list starts loading its content.
+	 */
+	[Event(name="loading", type="mesh.model.load.LoadEvent")]
+	
+	/**
+	 * Dispatched when the result list has successfully loaded its content.
+	 */
+	[Event(name="success", type="mesh.model.load.LoadSuccessEvent")]
+	
+	/**
+	 * Dispatched when the result list has failed to load its content.
+	 */
+	[Event(name="failed", type="mesh.model.load.LoadFailedEvent")]
 	
 	/**
 	 * An entity.
@@ -47,10 +67,7 @@ package mesh.model
 			_aggregates = new Aggregates(this);
 			
 			_status = new EntityStatus(this);
-			_status.addEventListener(StateEvent.ENTER, function(event:StateEvent):void
-			{
-				dispatchEvent(event.clone());
-			});
+			_status.addEventListener(StateEvent.ENTER, handleStatusChange);
 			
 			copy(values, this);
 			addEventListener(PropertyChangeEvent.PROPERTY_CHANGE, handlePropertyChange);
@@ -111,15 +128,15 @@ package mesh.model
 			return this;
 		}
 		
+		private var _fault:SourceFault;
 		/**
 		 * Puts the entity into an errored lifecycle state. This state signifies that an error 
 		 * occurred after a load or commit.
-		 * 
-		 * @return This instance.
 		 */
-		public function errored():Entity
+		public function failed(fault:SourceFault):void
 		{
-			throw new IllegalOperationError("Entity.errored() is not implemented.");
+			_fault = fault;
+			status.failed();
 		}
 		
 		/**
@@ -157,6 +174,23 @@ package mesh.model
 		private function handlePropertyChange(event:PropertyChangeEvent):void
 		{
 			propertyChanged(event.property.toString(), event.oldValue, event.newValue);
+		}
+		
+		private function handleStatusChange(event:StateEvent):void
+		{
+			dispatchEvent(event.clone());
+			
+			if (status.isErrored) {
+				dispatchEvent( new LoadFailedEvent(LoadFailedEvent.FAILED, _fault) );
+			}
+			
+			if (status.isSynced) {
+				dispatchEvent( new LoadSuccessEvent(LoadSuccessEvent.SUCCESS) );
+			}
+			
+			if (status.isBusy) {
+				dispatchEvent( new LoadEvent(LoadEvent.LOADING) );
+			}
 		}
 		
 		/**

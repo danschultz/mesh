@@ -28,6 +28,7 @@ package mesh.model
 		private var _state:StateMachine;
 		private var _loading:Action;
 		private var _destroy:Action;
+		private var _failed:Action;
 		private var _dirty:Action;
 		private var _synced:Action;
 		
@@ -74,6 +75,14 @@ package mesh.model
 			_destroy.trigger();
 		}
 		
+		/**
+		 * Puts the entity int a failed state.
+		 */
+		public function failed():void
+		{
+			_failed.trigger();
+		}
+		
 		private function isInState(state:String):Boolean
 		{
 			return _state.current.name.search(state) != -1;
@@ -103,6 +112,8 @@ package mesh.model
 			
 			var loadingBusyState:State = _state.createState("loading busy");
 			
+			var failedState:State = _state.createState("failed");
+			
 			var persistedState:State = _state.createState("persisted").onEnter(_entity.changes.clear);
 			var persistedDirtyState:State = _state.createState("persisted dirty");
 			
@@ -113,6 +124,7 @@ package mesh.model
 			_dirty = _state.createAction("dirty").transitionTo(persistedDirtyState, persistedState);
 			
 			_destroy = _state.createAction("destroy").transitionTo(destroyedDirtyState, [persistedState, persistedDirtyState]);
+			_failed = _state.createAction("failed").transitionTo(failedState, loadingBusyState);
 			
 			_synced = _state.createAction("synced");
 			_synced.transitionTo(persistedState, [loadingBusyState, newDirtyState, persistedDirtyState]);
@@ -135,6 +147,12 @@ package mesh.model
 		public function get isDestroyed():Boolean
 		{
 			return isInState("destroy");
+		}
+		
+		[Bindable(event="enter")]
+		public function get isErrored():Boolean
+		{
+			return isInState("failed");
 		}
 		
 		[Bindable(event="enter")]
