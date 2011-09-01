@@ -2,6 +2,8 @@ package mesh.model.store
 {
 	import flash.utils.Dictionary;
 	
+	import mesh.model.source.SourceFault;
+	
 	import mx.collections.IList;
 
 	/**
@@ -33,6 +35,17 @@ package mesh.model.store
 		internal function contains(query:Query):Boolean
 		{
 			return _cache[query] != null;
+		}
+		
+		/**
+		 * Called by the data source if it encountered an error during a query.
+		 * 
+		 * @param query The query that failed.
+		 * @param fault The reason of the failure.
+		 */
+		public function failed(query:Query, fault:SourceFault):void
+		{
+			results(query).failed(fault);
 		}
 		
 		/**

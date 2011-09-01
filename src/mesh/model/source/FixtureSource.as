@@ -12,7 +12,6 @@ package mesh.model.source
 	import mesh.model.store.Store;
 	
 	import mx.collections.ArrayList;
-	import mx.rpc.Fault;
 
 	public class FixtureSource extends Source
 	{
@@ -95,7 +94,7 @@ package mesh.model.source
 					delete _fixtures[data.id];
 					commit.destroyed([entity]);
 				} else {
-					commit.failed([entity], new Fault("", "Entity '" + entity.reflect.name + "' with ID=" + data.id + " does not exist"));
+					commit.failed([entity], new SourceFault("Failed to destroy entity", "Entity '" + entity.reflect.name + "' with ID=" + data.id + " does not exist"));
 				}
 			});
 		}
@@ -126,7 +125,7 @@ package mesh.model.source
 			invoke(function():void
 			{
 				if (_fixtures[data.id] == null) {
-					commit.failed([entity], new Fault("", "Entity '" + entity.reflect.name + "' with ID=" + data.id + " does not exist"));
+					commit.failed([entity], new SourceFault("Failed to update entity", "Entity '" + entity.reflect.name + "' with ID=" + data.id + " does not exist"));
 				} else {
 					_fixtures[data.id] = data;
 					commit.saved([entity]);

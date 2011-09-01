@@ -4,16 +4,33 @@ package mesh.model.associations
 	
 	import flash.errors.IllegalOperationError;
 	import flash.events.EventDispatcher;
+	import flash.events.IEventDispatcher;
 	
 	import mesh.core.inflection.humanize;
 	import mesh.core.reflection.Type;
-	import mesh.core.state.Action;
-	import mesh.core.state.State;
-	import mesh.core.state.StateEvent;
-	import mesh.core.state.StateMachine;
 	import mesh.model.Entity;
+	import mesh.model.load.LoadEvent;
+	import mesh.model.load.LoadFailedEvent;
+	import mesh.model.load.LoadHelper;
+	import mesh.model.load.LoadSuccessEvent;
+	import mesh.model.source.SourceFault;
 	
 	import mx.events.PropertyChangeEvent;
+	
+	/**
+	 * Dispatched when the result list starts loading its content.
+	 */
+	[Event(name="loading", type="mesh.model.load.LoadEvent")]
+	
+	/**
+	 * Dispatched when the result list has successfully loaded its content.
+	 */
+	[Event(name="success", type="mesh.model.load.LoadSuccessEvent")]
+	
+	/**
+	 * Dispatched when the result list has failed to load its content.
+	 */
+	[Event(name="failed", type="mesh.model.load.LoadFailedEvent")]
 	
 	/**
 	 * An association class is a proxy object that contains the references to the objects in
@@ -24,14 +41,7 @@ package mesh.model.associations
 	 */
 	public class Association extends EventDispatcher
 	{
-		private var _state:StateMachine;
-		
-		private var _initializedState:State;
-		private var _loadingState:State;
-		private var _loadedState:State;
-		
-		private var _loading:Action;
-		private var _loaded:Action;
+		private var _helper:LoadHelper;
 		
 		/**
 		 * Constructor.
@@ -48,16 +58,16 @@ package mesh.model.associations
 			_property = property;
 			_options = options != null ? options : {};
 			
-			_state = new StateMachine();
-			_state.addEventListener(StateEvent.ENTER, function(event:StateEvent):void
-			{
-				dispatchEvent(event.clone());
-			});
-			setupStates(_state);
+			_helper = new LoadHelper(this);
 			
 			// Watch for assignments to the mapped property on the owner. If the property is reassigned,
 			// then we'll need the association to wrap the new object.
 			owner.addEventListener(PropertyChangeEvent.PROPERTY_CHANGE, handleOwnerPropertyChange);
+			
+			addEventListener(LoadEvent.LOADING, function(event:LoadEvent):void
+			{
+				executeLoad();
+			});
 		}
 		
 		/**
@@ -71,6 +81,22 @@ package mesh.model.associations
 			if (owner.store && entity.store == null) owner.store.add(entity);
 			_entities.add(entity);
 			populateInverseRelationship(entity);
+		}
+		
+		private function cleanupLoad():void
+		{
+			_loadable = null;
+		}
+		
+		/**
+		 * Called by sub-classes if the association's data failed to load.
+		 * 
+		 * @param fault The reason for the failure.
+		 */
+		protected function failed(fault:SourceFault):void
+		{
+			_helper.failed(fault);
+			cleanupLoad();
 		}
 		
 		private function handleOwnerPropertyChange(event:PropertyChangeEvent):void
@@ -98,16 +124,34 @@ package mesh.model.associations
 		 */
 		public function load():void
 		{
-			_loading.trigger();
+			_helper.load();
 		}
 		
+		/**
+		 * Called when the association's data needs to be loaded. Sub-classes must override this
+		 * method in order to load the association's data.
+		 */
+		protected function executeLoad():void
+		{
+			
+		}
+		
+		private var _loadable:IEventDispatcher;
 		/**
 		 * Called when the association needs to load its data. Sub-classes must override this method in
 		 * order to load the data.
 		 */
-		protected function loadRequested():void
+		protected function wrapLoad(loadable:IEventDispatcher):void
 		{
-			
+			_loadable = loadable;
+			_loadable.addEventListener(LoadSuccessEvent.SUCCESS, function(event:LoadSuccessEvent):void
+			{
+				loaded(_loadable);
+			}, false, 0, true);
+			_loadable.addEventListener(LoadFailedEvent.FAILED, function(event:LoadFailedEvent):void
+			{
+				failed(event.fault);
+			}, false, 0, true);
 		}
 		
 		/**
@@ -120,7 +164,8 @@ package mesh.model.associations
 		{
 			owner[property] = data;
 			object = data;
-			_loaded.trigger();
+			_helper.loaded(data);
+			cleanupLoad();
 		}
 		
 		private function populateInverseRelationship(entity:Entity):void
@@ -137,16 +182,6 @@ package mesh.model.associations
 		public function revert():void
 		{
 			
-		}
-		
-		private function setupStates(states:StateMachine):void
-		{
-			_initializedState = states.createState("initialized");
-			_loadedState = states.createState("loaded");
-			_loadingState = states.createState("loading").onEnter(loadRequested);
-			
-			_loading = states.createAction("loading").transitionTo(_loadingState, [_initializedState, _loadedState]);
-			_loaded = states.createAction("loaded").transitionTo(_loadedState, [_loadingState, _initializedState]);
 		}
 		
 		/**
@@ -201,22 +236,20 @@ package mesh.model.associations
 			return options.isLazy || options.lazy;
 		}
 		
-		[Bindable(event="enter")]
 		/**
 		 * Indicates if the data for this association has been loaded.
 		 */
 		public function get isLoaded():Boolean
 		{
-			return _state.current.name == "loaded";
+			return _helper.isLoaded;
 		}
 		
-		[Bindable(event="enter")]
 		/**
 		 * Indicates if the association is loading its data.
 		 */
 		public function get isLoading():Boolean
 		{
-			return _state.current.name == "loading";
+			return _helper.isLoading;
 		}
 		
 		/**

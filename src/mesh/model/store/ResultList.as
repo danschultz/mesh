@@ -1,15 +1,28 @@
 package mesh.model.store
 {
 	import mesh.core.List;
-	import mesh.core.state.Action;
-	import mesh.core.state.State;
-	import mesh.core.state.StateEvent;
-	import mesh.core.state.StateMachine;
 	import mesh.model.Entity;
+	import mesh.model.load.LoadHelper;
+	import mesh.model.source.SourceFault;
 	
 	import mx.collections.IList;
 	import mx.collections.ListCollectionView;
 	import mx.collections.Sort;
+	
+	/**
+	 * Dispatched when the result list starts loading its content.
+	 */
+	[Event(name="loading", type="mesh.model.load.LoadEvent")]
+	
+	/**
+	 * Dispatched when the result list has successfully loaded its content.
+	 */
+	[Event(name="success", type="mesh.model.load.LoadSuccessEvent")]
+	
+	/**
+	 * Dispatched when the result list has failed to load its content.
+	 */
+	[Event(name="failed", type="mesh.model.load.LoadFailedEvent")]
 	
 	/**
 	 * The <code>ResultList</code> is a list of entities after an execution of a query.
@@ -28,11 +41,7 @@ package mesh.model.store
 		private var _store:Store;
 		private var _list:ListCollectionView;
 		
-		private var _state:StateMachine;
-		private var _refreshingState:State;
-		private var _loadedState:State;
-		private var _refreshing:Action;
-		private var _loaded:Action;
+		private var _helper:LoadHelper;
 		
 		/**
 		 * Constructor.
@@ -47,16 +56,7 @@ package mesh.model.store
 			_query = query;
 			_store = store;
 			
-			_state = new StateMachine();
-			_state.addEventListener(StateEvent.ENTER, function(event:StateEvent):void
-			{
-				dispatchEvent(event.clone());
-			});
-			
-			_refreshingState = _state.createState("refreshing");
-			_loadedState = _state.createState("loaded");
-			_refreshing = _state.createAction("refreshing").transitionTo(_loadedState, _refreshingState);
-			_loaded = _state.createAction("loaded").transitionTo(_loadedState, _refreshingState);
+			_helper = new LoadHelper(this);
 		}
 		
 		/**
@@ -85,6 +85,17 @@ package mesh.model.store
 		}
 		
 		/**
+		 * Used internally by Mesh to indicate that the query for this result list failed while loading
+		 * its data.
+		 * 
+		 * @param fault The reason of the failure.
+		 */
+		internal function failed(fault:SourceFault):void
+		{
+			_helper.failed(fault);
+		}
+		
+		/**
 		 * Used internally by Mesh to load the fetched data from a data source into the result list.
 		 * 
 		 * @param list The list of data to populate the result with.
@@ -92,7 +103,7 @@ package mesh.model.store
 		internal function loaded(results:IList):void
 		{
 			createList(results);
-			_loaded.trigger();
+			_helper.loaded(results);
 		}
 		
 		/**
@@ -102,7 +113,7 @@ package mesh.model.store
 		 */
 		public function refresh():ResultList
 		{
-			_refreshing.trigger();
+			_helper.load();
 			_store.dataSource.fetch(_store, _query);
 			
 			if (_query is LocalQuery) {
@@ -122,22 +133,20 @@ package mesh.model.store
 			return null;
 		}
 		
-		[Bindable(event="enter")]
 		/**
 		 * Indicates if the data for this result has been loaded.
 		 */
 		public function get isLoaded():Boolean
 		{
-			return _state.current.name == "loaded";
+			return _helper.isLoaded;
 		}
 		
-		[Bindable(event="enter")]
 		/**
 		 * Indicates if the data for this result is currently loading.
 		 */
 		public function get isRefreshing():Boolean
 		{
-			return _state.current.name == "refreshing";
+			return _helper.isLoading;
 		}
 	}
 }

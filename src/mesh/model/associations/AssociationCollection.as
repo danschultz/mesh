@@ -1,14 +1,9 @@
 package mesh.model.associations
 {
-	import flash.errors.IllegalOperationError;
-	import flash.events.Event;
-	
 	import mesh.model.Entity;
-	import mesh.model.store.LocalQuery;
 	import mesh.model.store.Query;
 	import mesh.model.store.ResultList;
 	
-	import mx.binding.utils.ChangeWatcher;
 	import mx.collections.ListCollectionView;
 	import mx.events.CollectionEvent;
 	import mx.events.CollectionEventKind;
@@ -89,46 +84,14 @@ package mesh.model.associations
 			}
 		}
 		
-		private var _result:ResultList;
-		private var _loadedWatcher:ChangeWatcher;
 		/**
 		 * @inheritDoc
 		 */
-		override protected function loadRequested():void
+		override protected function executeLoad():void
 		{
-			super.loadRequested();
-			
-			if (query == null) {
-				throw new IllegalOperationError("Query undefined for " + this);
-			}
-			
-			if (_result == null) {
-				_result = owner.store.find(query);
-				
-				if (query is LocalQuery || _result.isLoaded) {
-					loaded(_result);
-				} else {
-					_loadedWatcher = ChangeWatcher.watch(_result, "isLoaded", function(event:Event):void
-					{
-						loaded(_result);
-					});
-				}
-			}
-		}
-		
-		/**
-		 * @inheritDoc
-		 */
-		override protected function loaded(data:Object):void
-		{
-			super.loaded(data);
-			
-			_result = null;
-			
-			if (_loadedWatcher != null) {
-				_loadedWatcher.unwatch();
-				_loadedWatcher = null;
-			}
+			var result:ResultList = owner.store.find(query);
+			wrapLoad(result);
+			if (result.isLoaded) loaded(result);
 		}
 		
 		/**

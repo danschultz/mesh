@@ -1,11 +1,9 @@
 package mesh.model.associations
 {
 	import flash.errors.IllegalOperationError;
-	import flash.events.Event;
 	
 	import mesh.model.Entity;
 	
-	import mx.binding.utils.ChangeWatcher;
 	import mx.events.PropertyChangeEvent;
 	
 	/**
@@ -47,41 +45,14 @@ package mesh.model.associations
 			}
 		}
 		
-		private var _loadingEntity:Entity;
-		private var _loadingEntityWatcher:ChangeWatcher;
 		/**
 		 * @inheritDoc
 		 */
-		override protected function loadRequested():void
+		override protected function executeLoad():void
 		{
-			super.loadRequested();
-			
-			if (_loadingEntity == null) {
-				_loadingEntity = owner.store.find(entityType, owner[foreignKey]);
-				
-				_loadingEntityWatcher = ChangeWatcher.watch(_loadingEntity.status, "isSynced", function(event:Event):void
-				{
-					loaded(_loadingEntity);
-				});
-				
-				if (_loadingEntity.status.isSynced) {
-					loaded(_loadingEntity);
-				}
-			}
-		}
-		
-		/**
-		 * @inheritDoc
-		 */
-		override protected function loaded(data:Object):void
-		{
-			super.loaded(data);
-			_loadingEntity = null;
-			
-			if (_loadingEntityWatcher != null) {
-				_loadingEntityWatcher.unwatch();
-				_loadingEntityWatcher = null;
-			}
+			var entity:Entity = owner.store.find(entityType, owner[foreignKey]);
+			wrapLoad(entity);
+			if (entity.status.isSynced) loaded(entity);
 		}
 		
 		private function populateForeignKey():void

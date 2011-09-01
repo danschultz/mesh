@@ -7,12 +7,11 @@ package mesh.model.store
 	import mesh.core.object.copy;
 	import mesh.model.Entity;
 	import mesh.model.associations.Association;
+	import mesh.model.source.SourceFault;
 	import mesh.operations.FaultOperationEvent;
 	import mesh.operations.FinishedOperationEvent;
 	import mesh.operations.Operation;
 	import mesh.operations.OperationQueue;
-	
-	import mx.rpc.Fault;
 	
 	/**
 	 * Dispatched when the commit has successfully committed all of its entities.
@@ -154,7 +153,7 @@ package mesh.model.store
 		 * @param entities The entities that failed.
 		 * @param fault The reason for the failure.
 		 */
-		public function failed(entities:Array, fault:Fault):void
+		public function failed(entities:Array, fault:SourceFault):void
 		{
 			_operation.failed(fault);
 			
@@ -253,10 +252,9 @@ import collections.HashSet;
 import flash.utils.Dictionary;
 
 import mesh.model.Entity;
+import mesh.model.source.SourceFault;
 import mesh.model.store.Commit;
 import mesh.operations.Operation;
-
-import mx.rpc.Fault;
 
 /**
  * An operation that maintains the state of a commit.
@@ -291,9 +289,9 @@ class CommitOperation extends Operation
 	 * 
 	 * @param fault The reason for the failure.
 	 */
-	public function failed(reason:Fault):void
+	public function failed(reason:SourceFault):void
 	{
-		fault(reason.faultString, reason.faultDetail, reason.faultCode);
+		fault(reason.summary, reason.details, reason.code);
 	}
 	
 	private var _progressCounter:int = 0;
