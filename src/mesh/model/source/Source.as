@@ -4,6 +4,7 @@ package mesh.model.source
 	
 	import mesh.core.reflection.reflect;
 	import mesh.model.Entity;
+	import mesh.model.store.AsyncRequest;
 	import mesh.model.store.Commit;
 	import mesh.model.store.Query;
 	import mesh.model.store.Store;
@@ -49,20 +50,20 @@ package mesh.model.source
 			}
 		}
 		
-		public function fetch(store:Store, query:Query):void
+		public function fetch(request:AsyncRequest, query:Query):void
 		{
 			throw new IllegalOperationError("EntitySource.fetch() is not implemented.");
 		}
 		
-		public function retrieve(store:Store, entity:Entity):void
+		public function retrieve(request:AsyncRequest, entity:Entity):void
 		{
 			throw new IllegalOperationError("EntitySource.retrieve() is not implemented.");
 		}
 		
-		public function retrieveEach(store:Store, entities:Array):void
+		public function retrieveEach(request:AsyncRequest, entities:Array):void
 		{
 			for each (var entity:Entity in entities) {
-				retrieve(store, entity);
+				retrieve(request, entity);
 			}
 		}
 		

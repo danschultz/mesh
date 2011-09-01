@@ -5,9 +5,9 @@ package mesh.model.source
 	
 	import mesh.core.reflection.reflect;
 	import mesh.model.Entity;
+	import mesh.model.store.AsyncRequest;
 	import mesh.model.store.Commit;
 	import mesh.model.store.Query;
-	import mesh.model.store.Store;
 
 	/**
 	 * An entity source that maps a type of entity to its source.
@@ -82,27 +82,27 @@ package mesh.model.source
 		/**
 		 * @inheritDoc
 		 */
-		override public function fetch(store:Store, query:Query):void
+		override public function fetch(request:AsyncRequest, query:Query):void
 		{
 			for each (var source:Source in _mapping) {
-				source.fetch(store, query);
+				source.fetch(request, query);
 			}
 		}
 		
 		/**
 		 * @inheritDoc
 		 */
-		override public function retrieve(store:Store, entity:Entity):void
+		override public function retrieve(request:AsyncRequest, entity:Entity):void
 		{
-			invoke(store, "retrieve", entity);
+			invoke(request, "retrieve", entity);
 		}
 		
 		/**
 		 * @inheritDoc
 		 */
-		override public function retrieveEach(store:Store, entities:Array):void
+		override public function retrieveEach(request:AsyncRequest, entities:Array):void
 		{
-			invokeEach(store, "retrieveEach", entities);
+			invokeEach(request, "retrieveEach", entities);
 		}
 		
 		/**
@@ -133,11 +133,11 @@ package mesh.model.source
 			return _mapping[entity];
 		}
 		
-		private function invoke(storeOrCommit:Object, method:String, entity:Entity):void
+		private function invoke(requestOrCommit:Object, method:String, entity:Entity):void
 		{
 			var type:Class = entity.reflect.clazz;
 			throwIfUnmapped(type);
-			sourceFor(type)[method](storeOrCommit, entity);
+			sourceFor(type)[method](requestOrCommit, entity);
 		}
 		
 		private function invokeEach(storeOrCommit:Object, method:String, entities:Array):void

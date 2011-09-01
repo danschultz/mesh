@@ -1,10 +1,6 @@
 package mesh.model.store
 {
 	import flash.utils.Dictionary;
-	
-	import mesh.model.source.SourceFault;
-	
-	import mx.collections.IList;
 
 	/**
 	 * A class that caches the results of each query in the store.
@@ -38,36 +34,6 @@ package mesh.model.store
 		}
 		
 		/**
-		 * Called by the data source if it encountered an error during a query.
-		 * 
-		 * @param query The query that failed.
-		 * @param fault The reason of the failure.
-		 */
-		public function failed(query:Query, fault:SourceFault):void
-		{
-			results(query).failed(fault);
-		}
-		
-		/**
-		 * Called by the data source to load the fetched entities of a query into the result list.
-		 * 
-		 * @param query The query that was loaded.
-		 * @param entities The entities that were fetched.
-		 */
-		public function loaded(query:Query, entities:IList = null):void
-		{
-			if (!contains(query)) {
-				throw new ArgumentError("Query '" + query + "' not found in cache."); 
-			}
-			
-			if (entities != null) _store.add.apply(null, entities.toArray());
-			
-			if (query is RemoteQuery) {
-				results(query).loaded(entities);
-			}
-		}
-		
-		/**
 		 * Returns the cached result for the given query. If the result hasn't been 
 		 * cached, then a new result is created.
 		 * 
@@ -79,7 +45,6 @@ package mesh.model.store
 			if (!contains(query)) {
 				var result:ResultList = new ResultList(query, _store);
 				_cache[query] = result;
-				result.refresh();
 			}
 			return _cache[query];
 		}

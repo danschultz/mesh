@@ -60,14 +60,25 @@ package mesh.model.store
 		}
 		
 		/**
-		 * Finds a single entity for a specific ID, or returns a list of entities 
-		 * matching a query.
+		 * Finds a single entity for a specific ID, or returns a list of entities matching a query.
 		 * 
 		 * <p>
-		 * If you supply an entity type and an ID, then this method returns a single
-		 * <code>Entity</code>. If the entity has not been loaded into the store, then 
-		 * the store will ask the data source to load it. All properties on the entity
-		 * will be empty until the data source has loaded the data.
+		 * If you supply an entity type and an ID, then this method returns a single <code>Entity</code>. 
+		 * If the entity has not been loaded into the store, then the store will ask the data source 
+		 * to load it. All properties on the entity will be empty until the data source has loaded 
+		 * the data.
+		 * </p>
+		 * 
+		 * <p>
+		 * The last argument is an optional options hash to configure the find. The following options
+		 * are supported:
+		 * 
+		 * <ul>
+		 * <li><code>useBusyCursor:Boolean</code> - (default=<code>true</code>) Will display a busy 
+		 * 	cursor while data is loading.</li>
+		 * <li><code>reload:Boolean</code> - (default=<code>false</code>) Will reload the data if its 
+		 * 	already been loaded.</li>
+		 * </ul>
 		 * </p>
 		 * 
 		 * <p>
@@ -80,26 +91,49 @@ package mesh.model.store
 		 */
 		public function find(...args):*
 		{
+			return findAsync.apply(null, args).request().data;
+		}
+		
+		/**
+		 * Returns an object that wraps a find request. This method is useful if you want to know
+		 * when a request is successful or not. The arguments for this method are identical to 
+		 * <code>find()</code>.
+		 * 
+		 * <p>
+		 * <strong>Note:</strong> The request is not executed until you call <code>request()</code>
+		 * on the returned object.
+		 * </p>
+		 * 
+		 * @param args A entity type and an ID, or a <code>Query</code>.
+		 * @return A request.
+		 */
+		public function findAsync(...args):AsyncRequest
+		{
 			// A single entity is being requested.
 			if (args.length == 2 && args[0] is Class) {
-				var entity:Entity = index.findByTypeAndID(args[0], args[1]);
-				
-				// The entity doesn't exist in the store yet. Load it.
-				if (entity == null) {
-					entity = newInstance(args[0]);
-					entity.id = args[1];
-					add(entity);
-					dataSource.retrieve(this, entity);
-				}
-				return entity;
+				return new EntityRequest(this, findEntity(args[0], args[1]), args[2]);
 			}
 			
 			// A result list is being requested.
 			if (args[0] is Query) {
-				return query.results(args[0]);
+				return new QueryRequest(this, args[0], args[1]);
 			}
 			
 			throw new ArgumentError("Invalid arguments for find(): " + args);
+		}
+		
+		private function findEntity(type:Class, id:Object):Entity
+		{
+			var entity:Entity = index.findByTypeAndID(type, id);
+			
+			// The entity doesn't exist in the store yet. Load it.
+			if (entity == null) {
+				entity = newInstance(type);
+				entity.id = id;
+				add(entity);
+			}
+			
+			return entity;
 		}
 		
 		/**

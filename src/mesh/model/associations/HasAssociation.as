@@ -3,6 +3,7 @@ package mesh.model.associations
 	import flash.errors.IllegalOperationError;
 	
 	import mesh.model.Entity;
+	import mesh.model.store.AsyncRequest;
 	
 	import mx.events.PropertyChangeEvent;
 	
@@ -22,12 +23,6 @@ package mesh.model.associations
 			checkForRequiredFields();
 		}
 		
-		private function checkForRequiredFields():void
-		{
-			if (entityType == null) throw new IllegalOperationError("Undefined entity type for " + this);
-			if (foreignKey != null && !owner.hasOwnProperty(foreignKey)) throw new IllegalOperationError("Undefined foreign key for " + this);
-		}
-		
 		/**
 		 * @inheritDoc
 		 */
@@ -38,21 +33,25 @@ package mesh.model.associations
 			entity.addEventListener(PropertyChangeEvent.PROPERTY_CHANGE, handleAssociatedEntityPropertyChange);
 		}
 		
-		private function handleAssociatedEntityPropertyChange(event:PropertyChangeEvent):void
+		private function checkForRequiredFields():void
 		{
-			if (event.property == "id") {
-				populateForeignKey();
-			}
+			if (entityType == null) throw new IllegalOperationError("Undefined entity type for " + this);
+			if (foreignKey != null && !owner.hasOwnProperty(foreignKey)) throw new IllegalOperationError("Undefined foreign key for " + this);
 		}
 		
 		/**
 		 * @inheritDoc
 		 */
-		override protected function executeLoad():void
+		override protected function createLoadRequest():AsyncRequest
 		{
-			var entity:Entity = owner.store.find(entityType, owner[foreignKey]);
-			wrapLoad(entity);
-			if (entity.status.isSynced) loaded(entity);
+			return owner.store.findAsync(entityType, owner[foreignKey]);
+		}
+		
+		private function handleAssociatedEntityPropertyChange(event:PropertyChangeEvent):void
+		{
+			if (event.property == "id") {
+				populateForeignKey();
+			}
 		}
 		
 		private function populateForeignKey():void

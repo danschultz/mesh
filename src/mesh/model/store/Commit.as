@@ -156,10 +156,6 @@ package mesh.model.store
 		public function failed(entities:Array, fault:SourceFault):void
 		{
 			_operation.failed(fault);
-			
-			for each (var entity:Entity in storeEntities(entities)) {
-				entity.failed();
-			}
 		}
 		
 		private function handleOperationFinishedEvent(event:FinishedOperationEvent):void

@@ -42,7 +42,7 @@ package mesh.model.associations
 			var employee:Employee = _store.find(Employee, _employee.id);
 			assertThat("Precondition failed", employee.employer, nullValue());
 			
-			employee.associations.employer.load();
+			employee.associations.employer.load().request();
 			assertThat(employee.employer, notNullValue());
 			assertThat(employee.associations.employer.isLoaded, equalTo(true));
 		}

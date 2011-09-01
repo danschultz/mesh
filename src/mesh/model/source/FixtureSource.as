@@ -6,10 +6,10 @@ package mesh.model.source
 	import mesh.core.object.merge;
 	import mesh.core.reflection.newInstance;
 	import mesh.model.Entity;
+	import mesh.model.store.AsyncRequest;
 	import mesh.model.store.Commit;
 	import mesh.model.store.Query;
 	import mesh.model.store.RemoteQuery;
-	import mesh.model.store.Store;
 	
 	import mx.collections.ArrayList;
 
@@ -61,7 +61,7 @@ package mesh.model.source
 		/**
 		 * @inheritDoc
 		 */
-		override public function fetch(store:Store, query:Query):void
+		override public function fetch(request:AsyncRequest, query:Query):void
 		{
 			if (query.entityType == _entityType) {
 				var entities:Array = [];
@@ -78,7 +78,7 @@ package mesh.model.source
 					});
 				}
 				
-				store.query.loaded(query, new ArrayList(entities));
+				request.result(new ArrayList(entities));
 			}
 		}
 		
@@ -102,16 +102,16 @@ package mesh.model.source
 		/**
 		 * @inheritDoc
 		 */
-		override public function retrieve(store:Store, entity:Entity):void
+		override public function retrieve(request:AsyncRequest, entity:Entity):void
 		{
 			var data:Object = serialize([entity])[0];
 			invoke(function():void
 			{
 				if (_fixtures[data.id] != null) {
 					entity.fromObject(_fixtures[data.id]);
-					entity.synced();
+					request.result(entity);
 				} else {
-					entity.failed();
+					request.failed(new SourceFault(entity.reflect.name + " not found with ID=" + entity.id));
 				}
 			});
 		}

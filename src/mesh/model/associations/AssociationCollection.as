@@ -1,8 +1,8 @@
 package mesh.model.associations
 {
 	import mesh.model.Entity;
+	import mesh.model.store.AsyncRequest;
 	import mesh.model.store.Query;
-	import mesh.model.store.ResultList;
 	
 	import mx.collections.ListCollectionView;
 	import mx.events.CollectionEvent;
@@ -23,6 +23,14 @@ package mesh.model.associations
 			
 			_list = new ListCollectionView();
 			_list.addEventListener(CollectionEvent.COLLECTION_CHANGE, handleListCollectionChange);
+		}
+		
+		/**
+		 * @inheritDoc
+		 */
+		override protected function createLoadRequest():AsyncRequest
+		{
+			return owner.store.findAsync(query);
 		}
 		
 		private function handleListCollectionChange(event:CollectionEvent):void
@@ -82,16 +90,6 @@ package mesh.model.associations
 					handleEntitiesAdded([newEntity]);
 				}
 			}
-		}
-		
-		/**
-		 * @inheritDoc
-		 */
-		override protected function executeLoad():void
-		{
-			var result:ResultList = owner.store.find(query);
-			wrapLoad(result);
-			if (result.isLoaded) loaded(result);
 		}
 		
 		/**

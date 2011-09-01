@@ -4,33 +4,13 @@ package mesh.model.associations
 	
 	import flash.errors.IllegalOperationError;
 	import flash.events.EventDispatcher;
-	import flash.events.IEventDispatcher;
 	
 	import mesh.core.inflection.humanize;
 	import mesh.core.reflection.Type;
 	import mesh.model.Entity;
-	import mesh.model.load.LoadEvent;
-	import mesh.model.load.LoadFailedEvent;
-	import mesh.model.load.LoadHelper;
-	import mesh.model.load.LoadSuccessEvent;
-	import mesh.model.source.SourceFault;
+	import mesh.model.store.AsyncRequest;
 	
 	import mx.events.PropertyChangeEvent;
-	
-	/**
-	 * Dispatched when the result list starts loading its content.
-	 */
-	[Event(name="loading", type="mesh.model.load.LoadEvent")]
-	
-	/**
-	 * Dispatched when the result list has successfully loaded its content.
-	 */
-	[Event(name="success", type="mesh.model.load.LoadSuccessEvent")]
-	
-	/**
-	 * Dispatched when the result list has failed to load its content.
-	 */
-	[Event(name="failed", type="mesh.model.load.LoadFailedEvent")]
 	
 	/**
 	 * An association class is a proxy object that contains the references to the objects in
@@ -41,8 +21,6 @@ package mesh.model.associations
 	 */
 	public class Association extends EventDispatcher
 	{
-		private var _helper:LoadHelper;
-		
 		/**
 		 * Constructor.
 		 * 
@@ -58,16 +36,9 @@ package mesh.model.associations
 			_property = property;
 			_options = options != null ? options : {};
 			
-			_helper = new LoadHelper(this);
-			
 			// Watch for assignments to the mapped property on the owner. If the property is reassigned,
 			// then we'll need the association to wrap the new object.
 			owner.addEventListener(PropertyChangeEvent.PROPERTY_CHANGE, handleOwnerPropertyChange);
-			
-			addEventListener(LoadEvent.LOADING, function(event:LoadEvent):void
-			{
-				executeLoad();
-			});
 		}
 		
 		/**
@@ -83,22 +54,6 @@ package mesh.model.associations
 			populateInverseRelationship(entity);
 		}
 		
-		private function cleanupLoad():void
-		{
-			_loadable = null;
-		}
-		
-		/**
-		 * Called by sub-classes if the association's data failed to load.
-		 * 
-		 * @param fault The reason for the failure.
-		 */
-		protected function failed(fault:SourceFault):void
-		{
-			_helper.failed(fault);
-			cleanupLoad();
-		}
-		
 		private function handleOwnerPropertyChange(event:PropertyChangeEvent):void
 		{
 			if (event.property is String && event.property.toString() == property) {
@@ -111,61 +66,34 @@ package mesh.model.associations
 		 */
 		public function initialize():void
 		{
-			var data:Object = owner[property];
-			if (!isLazy) {
-				loaded(data);
-			} else {
-				object = data;
-			}
+			object = owner[property];
 		}
 		
 		/**
 		 * Loads the data for this association. If this is a non-lazy association, then nothing happens.
 		 */
-		public function load():void
+		public function load():AsyncRequest
 		{
-			_helper.load();
+			var request:AsyncRequest = createLoadRequest();
+			request.responder({result:loaded});
+			return request;
 		}
 		
-		/**
-		 * Called when the association's data needs to be loaded. Sub-classes must override this
-		 * method in order to load the association's data.
-		 */
-		protected function executeLoad():void
-		{
-			
-		}
-		
-		private var _loadable:IEventDispatcher;
-		/**
-		 * Called when the association needs to load its data. Sub-classes must override this method in
-		 * order to load the data.
-		 */
-		protected function wrapLoad(loadable:IEventDispatcher):void
-		{
-			_loadable = loadable;
-			_loadable.addEventListener(LoadSuccessEvent.SUCCESS, function(event:LoadSuccessEvent):void
-			{
-				loaded(_loadable);
-			}, false, 0, true);
-			_loadable.addEventListener(LoadFailedEvent.FAILED, function(event:LoadFailedEvent):void
-			{
-				failed(event.fault);
-			}, false, 0, true);
-		}
-		
-		/**
-		 * Called by sub-classes when the data for this association has been loaded. The loaded data will
-		 * replace any data on the associated property.
-		 * 
-		 * @param data The loaded data.
-		 */
-		protected function loaded(data:Object):void
+		private function loaded(data:*):void
 		{
 			owner[property] = data;
 			object = data;
-			_helper.loaded(data);
-			cleanupLoad();
+			_isLoaded = true;
+		}
+		
+		/**
+		 * Called during a load to create the request that will load the data for this association.
+		 * 
+		 * @return A request.
+		 */
+		protected function createLoadRequest():AsyncRequest
+		{
+			throw new IllegalOperationError("Association.createLoadRequest() is not implemented.");
 		}
 		
 		private function populateInverseRelationship(entity:Entity):void
@@ -236,20 +164,13 @@ package mesh.model.associations
 			return options.isLazy || options.lazy;
 		}
 		
+		private var _isLoaded:Boolean;
 		/**
 		 * Indicates if the data for this association has been loaded.
 		 */
 		public function get isLoaded():Boolean
 		{
-			return _helper.isLoaded;
-		}
-		
-		/**
-		 * Indicates if the association is loading its data.
-		 */
-		public function get isLoading():Boolean
-		{
-			return _helper.isLoading;
+			return !isLazy || _isLoaded;
 		}
 		
 		/**

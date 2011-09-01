@@ -2,8 +2,7 @@ package mesh.model.store
 {
 	import mesh.Name;
 	import mesh.Person;
-	import mesh.model.source.FixtureSource;
-	import mesh.model.source.MultiSource;
+	import mesh.TestSource;
 	
 	import org.flexunit.assertThat;
 	import org.hamcrest.collection.array;
@@ -28,16 +27,15 @@ package mesh.model.store
 				name: new Name("Robert", "Plant")
 			});
 			
-			var multiSource:MultiSource = new MultiSource();
-			multiSource.map(Person, new FixtureSource(Person, {latency:0}));
+			var dataSource:TestSource = new TestSource();
 			
-			var tempStore:Store = new Store(multiSource);
+			var tempStore:Store = new Store(dataSource);
 			tempStore.add(_jimmyPage);
 			tempStore.add(_robertPlant);
 			tempStore.commit();
 			
 			// Start fresh with an empty store.
-			_store = new Store(multiSource);
+			_store = new Store(dataSource);
 		}
 		
 		[Test]
