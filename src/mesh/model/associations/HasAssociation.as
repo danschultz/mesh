@@ -44,7 +44,12 @@ package mesh.model.associations
 		 */
 		override protected function createLoadRequest():AsyncRequest
 		{
-			return owner.store.findAsync(entityType, owner[foreignKey]);
+			return owner.store.findAsync(entityType, owner[getExplicitOrDerivedForeignKey()]);
+		}
+		
+		private function getExplicitOrDerivedForeignKey():String
+		{
+			return foreignKey != null ? foreignKey : property + "Id";
 		}
 		
 		private function handleAssociatedEntityPropertyChange(event:PropertyChangeEvent):void
@@ -57,10 +62,20 @@ package mesh.model.associations
 		private function populateForeignKey():void
 		{
 			// If the foreign key is undefined, try to automagically set it.
-			var key:String = foreignKey != null ? foreignKey : property + "Id";
+			var key:String = getExplicitOrDerivedForeignKey();
 			
 			if (owner.hasOwnProperty(key)) {
 				owner[key] = object.id;
+			}
+		}
+		
+		private function unassociateForeignKey():void
+		{
+			// If the foreign key is undefined, try to automagically set it.
+			var key:String = getExplicitOrDerivedForeignKey();
+			
+			if (owner.hasOwnProperty(key)) {
+				owner[key] = null;
 			}
 		}
 		
@@ -71,7 +86,7 @@ package mesh.model.associations
 		{
 			super.unassociate(entity);
 			entity.removeEventListener(PropertyChangeEvent.PROPERTY_CHANGE, handleAssociatedEntityPropertyChange);
-			if (foreignKey != null) owner[foreignKey] = null;
+			unassociateForeignKey();
 		}
 		
 		/**
