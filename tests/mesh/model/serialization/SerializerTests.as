@@ -88,7 +88,7 @@ package mesh.model.serialization
 				
 			assertThat(serialized.id, equalTo(_customer.id));
 			assertThat(serialized.age, equalTo(_customer.age));
-			assertThat(serialized.name, hasProperties({firstName:_customer.name.firstName, lastName:_customer.name.lastName}));
+			assertThat(serialized.name, hasProperties({first:_customer.name.first, last:_customer.name.last}));
 			assertThat(serialized.address, hasProperties({street:_customer.address.street}));
 			assertThat(serialized.address.city, nullValue());
 			assertThat(serialized.account, nullValue());

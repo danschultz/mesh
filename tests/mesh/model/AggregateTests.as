@@ -19,17 +19,17 @@ package mesh.model
 		public function testPropertyChangeUpdatesAggregate():void
 		{
 			_entity.firstName = "Thom";
-			_entity.lastName = "Yorke";
-			assertThat(_entity.name.firstName, equalTo(_entity.firstName));
-			assertThat(_entity.name.lastName, equalTo(_entity.lastName));
+			_entity.last = "Yorke";
+			assertThat(_entity.name.first, equalTo(_entity.firstName));
+			assertThat(_entity.name.last, equalTo(_entity.last));
 		}
 		
 		[Test]
 		public function testAggregateChangeUpdatesProperties():void
 		{
 			_entity.name = new Name("Thom", "Yorke");
-			assertThat(_entity.firstName, equalTo(_entity.name.firstName));
-			assertThat(_entity.lastName, equalTo(_entity.name.lastName));
+			assertThat(_entity.firstName, equalTo(_entity.name.first));
+			assertThat(_entity.last, equalTo(_entity.name.last));
 		}
 	}
 }

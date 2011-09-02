@@ -44,7 +44,7 @@ package mesh.model.store
 			var customer:Person = _store.find(Person, _jimmyPage.id);
 			assertThat(_store.index.contains(customer), equalTo(true));
 			assertThat(customer.id, equalTo(_jimmyPage.id));
-			assertThat(customer.name, hasProperties({firstName:_jimmyPage.name.firstName, lastName:_jimmyPage.name.lastName}));
+			assertThat(customer.name, hasProperties({first:_jimmyPage.name.first, last:_jimmyPage.name.last}));
 		}
 		
 		[Test]
@@ -53,8 +53,8 @@ package mesh.model.store
 			var result:ResultList = _store.find(new LocalQuery().on(Person));
 			var results:Array = result.toArray();
 			assertThat(results.length, equalTo(2));
-			assertThat(results, array(hasProperties({id:_jimmyPage.id, name:hasProperties({firstName:_jimmyPage.name.firstName, lastName:_jimmyPage.name.lastName})}),
-									  hasProperties({id:_robertPlant.id, name:hasProperties({firstName:_robertPlant.name.firstName, lastName:_robertPlant.name.lastName})})));
+			assertThat(results, array(hasProperties({id:_jimmyPage.id, name:hasProperties({first:_jimmyPage.name.first, last:_jimmyPage.name.last})}),
+									  hasProperties({id:_robertPlant.id, name:hasProperties({first:_robertPlant.name.first, last:_robertPlant.name.last})})));
 		}
 	}
 }

@@ -25,7 +25,7 @@ package mesh
 		override public function fromObject(object:Object):void
 		{
 			super.fromObject(object);
-			name = object.name != null ? new Name(object.name.firstName, object.name.lastName) : null;
+			name = object.name != null ? new Name(object.name.first, object.name.last) : null;
 		}
 		
 		override protected function get serializableOptions():Object
