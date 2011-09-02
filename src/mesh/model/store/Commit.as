@@ -32,7 +32,7 @@ package mesh.model.store
 	public class Commit extends EventDispatcher
 	{
 		private var _store:Store;
-		private var _entities:Array;
+		private var _entities:HashSet;
 		
 		private var _committed:HashSet = new HashSet();
 		private var _dependencies:Dependencies = new Dependencies();
@@ -46,8 +46,19 @@ package mesh.model.store
 		public function Commit(store:Store, entities:Array)
 		{
 			_store = store;
-			_entities = entities;
+			_entities = new HashSet(entities);
 			createDependencies();
+		}
+		
+		/**
+		 * Checks if the given entity belongs to this commit.
+		 * 
+		 * @param entity The entity to check.
+		 * @return <code>true</code> if the entity is found.
+		 */
+		public function contains(entity:Entity):Boolean
+		{
+			return _entities.contains(entity);
 		}
 		
 		/**
@@ -200,7 +211,7 @@ package mesh.model.store
 		
 		private function commit(entities:Array = null):void
 		{
-			entities = entities == null ? _entities : entities;
+			entities = entities == null ? _entities.toArray() : entities;
 			
 			// Nothing left commit.
 			if (entities.length == 0) {

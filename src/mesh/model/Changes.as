@@ -40,6 +40,7 @@ package mesh.model
 		{
 			if (!_oldValues.hasOwnProperty(property)) {
 				_oldValues[property] = oldValue;
+				_properties.push(property);
 			}
 		}
 		
@@ -52,8 +53,10 @@ package mesh.model
 		{
 			if (property != null) {
 				delete _oldValues[property];
+				_properties.splice(_properties.indexOf(property), 1);
 			} else {
 				_oldValues = {};
+				_properties = [];
 			}
 		}
 		
@@ -131,12 +134,21 @@ package mesh.model
 		 */
 		public function get hasChanges():Boolean
 		{
-			for (var property:String in _oldValues) {
+			for (var property:String in _properties) {
 				if (hasChanged(property)) {
 					return true;
 				}
 			}
 			return false;
+		}
+		
+		private var _properties:Array = [];
+		/**
+		 * The properties that have changed.
+		 */
+		public function get properties():Array
+		{
+			return _properties.concat();
 		}
 	}
 }
