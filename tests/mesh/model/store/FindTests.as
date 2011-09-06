@@ -41,7 +41,14 @@ package mesh.model.store
 		[Test]
 		public function testFindEntity():void
 		{
-			var customer:Person = _store.find(Person, _jimmyPage.id);
+			var customer:Person;
+			_store.find(Person, _jimmyPage.id).responder({
+				result:function(data:Person):void
+				{
+					customer = data;
+				}
+			}).request();
+			
 			assertThat(_store.index.contains(customer), equalTo(true));
 			assertThat(customer.id, equalTo(_jimmyPage.id));
 			assertThat(customer.name, hasProperties({first:_jimmyPage.name.first, last:_jimmyPage.name.last}));
@@ -50,7 +57,14 @@ package mesh.model.store
 		[Test]
 		public function testFindQuery():void
 		{
-			var result:ResultList = _store.find(new LocalQuery().on(Person));
+			var result:ResultList;
+			_store.find(new LocalQuery().on(Person)).responder({
+				result:function(data:ResultList):void
+				{
+					result = data;
+				}
+			}).request();
+			
 			var results:Array = result.toArray();
 			assertThat(results.length, equalTo(2));
 			assertThat(results, array(hasProperties({id:_jimmyPage.id, name:hasProperties({first:_jimmyPage.name.first, last:_jimmyPage.name.last})}),

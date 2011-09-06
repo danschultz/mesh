@@ -38,7 +38,11 @@ package mesh.model.store
 		 */
 		override public function result(data:*):void
 		{
-			_entity.synced();
+			if (!(data is Entity)) {
+				throw new ArgumentError("Result must be an Entity");
+			}
+			(data as Entity).synced();
+			store.add(data);
 			super.result(data);
 		}
 		

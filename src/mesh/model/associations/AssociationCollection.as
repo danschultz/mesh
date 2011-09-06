@@ -30,7 +30,7 @@ package mesh.model.associations
 		 */
 		override protected function createLoadRequest():AsyncRequest
 		{
-			return owner.store.findAsync(query);
+			return owner.store.find(query);
 		}
 		
 		private function handleListCollectionChange(event:CollectionEvent):void

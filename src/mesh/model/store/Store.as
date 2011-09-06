@@ -60,7 +60,7 @@ package mesh.model.store
 		}
 		
 		/**
-		 * Finds a single entity for a specific ID, or returns a list of entities matching a query.
+		 * Finds a single entity for a specific ID, or a list of entities matching a query.
 		 * 
 		 * <p>
 		 * If you supply an entity type and an ID, then this method returns a single <code>Entity</code>. 
@@ -87,27 +87,9 @@ package mesh.model.store
 		 * </p>
 		 * 
 		 * @param args A entity type and an ID, or a <code>Query</code>.
-		 * @return An <code>Entity</code> or <code>ResultList</code>.
+		 * @return An request object.
 		 */
-		public function find(...args):*
-		{
-			return findAsync.apply(null, args).request().data;
-		}
-		
-		/**
-		 * Returns an object that wraps a find request. This method is useful if you want to know
-		 * when a request is successful or not. The arguments for this method are identical to 
-		 * <code>find()</code>.
-		 * 
-		 * <p>
-		 * <strong>Note:</strong> The request is not executed until you call <code>request()</code>
-		 * on the returned object.
-		 * </p>
-		 * 
-		 * @param args A entity type and an ID, or a <code>Query</code>.
-		 * @return A request.
-		 */
-		public function findAsync(...args):AsyncRequest
+		public function find(...args):AsyncRequest
 		{
 			// A single entity is being requested.
 			if (args.length == 2 && args[0] is Class) {
@@ -130,7 +112,6 @@ package mesh.model.store
 			if (entity == null) {
 				entity = newInstance(type);
 				entity.id = id;
-				add(entity);
 			}
 			
 			return entity;
@@ -167,6 +148,18 @@ package mesh.model.store
 			}
 			
 			index.add(entity);
+		}
+		
+		/**
+		 * Removes entities from the store.
+		 * 
+		 * @param entities The entities to remove.
+		 */
+		public function remove(...entities):void
+		{
+			for each (var entity:Entity in entities) {
+				unregister(entity);
+			}
 		}
 		
 		private function unregister(entity:Entity):void

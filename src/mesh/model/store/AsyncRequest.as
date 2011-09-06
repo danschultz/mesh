@@ -31,7 +31,7 @@ package mesh.model.store
 		}
 		
 		/**
-		 * Invoked by sub-classes when a request fails.
+		 * Invoked by the data source when the request failed.
 		 * 
 		 * @param fault The reason for the failure.
 		 */
@@ -46,13 +46,15 @@ package mesh.model.store
 		}
 		
 		/**
-		 * Invoked by sub-classes when a request succeeds.
+		 * Invoked by the data source when the result is received. The data must be an entity or list.
+		 * 
+		 * @param data An <code>Entity</code> or <code>IList</code>.
 		 */
 		public function result(data:*):void
 		{
 			for each (var responder:Object in _responders) {
 				if (responder.hasOwnProperty("result")) {
-					responder.result(this.data);
+					responder.result(data);
 				}
 			}
 			finished();

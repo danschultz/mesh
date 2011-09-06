@@ -44,7 +44,7 @@ package mesh.model.associations
 		 */
 		override protected function createLoadRequest():AsyncRequest
 		{
-			return owner.store.findAsync(entityType, owner[getExplicitOrDerivedForeignKey()]);
+			return owner.store.find(entityType, owner[getExplicitOrDerivedForeignKey()]);
 		}
 		
 		private function getExplicitOrDerivedForeignKey():String

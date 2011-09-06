@@ -3,6 +3,7 @@ package mesh.model.store
 	import mesh.model.Entity;
 	
 	import mx.collections.ArrayList;
+	import mx.collections.IList;
 
 	/**
 	 * A request that wraps the loading of a query.
@@ -45,13 +46,16 @@ package mesh.model.store
 		 */
 		override public function result(data:*):void
 		{
+			if (!(data is IList || data is Array)) {
+				throw new ArgumentError("Result must be an IList or Array");
+			}
 			data = data is Array ? new ArrayList(data) : data;
 			store.add.apply(null, data.toArray().filter(function(entity:Entity, ...args):Boolean
 			{
 				return !store.index.contains(entity);
 			}));
 			_result.loaded(data);
-			super.result(data);
+			super.result(_result);
 		}
 		
 		/**

@@ -40,7 +40,14 @@ package mesh.model.associations
 		[Test]
 		public function testLoadLazyAssociation():void
 		{
-			var organization:Organization = _store.find(Organization, _organization.id);
+			var organization:Organization;
+			_store.find(Organization, _organization.id).responder({
+				result:function(data:Organization):void
+				{
+					organization = data;
+				}
+			}).request();
+			
 			assertThat("Precondition failed", organization.employees, nullValue());
 			
 			organization.associations.employees.load().request();
