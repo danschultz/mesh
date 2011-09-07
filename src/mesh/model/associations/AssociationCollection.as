@@ -106,7 +106,7 @@ package mesh.model.associations
 		 */
 		protected function get query():Query
 		{
-			return options.query;
+			return options.query is Function ? options.query() : options.query;
 		}
 	}
 }

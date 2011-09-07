@@ -76,6 +76,12 @@ package mesh.model.associations
 		{
 			var request:AsyncRequest = createLoadRequest();
 			request.responder({result:loaded});
+			
+			setBindableReadOnlyProperty("isLoading", function():void
+			{
+				_isLoading = true;
+			});
+			
 			return request;
 		}
 		
@@ -83,7 +89,15 @@ package mesh.model.associations
 		{
 			owner[property] = data;
 			object = data;
-			_isLoaded = true;
+			
+			setBindableReadOnlyProperty("isLoaded", function():void
+			{
+				_isLoaded = true;
+			});
+			setBindableReadOnlyProperty("isLoading", function():void
+			{
+				_isLoading = false;
+			});
 		}
 		
 		/**
@@ -110,6 +124,13 @@ package mesh.model.associations
 		public function revert():void
 		{
 			
+		}
+		
+		private function setBindableReadOnlyProperty(property:String, setter:Function):void
+		{
+			var oldValue:* = this[property];
+			setter();
+			dispatchEvent(PropertyChangeEvent.createUpdateEvent(this, property, oldValue, this[property]));
 		}
 		
 		/**
@@ -165,12 +186,23 @@ package mesh.model.associations
 		}
 		
 		private var _isLoaded:Boolean;
+		[Bindable(event="propertyChange")]
 		/**
 		 * Indicates if the data for this association has been loaded.
 		 */
 		public function get isLoaded():Boolean
 		{
 			return !isLazy || _isLoaded;
+		}
+		
+		private var _isLoading:Boolean;
+		[Bindable(event="propertyChange")]
+		/**
+		 * Indicates if the data for this association is loading.
+		 */
+		public function get isLoading():Boolean
+		{
+			return _isLoading;
 		}
 		
 		/**
