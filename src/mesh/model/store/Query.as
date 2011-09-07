@@ -28,6 +28,18 @@ package mesh.model.store
 		}
 		
 		/**
+		 * Sets the parent entity that the results of the query belong to.
+		 * 
+		 * @param entity The entity that owns the results.
+		 * @return This instance.
+		 */
+		public function belongingTo(entity:Entity):Query
+		{
+			_belongsTo = entity;
+			return this;
+		}
+		
+		/**
 		 * Returns the sort order for two entities based on the sort defined
 		 * in this query.
 		 * 
@@ -106,6 +118,15 @@ package mesh.model.store
 		{
 			_comparator = comparator;
 			return this;
+		}
+		
+		private var _belongsTo:Entity;
+		/**
+		 * The parent entity that the results for this query belong to.
+		 */
+		public function get belongsTo():Entity
+		{
+			return _belongsTo;
 		}
 		
 		private var _entityType:Class;
