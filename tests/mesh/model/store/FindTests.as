@@ -8,6 +8,7 @@ package mesh.model.store
 	import org.hamcrest.collection.array;
 	import org.hamcrest.object.equalTo;
 	import org.hamcrest.object.hasProperties;
+	import org.hamcrest.object.hasPropertyWithValue;
 
 	public class FindTests
 	{
@@ -52,6 +53,7 @@ package mesh.model.store
 			assertThat(_store.index.contains(customer), equalTo(true));
 			assertThat(customer.id, equalTo(_jimmyPage.id));
 			assertThat(customer.name, hasProperties({first:_jimmyPage.name.first, last:_jimmyPage.name.last}));
+			assertThat(customer.status.isSynced, equalTo(true));
 		}
 		
 		[Test]
@@ -67,8 +69,8 @@ package mesh.model.store
 			
 			var results:Array = result.toArray();
 			assertThat(results.length, equalTo(2));
-			assertThat(results, array(hasProperties({id:_jimmyPage.id, name:hasProperties({first:_jimmyPage.name.first, last:_jimmyPage.name.last})}),
-									  hasProperties({id:_robertPlant.id, name:hasProperties({first:_robertPlant.name.first, last:_robertPlant.name.last})})));
+			assertThat(results, array(hasProperties({id:_jimmyPage.id, name:hasProperties({first:_jimmyPage.name.first, last:_jimmyPage.name.last}), status:hasPropertyWithValue("isSynced", true)}),
+									  hasProperties({id:_robertPlant.id, name:hasProperties({first:_robertPlant.name.first, last:_robertPlant.name.last}), status:hasPropertyWithValue("isSynced", true)})));
 		}
 	}
 }

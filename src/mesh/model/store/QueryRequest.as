@@ -60,10 +60,12 @@ package mesh.model.store
 			});
 			
 			// Add elements to the store if they need to be added.
-			store.add.apply(null, data.filter(function(entity:Entity, ...args):Boolean
-			{
-				return !store.index.contains(entity);
-			}));
+			for each (var entity:Entity in data) {
+				if (!store.index.contains(entity)) {
+					entity.synced();
+					store.add(entity);
+				}
+			}
 			
 			// We're done.
 			_result.loaded(new ArrayList(data));
