@@ -46,15 +46,27 @@ package mesh.model.store
 		 */
 		override public function result(data:*):void
 		{
+			// Assert the data is the right type, and convert the array to a list.
 			if (!(data is IList || data is Array)) {
 				throw new ArgumentError("Result must be an IList or Array");
 			}
-			data = data is Array ? new ArrayList(data) : data;
-			store.add.apply(null, data.toArray().filter(function(entity:Entity, ...args):Boolean
+			data = data is IList ? data.toArray() : data;
+			
+			// Replace any elements in the result that exist in the store.
+			data = data.map(function(entity:Entity, ...args):Entity
+			{
+				var storeEntity:Entity = store.index.findByTypeAndID(entity.reflect.clazz, entity.id);
+				return storeEntity != null ? storeEntity : entity;
+			});
+			
+			// Add elements to the store if they need to be added.
+			store.add.apply(null, data.filter(function(entity:Entity, ...args):Boolean
 			{
 				return !store.index.contains(entity);
 			}));
-			_result.loaded(data);
+			
+			// We're done.
+			_result.loaded(new ArrayList(data));
 			super.result(_result);
 		}
 		
