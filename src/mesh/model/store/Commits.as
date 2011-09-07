@@ -110,7 +110,14 @@ package mesh.model.store
 			var snapshot:ByteArray = new ByteArray();
 			snapshot.writeObject(entities);
 			snapshot.position = 0;
-			return snapshot.readObject();
+			
+			var copied:Array = snapshot.readObject();
+			var len:int = entities.length;
+			for (var i:int = 0; i < len; i++) {
+				copied[i].storeKey = entities[i].storeKey;
+			}
+			
+			return copied;
 		}
 		
 		private var _checkpoint:Commit;

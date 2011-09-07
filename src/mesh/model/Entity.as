@@ -452,6 +452,7 @@ package mesh.model
 		}
 		
 		private var _storeKey:Object;
+		[Transient]
 		/**
 		 * The global unique identifier assigned to this entity by the store.
 		 */
