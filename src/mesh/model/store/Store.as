@@ -4,7 +4,6 @@ package mesh.model.store
 	
 	import flash.events.EventDispatcher;
 	
-	import mesh.core.reflection.newInstance;
 	import mesh.core.state.StateEvent;
 	import mesh.model.Entity;
 	import mesh.model.source.Source;
@@ -19,6 +18,7 @@ package mesh.model.store
 	{
 		private var _keyCounter:Number = 0;
 		private var _changes:HashSet = new HashSet();
+		private var _requests:Requests;
 		
 		/**
 		 * Constructor.
@@ -32,6 +32,7 @@ package mesh.model.store
 			_index = new EntityIndex();
 			_queries = new Queries(this);
 			_commits = new Commits(this, _changes);
+			_requests = new Requests(this);
 			_dataSource = dataSource;
 		}
 		
@@ -91,30 +92,13 @@ package mesh.model.store
 		 */
 		public function find(...args):AsyncRequest
 		{
-			// A single entity is being requested.
-			if (args.length == 2 && args[0] is Class) {
-				return new EntityRequest(this, findEntity(args[0], args[1]), args[2]);
+			var request:AsyncRequest = _requests.request.apply(null, args);
+			
+			if (request == null) {
+				throw new ArgumentError("Invalid arguments for find(): " + args);
 			}
 			
-			// A result list is being requested.
-			if (args[0] is Query) {
-				return new QueryRequest(this, args[0], args[1]);
-			}
-			
-			throw new ArgumentError("Invalid arguments for find(): " + args);
-		}
-		
-		private function findEntity(type:Class, id:Object):Entity
-		{
-			var entity:Entity = index.findByTypeAndID(type, id);
-			
-			// The entity doesn't exist in the store yet. Load it.
-			if (entity == null) {
-				entity = newInstance(type);
-				entity.id = id;
-			}
-			
-			return entity;
+			return request;
 		}
 		
 		/**
