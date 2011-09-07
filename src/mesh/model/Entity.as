@@ -355,10 +355,6 @@ package mesh.model
 		{
 			return _changes;
 		}
-		public function set changes(value:Changes):void
-		{
-			_changes = value;
-		}
 		
 		private var _errors:Errors;
 		/**
@@ -424,7 +420,7 @@ package mesh.model
 		 */
 		protected function get serializableOptions():Object
 		{
-			return {exclude:["store", "storeKey", "changes"]};
+			return {exclude:["store", "storeKey"]};
 		}
 		
 		private var _status:EntityStatus;
@@ -437,6 +433,7 @@ package mesh.model
 		}
 		
 		private var _store:Store;
+		[Transient]
 		/**
 		 * The store that owns this entity.
 		 */
