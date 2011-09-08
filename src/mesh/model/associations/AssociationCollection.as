@@ -80,15 +80,11 @@ package mesh.model.associations
 		private function handleEntitiesReset():void
 		{
 			for each (var oldEntity:Entity in _snapshot) {
-				if (_list.getItemIndex(oldEntity) == -1) {
-					handleEntitiesRemoved([oldEntity]);
-				}
+				handleEntitiesRemoved([oldEntity]);
 			}
 			
 			for each (var newEntity:Entity in _list.toArray()) {
-				if (_snapshot.indexOf(newEntity) == -1) {
-					handleEntitiesAdded([newEntity]);
-				}
+				handleEntitiesAdded([newEntity]);
 			}
 		}
 		
