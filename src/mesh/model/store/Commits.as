@@ -68,9 +68,11 @@ package mesh.model.store
 		 */
 		public function commit(entities:Array = null):void
 		{
-			entities = (entities == null || entities.length == 0) ? _changes.toArray() : intersection(entities, _changes.toArray());
-			_changes.removeAll(entities);
-			queue( new Commit(_store, snapshot(entities)) );
+			if (_store.hasChanges) {
+				entities = (entities == null || entities.length == 0) ? _changes.toArray() : intersection(entities, _changes.toArray());
+				_changes.removeAll(entities);
+				queue( new Commit(_store, snapshot(entities)) );
+			}
 		}
 		
 		private function commitFailed(commit:Commit):void

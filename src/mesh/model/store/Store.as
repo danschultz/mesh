@@ -8,6 +8,8 @@ package mesh.model.store
 	import mesh.model.Entity;
 	import mesh.model.source.Source;
 	
+	import mx.events.PropertyChangeEvent;
+	
 	/**
 	 * The store represents a repository for all <code>Entity</code>s in your application. The store
 	 * is assigned a data source, which is responsible for persisting the changes to each entity.
@@ -113,12 +115,16 @@ package mesh.model.store
 		
 		private function handleEntityStatusStateChange(event:StateEvent):void
 		{
+			var oldHasChanges:Boolean = hasChanges;
+			
 			var entity:Entity = Entity( event.target );
 			if (entity.status.isDirty) {
 				_changes.add(entity);
 			} else if (entity.status.isSynced) {
 				_changes.remove(entity);
 			}
+			
+			dispatchEvent(PropertyChangeEvent.createUpdateEvent(this, "hasChanges", oldHasChanges, hasChanges));
 		}
 		
 		private function register(entity:Entity):void
@@ -174,6 +180,15 @@ package mesh.model.store
 		internal function get dataSource():Source
 		{
 			return _dataSource;
+		}
+		
+		[Bindable(event="propertyChange")]
+		/**
+		 * <code>true</code> if the store has uncommitted changes.
+		 */
+		public function get hasChanges():Boolean
+		{
+			return _changes.length > 0;
 		}
 		
 		private var _index:EntityIndex;
