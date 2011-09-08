@@ -222,7 +222,8 @@ package mesh.model
 		 */
 		protected function propertyChanged(property:String, oldValue:Object, newValue:Object):void
 		{
-			if (!IGNORED_PROPERTY_CHANGES.hasOwnProperty(property)) {
+			if (!IGNORED_PROPERTY_CHANGES.hasOwnProperty(property) && !associations.isAssociation(property))
+			{
 				changes.changed(property, oldValue, newValue);
 				_aggregates.changed(property);
 				status.dirty();

@@ -52,6 +52,7 @@ package mesh.model.associations
 			employee.associations.employer.load().request();
 			assertThat(employee.employer, notNullValue());
 			assertThat(employee.associations.employer.isLoaded, equalTo(true));
+			assertThat(_store.hasChanges, equalTo(false));
 		}
 	}
 }

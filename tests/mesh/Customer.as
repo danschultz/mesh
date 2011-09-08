@@ -15,7 +15,7 @@ package mesh
 		};
 		
 		[Bindable] public var address:Address;
-		[Bindable] public var accountId:int;
+		public var accountId:int;
 		[Bindable] public var account:Account;
 		[Bindable] public var orders:IList;
 		
