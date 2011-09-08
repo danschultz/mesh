@@ -111,18 +111,23 @@ package mesh.model.serialization
 			if (value is Array) {
 				value = value.map(function(object:Object, ...args):Object
 				{
-					if (object != null && object.hasOwnProperty("serialize")) {
-						return object.serialize(options);
-					}
-					return new Serializer(object, options).serialize();
+					return serializeAssociation(object, options);
 				});
 			}
 			// The object isn't iterable, so serialize it.
 			else {
-				value = value != null ? new Serializer(value, options).serialize() : value;
+				value = serializeAssociation(value, options);
 			}
 			
 			return value;
+		}
+		
+		private function serializeAssociation(object:Object, options:Object):Object
+		{
+			if (object != null && object.hasOwnProperty("serialize")) {
+				return object.serialize(options);
+			}
+			return object != null ? new Serializer(object, options).serialize() : object;
 		}
 		
 		/**

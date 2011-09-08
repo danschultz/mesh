@@ -5,13 +5,19 @@ package mesh.model.serialization
 	import mesh.Customer;
 	import mesh.Name;
 	import mesh.Order;
+	import mesh.TestSource;
+	import mesh.model.store.Store;
 	
 	import mx.collections.ArrayList;
 	
 	import org.flexunit.assertThat;
 	import org.hamcrest.collection.array;
+	import org.hamcrest.core.allOf;
+	import org.hamcrest.core.not;
 	import org.hamcrest.object.equalTo;
 	import org.hamcrest.object.hasProperties;
+	import org.hamcrest.object.hasProperty;
+	import org.hamcrest.object.hasPropertyWithValue;
 	import org.hamcrest.object.nullValue;
 
 	public class SerializerTests
@@ -38,6 +44,10 @@ package mesh.model.serialization
 					})
 				])
 			});
+			
+			var store:Store = new Store(new TestSource());
+			store.add(_customer);
+			store.commit();
 		}
 		
 		[Test]
@@ -93,6 +103,17 @@ package mesh.model.serialization
 			assertThat(serialized.address.city, nullValue());
 			assertThat(serialized.account, nullValue());
 			assertThat(serialized.orders, array(hasProperties({total:5}), hasProperties({total:10})));
+		}
+		
+		[Test]
+		public function testSerializeNestedAssociations():void
+		{
+			var serialized:Object = _customer.serialize({
+				includes:{account:true, orders:true}
+			});
+			
+			assertThat(serialized.account, allOf(not(hasProperty("storeKey")), hasPropertyWithValue("number", _customer.account.number)));
+			assertThat(serialized.orders, array(allOf(not(hasProperty("storeKey")), hasProperties({total:5})), allOf(not(hasProperty("storeKey")), hasProperties({total:10}))));
 		}
 	}
 }
