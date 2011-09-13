@@ -211,6 +211,21 @@ package mesh.model
 			return validate().length == 0;
 		}
 		
+		/**
+		 * Called by the data source when the entity has loaded. This method marks the entity as 
+		 * synced and goes through each non-lazy association marking it as loaded.
+		 */
+		public function loaded():void
+		{
+			synced();
+			
+			for each (var association:Association in associations) {
+				if (!association.isLazy) {
+					association.loaded();
+				}
+			}
+		}
+		
 		private static const IGNORED_PROPERTY_CHANGES:Object = {id:true};
 		/**
 		 * Marks a property on the entity as being dirty. This method allows sub-classes to manually 

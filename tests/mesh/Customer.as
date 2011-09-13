@@ -3,6 +3,7 @@ package mesh
 	import mesh.core.object.merge;
 	import mesh.model.validators.PresenceValidator;
 	
+	import mx.collections.ArrayList;
 	import mx.collections.IList;
 	
 	[RemoteClass(alias="mesh.Customer")]
@@ -30,13 +31,18 @@ package mesh
 		override public function fromObject(object:Object):void
 		{
 			super.fromObject(object);
+			account = object.account != null ? new Account(object.account) : null;
 			address = object.address != null ? new Address(object.address.street, object.address.city) : null;
+			orders = object.orders != null ? new ArrayList(object.orders.map(function(order:Object, ...args):Order
+			{
+				return new Order(order);
+			})) : null;
 		}
 		
 		override protected function get serializableOptions():Object
 		{
 			var inherited:Object = super.serializableOptions;
-			inherited.includes = merge(inherited.includes, {address:true});
+			inherited.includes = merge(inherited.includes, {address:true, account:true, orders:true});
 			return inherited;
 		}
 	}

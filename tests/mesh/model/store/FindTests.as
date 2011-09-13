@@ -1,8 +1,13 @@
 package mesh.model.store
 {
+	import mesh.Account;
+	import mesh.Customer;
 	import mesh.Name;
+	import mesh.Order;
 	import mesh.Person;
 	import mesh.TestSource;
+	
+	import mx.collections.ArrayList;
 	
 	import org.flexunit.assertThat;
 	import org.hamcrest.collection.array;
@@ -14,6 +19,7 @@ package mesh.model.store
 	{
 		private var _jimmyPage:Person;
 		private var _robertPlant:Person;
+		private var _customer:Customer;
 		private var _store:Store;
 		
 		[Before]
@@ -28,11 +34,21 @@ package mesh.model.store
 				name: new Name("Robert", "Plant")
 			});
 			
+			_customer = new Customer({
+				name: new Name("John", "Doe"),
+				account: new Account({number:"001-001"}),
+				orders: new ArrayList([
+					new Order({total:5}),
+					new Order({total:10})
+				])
+			});
+			
 			var dataSource:TestSource = new TestSource();
 			
 			var tempStore:Store = new Store(dataSource);
 			tempStore.add(_jimmyPage);
 			tempStore.add(_robertPlant);
+			tempStore.add(_customer);
 			tempStore.commit();
 			
 			// Start fresh with an empty store.
@@ -42,18 +58,33 @@ package mesh.model.store
 		[Test]
 		public function testFindEntity():void
 		{
-			var customer:Person;
+			var person:Person;
 			_store.find(Person, _jimmyPage.id).responder({
 				result:function(data:Person):void
+				{
+					person = data;
+				}
+			}).request();
+			
+			assertThat(_store.index.contains(person), equalTo(true));
+			assertThat(person.id, equalTo(_jimmyPage.id));
+			assertThat(person.name, hasProperties({first:_jimmyPage.name.first, last:_jimmyPage.name.last}));
+			assertThat(person.status.isSynced, equalTo(true));
+			assertThat(_store.hasChanges, equalTo(false));
+		}
+		
+		[Test]
+		public function testFindEntityWithNonLazyAssociationsDoesNotMarkStoreAsDirty():void
+		{
+			var customer:Customer;
+			_store.find(Customer, _customer.id).responder({
+				result:function(data:Customer):void
 				{
 					customer = data;
 				}
 			}).request();
 			
-			assertThat(_store.index.contains(customer), equalTo(true));
-			assertThat(customer.id, equalTo(_jimmyPage.id));
-			assertThat(customer.name, hasProperties({first:_jimmyPage.name.first, last:_jimmyPage.name.last}));
-			assertThat(customer.status.isSynced, equalTo(true));
+			assertThat(_store.hasChanges, equalTo(false));
 		}
 		
 		[Test]
@@ -71,6 +102,7 @@ package mesh.model.store
 			assertThat(results.length, equalTo(2));
 			assertThat(results, array(hasProperties({id:_jimmyPage.id, name:hasProperties({first:_jimmyPage.name.first, last:_jimmyPage.name.last}), status:hasPropertyWithValue("isSynced", true)}),
 									  hasProperties({id:_robertPlant.id, name:hasProperties({first:_robertPlant.name.first, last:_robertPlant.name.last}), status:hasPropertyWithValue("isSynced", true)})));
+			assertThat(_store.hasChanges, equalTo(false));
 		}
 	}
 }

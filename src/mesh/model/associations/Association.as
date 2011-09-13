@@ -75,7 +75,14 @@ package mesh.model.associations
 		public function load():AsyncRequest
 		{
 			var request:AsyncRequest = createLoadRequest();
-			request.responder({result:loaded});
+			request.responder({
+				result:function(data:*):void
+				{
+					owner[property] = data;
+					object = data;
+					loaded();
+				}
+			});
 			
 			setBindableReadOnlyProperty("isLoading", function():void
 			{
@@ -85,19 +92,25 @@ package mesh.model.associations
 			return request;
 		}
 		
-		private function loaded(data:*):void
+		/**
+		 * Marks this association as being loaded.
+		 */
+		public function loaded():void
 		{
-			owner[property] = data;
-			object = data;
-			
-			setBindableReadOnlyProperty("isLoaded", function():void
-			{
-				_isLoaded = true;
-			});
-			setBindableReadOnlyProperty("isLoading", function():void
-			{
-				_isLoading = false;
-			});
+			if (!_isLoaded) {
+				setBindableReadOnlyProperty("isLoaded", function():void
+				{
+					_isLoaded = true;
+				});
+				setBindableReadOnlyProperty("isLoading", function():void
+				{
+					_isLoading = false;
+				});
+				
+				for each (var entity:Entity in entities) {
+					entity.loaded();
+				}
+			}
 		}
 		
 		/**
