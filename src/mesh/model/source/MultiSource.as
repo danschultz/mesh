@@ -128,45 +128,63 @@ package mesh.model.source
 		 * @param entity The entity type to get the source for.
 		 * @return The source mapped to the given entity.
 		 */
-		protected function sourceFor(entity:Class):Source
+		protected function sourceFor(entity:Object):Source
 		{
-			return _mapping[entity];
+			entity = entity is Entity ? (entity as Entity).reflect.clazz : entity;
+			
+			var source:Source = _mapping[entity];
+			if (source != null) {
+				return source;
+			}
+			
+			var parent:Class = reflect(entity).parent.clazz;
+			if (parent != Entity) {
+				return sourceFor(parent);
+			}
+			
+			return null;
 		}
 		
 		private function invoke(requestOrCommit:Object, method:String, entity:Entity):void
 		{
-			var type:Class = entity.reflect.clazz;
-			throwIfUnmapped(type);
-			sourceFor(type)[method](requestOrCommit, entity);
+			var source:Source = sourceFor(entity);
+			throwIfSourceIsNull(source, entity);
+			source[method](requestOrCommit, entity);
 		}
 		
 		private function invokeEach(storeOrCommit:Object, method:String, entities:Array):void
 		{
-			var grouped:Dictionary = groupByType(entities);
-			for (var type:* in grouped) {
-				throwIfUnmapped(type);
-				sourceFor(type)[method](storeOrCommit, grouped[type]);
+			var grouped:Dictionary = groupBySource(entities);
+			for (var source:* in grouped) {
+				source[method](storeOrCommit, grouped[source]);
 			}
 		}
 		
-		private function groupByType(entities:Array):Dictionary
+		private function groupBySource(entities:Array):Dictionary
 		{
 			var result:Dictionary = new Dictionary();
 			for each (var entity:Entity in entities) {
-				var type:Class = entity.reflect.clazz;
-				if (result[type] == null) {
-					result[type] = [];
+				var source:Source = sourceFor(entity);
+				throwIfSourceIsNull(source, entity);
+				
+				if (result[source] == null) {
+					result[source] = [];
 				}
-				(result[type] as Array).push(entity);
+				(result[source] as Array).push(entity);
 			}
 			return result;
 		}
 		
-		private function throwIfUnmapped(entity:Class):void
+		private function throwIfSourceIsNull(source:Source, entity:Entity):void
 		{
-			if (sourceFor(entity) == null) {
-				throw new IllegalOperationError("Source undefined for " + reflect(entity).name);
+			if (source == null) {
+				throwUnmappedError(entity);
 			}
+		}
+		
+		private function throwUnmappedError(entity:Entity):void
+		{
+			throw new IllegalOperationError("Source undefined for '" + entity.reflect.name + "'");
 		}
 	}
 }
