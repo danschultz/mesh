@@ -41,8 +41,8 @@ package mesh.model.store
 			if (!(data is Entity)) {
 				throw new ArgumentError("Result must be an Entity");
 			}
-			(data as Entity).loaded();
 			store.add(data);
+			(data as Entity).loaded();
 			super.result(data);
 		}
 		

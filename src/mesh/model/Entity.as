@@ -217,13 +217,13 @@ package mesh.model
 		 */
 		public function loaded():void
 		{
-			synced();
-			
 			for each (var association:Association in associations) {
 				if (!association.isLazy) {
 					association.loaded();
 				}
 			}
+			
+			synced();
 		}
 		
 		private static const IGNORED_PROPERTY_CHANGES:Object = {id:true};
