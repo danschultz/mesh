@@ -2,11 +2,8 @@ package mesh.model
 {
 	import collections.Collection;
 	
-	import flash.utils.IDataInput;
-	import flash.utils.IDataOutput;
-	import flash.utils.IExternalizable;
-	
-	[RemoteClass(alias="mesh.model.Changes")]
+	import flash.utils.Proxy;
+	import flash.utils.flash_proxy;
 	
 	/**
 	 * The <code>Changes</code> class represents a storage container for values that have
@@ -14,7 +11,7 @@ package mesh.model
 	 * 
 	 * @author Dan Schultz
 	 */
-	public class Changes implements IExternalizable
+	public class Changes extends Proxy
 	{
 		private var _host:Object;
 		private var _oldValues:Object = {};
@@ -78,15 +75,6 @@ package mesh.model
 		}
 		
 		/**
-		 * @inheritDoc
-		 */
-		public function readExternal(input:IDataInput):void
-		{
-			_host = input.readObject();
-			_oldValues = input.readObject();
-		}
-		
-		/**
 		 * Sets all properties on the host back to their original values.
 		 */
 		public function revert():void
@@ -121,12 +109,33 @@ package mesh.model
 		}
 		
 		/**
-		 * @inheritDoc
+		 * @private
 		 */
-		public function writeExternal(output:IDataOutput):void
+		override flash_proxy function nextName(index:int):String
 		{
-			output.writeObject(_host);
-			output.writeObject(_oldValues);
+			return (index-1).toString();
+		}
+		
+		private var _iteratingItems:Array;
+		private var _len:int;
+		/**
+		 * @private
+		 */
+		override flash_proxy function nextNameIndex(index:int):int
+		{
+			if (index == 0) {
+				_iteratingItems = properties;
+				_len = _iteratingItems.length;
+			}
+			return index < _len ? index+1 : 0;
+		}
+		
+		/**
+		 * @private
+		 */
+		override flash_proxy function nextValue(index:int):*
+		{
+			return _iteratingItems[index-1];
 		}
 		
 		/**
