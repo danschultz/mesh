@@ -47,6 +47,7 @@ package mesh.model.store
 		{
 			_store = store;
 			_entities = new HashSet(entities);
+			_snapshots = new Snapshots(entities);
 			createDependencies();
 		}
 		
@@ -103,14 +104,11 @@ package mesh.model.store
 		private function copyData(entities:Array, data:Array = null, copier:Function = null):void
 		{
 			if (data != null) {
-				var entitiesFromStore:Array = storeEntities(entities);
 				for (var i:int = 0; i < data.length; i++) {
 					if (copier != null) {
 						copier(entities[i], data[i]);
-						copier(entitiesFromStore[i], data[i]);
 					} else {
 						copy(data[i], entities[i]);
-						copy(data[i], entitiesFromStore[i]);
 					}
 				}
 			}
@@ -122,12 +120,12 @@ package mesh.model.store
 			_operation.completed(entities);
 			
 			for each (var entity:Entity in entities) {
-				entityInStore(entity).synced();
+				entity.synced();
 				
 				// Notify dependencies that their dependents have been committed, and any foreign keys 
 				// should be synced now.
-				for each (var depenency:Entity in storeEntities(_dependencies.dependenciesFor(entity))) {
-					entityInStore(depenency).synced();
+				for each (var depenency:Entity in _dependencies.dependenciesFor(entity)) {
+					depenency.synced();
 				}
 			}
 			
@@ -150,11 +148,6 @@ package mesh.model.store
 					_dependencies.addDependents(entity, association.dependents);
 				}
 			}
-		}
-		
-		private function entityInStore(entity:Entity):Entity
-		{
-			return _store.index.findByKey(entity.storeKey);
 		}
 		
 		/**
@@ -250,6 +243,15 @@ package mesh.model.store
 		public function get count():int
 		{
 			return _entities.length;
+		}
+		
+		private var _snapshots:Snapshots;
+		/**
+		 * @copy Snapshots
+		 */
+		public function get snapshots():Snapshots
+		{
+			return _snapshots;
 		}
 	}
 }

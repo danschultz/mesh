@@ -3,7 +3,6 @@ package mesh.model.store
 	import collections.HashSet;
 	
 	import flash.events.Event;
-	import flash.utils.ByteArray;
 	
 	import mesh.core.array.intersection;
 	import mesh.operations.FaultOperationEvent;
@@ -71,7 +70,7 @@ package mesh.model.store
 			if (_store.hasChanges) {
 				entities = (entities == null || entities.length == 0) ? _changes.toArray() : intersection(entities, _changes.toArray());
 				_changes.removeAll(entities);
-				queue( new Commit(_store, snapshot(entities)) );
+				queue( new Commit(_store, entities) );
 			}
 		}
 		
@@ -105,21 +104,6 @@ package mesh.model.store
 			
 			_commits.unshift(commit);
 			commit.queue(_queue);
-		}
-		
-		private function snapshot(entities:Array):Array
-		{
-			var snapshot:ByteArray = new ByteArray();
-			snapshot.writeObject(entities);
-			snapshot.position = 0;
-			
-			var copied:Array = snapshot.readObject();
-			var len:int = entities.length;
-			for (var i:int = 0; i < len; i++) {
-				copied[i].storeKey = entities[i].storeKey;
-			}
-			
-			return copied;
 		}
 		
 		private var _checkpoint:Commit;
