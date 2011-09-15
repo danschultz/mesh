@@ -35,7 +35,7 @@ package mesh.model.store
 		private var _entities:HashSet;
 		
 		private var _committed:HashSet = new HashSet();
-		private var _dependencies:Dependencies = new Dependencies();
+		private var _dependencies:Dependencies;
 		
 		/**
 		 * Constructor.
@@ -48,7 +48,7 @@ package mesh.model.store
 			_store = store;
 			_entities = new HashSet(entities);
 			_snapshots = new Snapshots(entities);
-			createDependencies();
+			_dependencies = new Dependencies(this, entities);
 		}
 		
 		/**
@@ -122,8 +122,8 @@ package mesh.model.store
 			for each (var entity:Entity in entities) {
 				entity.synced();
 				
-				// Notify dependencies that their dependents have been committed, and any foreign keys 
-				// should be synced now.
+				// Notify the owners of this entity that it's been committed and that the foreign keys
+				// are synced.
 				for each (var depenency:Entity in _dependencies.dependenciesFor(entity)) {
 					depenency.synced();
 				}
@@ -139,15 +139,6 @@ package mesh.model.store
 				dependents.addAll(_dependencies.dependentsFor(entity));
 			}
 			commit(dependents.toArray());
-		}
-		
-		private function createDependencies():void
-		{
-			for each (var entity:Entity in _entities) {
-				for each (var association:Association in entity.associations) {
-					_dependencies.addDependents(entity, association.dependents);
-				}
-			}
 		}
 		
 		/**
@@ -170,14 +161,6 @@ package mesh.model.store
 		private function handleOperationFaultEvent(event:FaultOperationEvent):void
 		{
 			dispatchEvent(event.clone());
-		}
-		
-		private function storeEntities(entities:Array):Array
-		{
-			return entities.map(function(entity:Entity, ...args):Entity
-			{
-				return _store.index.findByKey(entity.storeKey);
-			});
 		}
 		
 		private var _operation:CommitOperation;
@@ -261,6 +244,7 @@ import collections.HashSet;
 import flash.utils.Dictionary;
 
 import mesh.model.Entity;
+import mesh.model.associations.Association;
 import mesh.model.source.SourceFault;
 import mesh.model.store.Commit;
 import mesh.operations.Operation;
@@ -342,12 +326,12 @@ class Dependencies
 	/**
 	 * Constructor.
 	 */
-	public function Dependencies()
+	public function Dependencies(commit:Commit, entities:Array)
 	{
-		
+		build(commit, entities);
 	}
 	
-	public function addDependents(target:Entity, dependents:Array):void
+	private function addDependents(target:Entity, dependents:Array):void
 	{
 		if (_entityToDependents[target] == null) {
 			_entityToDependents[target] = new HashSet();
@@ -365,6 +349,22 @@ class Dependencies
 			_entityToDependencies[target] = new HashSet();
 		}
 		_entityToDependencies[target].add(dependency);
+	}
+	
+	private function build(commit:Commit, entities:Array):void
+	{
+		for each (var entity:Entity in entities) {
+			if (entity.status.isNew) {
+				for each (var association:Association in entity.associations) {
+					if (association.isMaster) {
+						addDependents(entity, association.entities.filter(function(entity:Entity, index:int, array:Array):Boolean
+						{
+							return commit.contains(entity);
+						}));
+					}
+				}
+			}
+		}
 	}
 	
 	/**

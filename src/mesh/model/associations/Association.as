@@ -164,15 +164,6 @@ package mesh.model.associations
 			_entities.remove(entity);
 		}
 		
-		/**
-		 * The set of entities belonging to this association that are dependent on the owner being 
-		 * committed first.
-		 */
-		public function get dependents():Array
-		{
-			return isMaster && owner.status.isNew ? entities : [];
-		}
-		
 		private var _entities:HashSet = new HashSet();
 		/**
 		 * The set of entities belonging to this association.
