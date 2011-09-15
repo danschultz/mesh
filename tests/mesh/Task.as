@@ -2,8 +2,6 @@ package mesh
 {
 	import mesh.model.Entity;
 	
-	[RemoteClass(alias="mesh.Task")]
-	
 	public class Task extends Entity
 	{
 		[Bindable] public var owner:Employee;

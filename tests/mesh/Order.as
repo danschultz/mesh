@@ -2,8 +2,6 @@ package mesh
 {
 	import mesh.model.Entity;
 	
-	[RemoteClass(alias="mesh.Order")]
-	
 	public class Order extends Entity
 	{
 		public var customerId:int;

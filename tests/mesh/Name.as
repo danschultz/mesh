@@ -1,14 +1,8 @@
 package mesh
 {
-	import flash.utils.IDataInput;
-	import flash.utils.IDataOutput;
-	import flash.utils.IExternalizable;
-	
-	[RemoteClass(alias="mesh.Name")]
-	
-	public class Name implements IExternalizable
+	public class Name
 	{
-		public function Name(first:String = "", last:String = "")
+		public function Name(first:String, last:String)
 		{
 			_first = first;
 			_last = last;
@@ -17,18 +11,6 @@ package mesh
 		public function equals(name:Name):Boolean
 		{
 			return first == name.first && last == name.last;
-		}
-		
-		public function readExternal(input:IDataInput):void
-		{
-			_first = input.readUTF();
-			_last = input.readUTF();
-		}
-		
-		public function writeExternal(output:IDataOutput):void
-		{
-			output.writeUTF(first);
-			output.writeUTF(last);
 		}
 		
 		private var _first:String;

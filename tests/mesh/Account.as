@@ -2,8 +2,6 @@ package mesh
 {
 	import mesh.model.Entity;
 	
-	[RemoteClass(alias="mesh.Account")]
-	
 	public class Account extends Entity
 	{
 		[Bindable] public var customerId:int;

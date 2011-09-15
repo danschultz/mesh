@@ -4,8 +4,6 @@ package mesh
 	import mesh.model.validators.NumericValidator;
 	import mesh.model.validators.PresenceValidator;
 	
-	[RemoteClass(alias="mesh.Person")]
-	
 	public class Person extends Entity
 	{
 		public static var validate:Object = 

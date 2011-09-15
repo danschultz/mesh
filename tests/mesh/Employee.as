@@ -4,8 +4,6 @@ package mesh
 	
 	import mx.collections.IList;
 	
-	[RemoteClass(alias="mesh.Employee")]
-	
 	public class Employee extends Person
 	{
 		[Bindable] public var employer:Organization;

@@ -5,8 +5,6 @@ package mesh
 	
 	import mx.collections.IList;
 	
-	[RemoteClass(alias="mesh.Organization")]
-	
 	public class Organization extends Entity
 	{
 		[Bindable] public var name:String;
