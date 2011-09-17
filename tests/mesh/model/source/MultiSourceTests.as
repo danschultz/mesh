@@ -3,7 +3,6 @@ package mesh.model.source
 	import mesh.Customer;
 	import mesh.Organization;
 	import mesh.Person;
-	import mesh.model.store.Commit;
 	
 	import org.flexunit.assertThat;
 	import org.hamcrest.object.equalTo;
@@ -24,34 +23,34 @@ package mesh.model.source
 		[Test]
 		public function testEntityIsMappedToSource():void
 		{
-			_source.createEach(null, [new Person()]);
+			_source.retrieveEach(null, [new Person()]);
 			assertThat(_subSource.called, equalTo(true));
 		}
 		
 		[Test]
 		public function testEntityInheritsMappedSource():void
 		{
-			_source.createEach(null, [new Customer()]);
+			_source.retrieveEach(null, [new Customer()]);
 			assertThat(_subSource.called, equalTo(true));
 		}
 		
 		[Test(expects="Error")]
 		public function testErrorIfSourceIsUnmapped():void
 		{
-			_source.createEach(null, [new Organization()]);
+			_source.retrieveEach(null, [new Organization()]);
 		}
 	}
 }
 
 import mesh.model.Entity;
 import mesh.model.source.Source;
-import mesh.model.store.Commit;
+import mesh.model.store.AsyncRequest;
 
 class MultiSourceTestSource extends Source
 {
 	public var called:Boolean;
 	
-	override public function create(commit:Commit, entity:Entity):void
+	override public function retrieve(request:AsyncRequest, entity:Entity):void
 	{
 		called = true;
 	}

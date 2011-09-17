@@ -111,7 +111,7 @@ package mesh.core.state
 		 * 
 		 * @param to The state to transition to.
 		 */
-		internal function transitionTo(to:State):void
+		public function transitionTo(to:State):void
 		{
 			if (current != null) {
 				current.exit();

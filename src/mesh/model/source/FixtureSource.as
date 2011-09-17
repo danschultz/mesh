@@ -10,6 +10,7 @@ package mesh.model.source
 	import mesh.model.store.Commit;
 	import mesh.model.store.Query;
 	import mesh.model.store.RemoteQuery;
+	import mesh.model.store.Snapshot;
 	
 	import mx.collections.ArrayList;
 
@@ -43,17 +44,17 @@ package mesh.model.source
 		/**
 		 * @inheritDoc
 		 */
-		override public function create(commit:Commit, entity:Entity):void
+		override public function create(commit:Commit, snapshot:Snapshot):void
 		{
-			var data:Object = serialize([entity])[0];
+			var data:Object = serialize([snapshot])[0];
 			invoke(function():void
 			{
-				if (!entity.status.isNew) {
-					update(commit, entity);
+				if (!snapshot.status.isNew) {
+					update(commit, snapshot);
 				} else {
 					data.id = ++_idCounter;
 					_fixtures[data.id] = data;
-					commit.saved([entity], [{id:data.id}]);
+					commit.committed([snapshot], [data.id]);
 				}
 			});
 		}
@@ -85,16 +86,16 @@ package mesh.model.source
 		/**
 		 * @inheritDoc
 		 */
-		override public function destroy(commit:Commit, entity:Entity):void
+		override public function destroy(commit:Commit, snapshot:Snapshot):void
 		{
-			var data:Object = serialize([entity])[0];
+			var data:Object = serialize([snapshot])[0];
 			invoke(function():void
 			{
 				if (_fixtures[data.id] != null) {
 					delete _fixtures[data.id];
-					commit.destroyed([entity]);
+					commit.committed([snapshot]);
 				} else {
-					commit.failed([entity], new SourceFault("Failed to destroy entity", "Entity '" + entity.reflect.name + "' with ID=" + data.id + " does not exist"));
+					commit.failed([snapshot], new SourceFault("Failed to destroy entity", "Entity '" + snapshot.entity.reflect.name + "' with ID=" + data.id + " does not exist"));
 				}
 			});
 		}
@@ -104,7 +105,7 @@ package mesh.model.source
 		 */
 		override public function retrieve(request:AsyncRequest, entity:Entity):void
 		{
-			var data:Object = serialize([entity])[0];
+			var data:Object = entity.serialize();
 			invoke(function():void
 			{
 				if (_fixtures[data.id] != null) {
@@ -119,16 +120,16 @@ package mesh.model.source
 		/**
 		 * @inheritDoc
 		 */
-		override public function update(commit:Commit, entity:Entity):void
+		override public function update(commit:Commit, snapshot:Snapshot):void
 		{
-			var data:Object = serialize([entity])[0];
+			var data:Object = serialize([snapshot])[0];
 			invoke(function():void
 			{
 				if (_fixtures[data.id] == null) {
-					commit.failed([entity], new SourceFault("Failed to update entity", "Entity '" + entity.reflect.name + "' with ID=" + data.id + " does not exist"));
+					commit.failed([snapshot], new SourceFault("Failed to update entity", "Entity '" + snapshot.entity.reflect.name + "' with ID=" + data.id + " does not exist"));
 				} else {
 					_fixtures[data.id] = data;
-					commit.saved([entity]);
+					commit.committed([snapshot]);
 				}
 			});
 		}
@@ -136,11 +137,11 @@ package mesh.model.source
 		/**
 		 * @inheritDoc
 		 */
-		override protected function serialize(entities:Array):Array
+		override protected function serialize(snapshots:Array):Array
 		{
-			return entities.map(function(entity:Entity, ...args):Object
+			return snapshots.map(function(snapshot:Snapshot, ...args):Object
 			{
-				return entity.toObject();
+				return snapshot.materialize().toObject();
 			});
 		}
 		

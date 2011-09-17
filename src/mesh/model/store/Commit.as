@@ -4,7 +4,6 @@ package mesh.model.store
 	
 	import flash.events.EventDispatcher;
 	
-	import mesh.core.object.copy;
 	import mesh.model.Entity;
 	import mesh.model.associations.Association;
 	import mesh.model.source.SourceFault;
@@ -32,10 +31,9 @@ package mesh.model.store
 	public class Commit extends EventDispatcher
 	{
 		private var _store:Store;
-		private var _entities:HashSet;
 		
-		private var _committed:HashSet = new HashSet();
 		private var _dependencies:Dependencies;
+		private var _snapshots:Snapshots;
 		
 		/**
 		 * Constructor.
@@ -46,9 +44,36 @@ package mesh.model.store
 		public function Commit(store:Store, entities:Array)
 		{
 			_store = store;
-			_entities = new HashSet(entities);
-			_snapshots = new Snapshots(entities);
+			_snapshots = new Snapshots(this, entities);
 			_dependencies = new Dependencies(this, entities);
+		}
+		
+		/**
+		 * Checks if the given entity can be committed. There are situations when an entity has to wait
+		 * for its parent entity to finish committing before it can be committed. 
+		 * 
+		 * @param entity The entity to check.
+		 * @return <code>true</code> if the entity can be committed.
+		 */
+		public function isCommittable(entity:Entity):Boolean
+		{
+			var snapshot:Snapshot = _snapshots.findByEntity(entity);
+			
+			if (snapshot.isCommitted) {
+				return false;
+			}
+			
+			if (!snapshot.status.isNew) {
+				return true;
+			}
+			
+			for each (var dependency:Entity in _dependencies.dependenciesFor(entity)) {
+				if (!_snapshots.findByEntity(dependency).isCommitted) {
+					return false;
+				}
+			}
+			
+			return true;
 		}
 		
 		/**
@@ -59,96 +84,62 @@ package mesh.model.store
 		 */
 		public function contains(entity:Entity):Boolean
 		{
-			return _entities.contains(entity);
+			return _snapshots.contains(entity.storeKey);
 		}
 		
 		/**
-		 * The data source calls this method when an entity was successfully created or updated on
-		 * the backend. The data source may also supply an array of data objects. If this argument
-		 * is given, the data from each element in the array will be copied to the entity.
+		 * The data source calls this method when a snapshot's entity was successfully created, 
+		 * updated or destroyed in the data source. The data source may also supply an array of 
+		 * data objects. If this argument is given, the data from each element in the array will 
+		 * be copied to the entity.
 		 * 
-		 * @param entities The entities that were successful.
-		 * @param data A list of data to copy onto each entity.
-		 * @param copier A function that copies data from an object to the entity. This method should
-		 * 	have the following signature: <code>function(entity:Entity, data:Object):void</code>. If
-		 * 	empty, the method will use <code>mesh.core.object.copy()</code>.
+		 * @param snapshots The snapshots that were committed.
+		 * @param ids A list of IDs to copy onto each entity of the snapshots.
 		 */
-		public function saved(entities:Array, data:Array = null, copier:Function = null):void
+		public function committed(snapshots:Array, ids:Array = null):void
 		{
-			copyData(entities, data, copier);
-			completed(entities);
-		}
-		
-		/**
-		 * The data source calls this method when an entity was successfully destroyed from the
-		 * backend.
-		 * 
-		 * @param entities The entities that were destroyed.
-		 */
-		public function destroyed(entities:Array):void
-		{
-			completed(entities);
-		}
-		
-		/**
-		 * The data source calls this method when an entity was successfully committed to
-		 * the backend. The data source may also supply an array of data objects. If this argument
-		 * is given, the data from each element in the array will be copied to the entity.
-		 * 
-		 * @param entities The entities that were successful.
-		 * @param data A list of data to copy onto each entity.
-		 * @param copier A function that copies data from an object to the entity. This method should
-		 * 	have the following signature: <code>function(entity:Entity, data:Object):void</code>. If
-		 * 	empty, the method will use <code>mesh.core.object.copy()</code>.
-		 */
-		private function copyData(entities:Array, data:Array = null, copier:Function = null):void
-		{
-			if (data != null) {
-				for (var i:int = 0; i < data.length; i++) {
-					if (copier != null) {
-						copier(entities[i], data[i]);
-					} else {
-						copy(data[i], entities[i]);
-					}
-				}
-			}
-		}
-		
-		private function completed(entities:Array):void
-		{
-			_committed.addAll(entities);
-			_operation.completed(entities);
+			_snapshots.committed(snapshots, ids);
+			_operation.completed(snapshots);
 			
-			for each (var entity:Entity in entities) {
-				entity.synced();
+			for each (var snapshot:Snapshot in snapshots) {
+				snapshot.entity.synced();
 				
 				// Notify the owners of this entity that it's been committed and that the foreign keys
 				// are synced.
-				for each (var depenency:Entity in _dependencies.dependenciesFor(entity)) {
+				for each (var depenency:Entity in _dependencies.dependenciesFor(snapshot.entity)) {
 					depenency.synced();
 				}
 			}
 			
-			commitDependents(entities);
+			commitDependents(snapshots);
 		}
 		
-		private function commitDependents(entities:Array):void
+		private function commit(keys:Array = null):void
+		{
+			_snapshots.commit(_store.dataSource, keys);
+		}
+		
+		private function commitDependents(snapshots:Array):void
 		{
 			var dependents:HashSet = new HashSet();
-			for each (var entity:Entity in entities) {
-				dependents.addAll(_dependencies.dependentsFor(entity));
+			for each (var snapshot:Snapshot in snapshots) {
+				dependents.addAll(_dependencies.dependentsFor(snapshot.entity));
 			}
-			commit(dependents.toArray());
+			
+			commit(dependents.toArray().map(function(entity:Entity, ...args):Object
+			{
+				return entity.storeKey;
+			}));
 		}
 		
 		/**
-		 * The data source calls this method when an entity failed during a commit to the
+		 * The data source calls this method when a snapshot's entity failed during a commit to the
 		 * backend.
 		 * 
-		 * @param entities The entities that failed.
+		 * @param snapshots The snapshots that failed.
 		 * @param fault The reason for the failure.
 		 */
-		public function failed(entities:Array, fault:SourceFault):void
+		public function failed(snapshots:Array, fault:SourceFault):void
 		{
 			_operation.failed(fault);
 		}
@@ -185,56 +176,12 @@ package mesh.model.store
 			commit();
 		}
 		
-		private function commit(entities:Array = null):void
-		{
-			entities = entities == null ? _entities.toArray() : entities;
-			
-			// Nothing left commit.
-			if (entities.length == 0) {
-				return;
-			}
-			
-			var create:Array = entities.filter(function(entity:Entity, ...args):Boolean
-			{
-				return !_committed.contains(entity) && entity.status.isNew && entity.status.isDirty && _committed.containsAll(_dependencies.dependenciesFor(entity));
-			});
-			var update:Array = entities.filter(function(entity:Entity, ...args):Boolean
-			{
-				return !_committed.contains(entity) && entity.status.isPersisted && entity.status.isDirty;
-			});
-			var destroy:Array = entities.filter(function(entity:Entity, ...args):Boolean
-			{
-				return !_committed.contains(entity) && entity.status.isDestroyed && entity.status.isDirty;
-			});
-			
-			if (create.length > 0) {
-				_store.dataSource.createEach(this, create);
-			}
-			
-			if (update.length > 0) {
-				_store.dataSource.updateEach(this, update);
-			}
-			
-			if (destroy.length > 0) {
-				_store.dataSource.destroyEach(this, destroy);
-			}
-		}
-		
 		/**
 		 * The number of entities that need to be committed.
 		 */
 		public function get count():int
 		{
-			return _entities.length;
-		}
-		
-		private var _snapshots:Snapshots;
-		/**
-		 * @copy Snapshots
-		 */
-		public function get snapshots():Snapshots
-		{
-			return _snapshots;
+			return _snapshots.length;
 		}
 	}
 }
@@ -247,6 +194,7 @@ import mesh.model.Entity;
 import mesh.model.associations.Association;
 import mesh.model.source.SourceFault;
 import mesh.model.store.Commit;
+import mesh.model.store.Snapshot;
 import mesh.operations.Operation;
 
 /**
@@ -291,11 +239,11 @@ class CommitOperation extends Operation
 	/**
 	 * Called by the commit to indicate that its entities have been successfully committed.
 	 * 
-	 * @param entities The entities that were successful.
+	 * @param snapshots The snapshots that were successful.
 	 */
-	public function completed(entities:Array):void
+	public function completed(snapshots:Array):void
 	{
-		_progressCounter += entities.length;
+		_progressCounter += snapshots.length;
 		progressed(_progressCounter);
 		
 		if (progress.complete == progress.total) {

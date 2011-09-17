@@ -36,7 +36,7 @@ package mesh.model.associations
 		private function checkForRequiredFields():void
 		{
 			if (entityType == null) throw new IllegalOperationError("Undefined entity type for " + this);
-			if (foreignKey != null && !owner.hasOwnProperty(foreignKey)) throw new IllegalOperationError("Undefined foreign key for " + this);
+			if (options.foreignKey != null && !owner.hasOwnProperty(options.foreignKey)) throw new IllegalOperationError("Undefined foreign key '" + options.foreignKey + " for " + this);
 		}
 		
 		/**
@@ -44,12 +44,7 @@ package mesh.model.associations
 		 */
 		override protected function createLoadRequest():AsyncRequest
 		{
-			return owner.store.find(entityType, owner[getExplicitOrDerivedForeignKey()]);
-		}
-		
-		private function getExplicitOrDerivedForeignKey():String
-		{
-			return foreignKey != null ? foreignKey : property + "Id";
+			return owner.store.find(entityType, owner[foreignKey]);
 		}
 		
 		private function handleAssociatedEntityPropertyChange(event:PropertyChangeEvent):void
@@ -62,7 +57,7 @@ package mesh.model.associations
 		private function populateForeignKey():void
 		{
 			// If the foreign key is undefined, try to automagically set it.
-			var key:String = getExplicitOrDerivedForeignKey();
+			var key:String = foreignKey;
 			
 			if (owner.hasOwnProperty(key)) {
 				owner[key] = object.id;
@@ -72,7 +67,7 @@ package mesh.model.associations
 		private function unassociateForeignKey():void
 		{
 			// If the foreign key is undefined, try to automagically set it.
-			var key:String = getExplicitOrDerivedForeignKey();
+			var key:String = foreignKey;
 			
 			if (owner.hasOwnProperty(key)) {
 				owner[key] = null;
@@ -92,9 +87,9 @@ package mesh.model.associations
 		/**
 		 * The property on the owner that defines the foreign key to load this association.
 		 */
-		protected function get foreignKey():String
+		public function get foreignKey():String
 		{
-			return options.foreignKey;
+			return options.foreignKey != null ? options.foreignKey : property + "Id";
 		}
 		
 		/**

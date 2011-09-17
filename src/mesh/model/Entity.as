@@ -47,9 +47,12 @@ package mesh.model
 			_associations = new Associations(this);
 			_aggregates = new Aggregates(this);
 			
-			_status = new EntityStatus(this);
+			_status = new EntityStatus();
 			_status.addEventListener(StateEvent.ENTER, function(event:StateEvent):void
 			{
+				if (status.isPersisted) {
+					changes.clear();
+				}
 				dispatchEvent(event.clone());
 			});
 			

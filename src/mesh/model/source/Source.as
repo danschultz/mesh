@@ -7,6 +7,7 @@ package mesh.model.source
 	import mesh.model.store.AsyncRequest;
 	import mesh.model.store.Commit;
 	import mesh.model.store.Query;
+	import mesh.model.store.Snapshot;
 	import mesh.model.store.Store;
 
 	/**
@@ -26,38 +27,38 @@ package mesh.model.source
 			
 		}
 		
-		public function create(commit:Commit, entity:Entity):void
+		public function create(commit:Commit, snapshot:Snapshot):void
 		{
-			throw new IllegalOperationError("EntitySource.create() is not implemented.");
+			throw new IllegalOperationError("Source.create() is not implemented.");
 		}
 		
-		public function createEach(commit:Commit, entities:Array):void
+		public function createEach(commit:Commit, snapshots:Array):void
 		{
-			for each (var entity:Entity in entities) {
-				create(commit, entity);
+			for each (var snapshot:Snapshot in snapshots) {
+				create(commit, snapshot);
 			}
 		}
 		
-		public function destroy(commit:Commit, entity:Entity):void
+		public function destroy(commit:Commit, snapshot:Snapshot):void
 		{
-			throw new IllegalOperationError("EntitySource.destroy() is not implemented.");
+			throw new IllegalOperationError("Source.destroy() is not implemented.");
 		}
 		
-		public function destroyEach(commit:Commit, entities:Array):void
+		public function destroyEach(commit:Commit, snapshots:Array):void
 		{
-			for each (var entity:Entity in entities) {
-				destroy(commit, entity);
+			for each (var snapshot:Snapshot in snapshots) {
+				destroy(commit, snapshot);
 			}
 		}
 		
 		public function fetch(request:AsyncRequest, query:Query):void
 		{
-			throw new IllegalOperationError("EntitySource.fetch() is not implemented.");
+			throw new IllegalOperationError("Source.fetch() is not implemented.");
 		}
 		
 		public function retrieve(request:AsyncRequest, entity:Entity):void
 		{
-			throw new IllegalOperationError("EntitySource.retrieve() is not implemented.");
+			throw new IllegalOperationError("Source.retrieve() is not implemented.");
 		}
 		
 		public function retrieveEach(request:AsyncRequest, entities:Array):void
@@ -67,26 +68,26 @@ package mesh.model.source
 			}
 		}
 		
-		public function update(commit:Commit, entity:Entity):void
+		public function update(commit:Commit, snapshot:Snapshot):void
 		{
-			throw new IllegalOperationError("EntitySource.update() is not implemented.");
+			throw new IllegalOperationError("Source.update() is not implemented.");
 		}
 		
-		public function updateEach(commit:Commit, entities:Array):void
+		public function updateEach(commit:Commit, snapshots:Array):void
 		{
-			for each (var entity:Entity in entities) {
-				update(commit, entity);
+			for each (var snapshot:Snapshot in snapshots) {
+				update(commit, snapshot);
 			}
 		}
 		
 		/**
-		 * Serializes the entities into a format that the server expects, such as XML, JSON or
+		 * Serializes the snapshots into a format that the server expects, such as XML, JSON or
 		 * AMF.
 		 * 
-		 * @param entities The entities to serialize.
+		 * @param snapshots The snapshots to serialize.
 		 * @return An array of serialized entities.
 		 */
-		protected function serialize(entities:Array):Array
+		protected function serialize(snapshots:Array):Array
 		{
 			throw new IllegalOperationError(reflect(this).name + ".serialize() is not implemented.");
 		}

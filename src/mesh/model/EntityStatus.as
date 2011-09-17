@@ -32,18 +32,14 @@ package mesh.model
 		private var _dirty:Action;
 		private var _synced:Action;
 		
-		private var _entity:Entity;
-		
 		/**
 		 * Constructor.
 		 * 
 		 * @param entity The entity to track.
 		 */
-		public function EntityStatus(entity:Entity)
+		public function EntityStatus(state:State = null)
 		{
 			super();
-			
-			_entity = entity;
 			
 			_state = new StateMachine();
 			_state.addEventListener(StateEvent.ENTER, function(event:StateEvent):void
@@ -55,6 +51,10 @@ package mesh.model
 				dispatchEvent(event.clone());
 			});
 			setupStates(_state);
+			
+			if (state != null) {
+				_state.transitionTo(state);
+			}
 		}
 		
 		/**
@@ -114,7 +114,7 @@ package mesh.model
 			
 			var failedState:State = _state.createState("failed");
 			
-			var persistedState:State = _state.createState("persisted").onEnter(_entity.changes.clear);
+			var persistedState:State = _state.createState("persisted");
 			var persistedDirtyState:State = _state.createState("persisted dirty");
 			
 			var destroyedState:State = _state.createState("destroyed");

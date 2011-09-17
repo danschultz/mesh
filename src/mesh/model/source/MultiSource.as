@@ -8,6 +8,7 @@ package mesh.model.source
 	import mesh.model.store.AsyncRequest;
 	import mesh.model.store.Commit;
 	import mesh.model.store.Query;
+	import mesh.model.store.Snapshot;
 
 	/**
 	 * An entity source that maps a type of entity to its source.
@@ -50,33 +51,33 @@ package mesh.model.source
 		/**
 		 * @inheritDoc
 		 */
-		override public function create(commit:Commit, entity:Entity):void
+		override public function create(commit:Commit, snapshot:Snapshot):void
 		{
-			invoke(commit, "create", entity);
+			invoke(commit, "create", snapshot);
 		}
 		
 		/**
 		 * @inheritDoc
 		 */
-		override public function createEach(commit:Commit, entities:Array):void
+		override public function createEach(commit:Commit, snapshots:Array):void
 		{
-			invokeEach(commit, "createEach", entities);
+			invokeEach(commit, "createEach", snapshots);
 		}
 		
 		/**
 		 * @inheritDoc
 		 */
-		override public function destroy(commit:Commit, entity:Entity):void
+		override public function destroy(commit:Commit, snapshot:Snapshot):void
 		{
-			invoke(commit, "destroy", entity);
+			invoke(commit, "destroy", snapshot);
 		}
 		
 		/**
 		 * @inheritDoc
 		 */
-		override public function destroyEach(commit:Commit, entities:Array):void
+		override public function destroyEach(commit:Commit, snapshots:Array):void
 		{
-			invokeEach(commit, "destroyEach", entities);
+			invokeEach(commit, "destroyEach", snapshots);
 		}
 		
 		/**
@@ -108,17 +109,17 @@ package mesh.model.source
 		/**
 		 * @inheritDoc
 		 */
-		override public function update(commit:Commit, entity:Entity):void
+		override public function update(commit:Commit, snapshot:Snapshot):void
 		{
-			invoke(commit, "update", entity);
+			invoke(commit, "update", snapshot);
 		}
 		
 		/**
 		 * @inheritDoc
 		 */
-		override public function updateEach(commit:Commit, entities:Array):void
+		override public function updateEach(commit:Commit, snapshots:Array):void
 		{
-			invokeEach(commit, "updateEach", entities);
+			invokeEach(commit, "updateEach", snapshots);
 		}
 		
 		/**
@@ -145,32 +146,34 @@ package mesh.model.source
 			return null;
 		}
 		
-		private function invoke(requestOrCommit:Object, method:String, entity:Entity):void
+		private function invoke(requestOrCommit:Object, method:String, snapshotOrEntity:Object):void
 		{
+			var entity:Entity = snapshotOrEntity is Snapshot ? (snapshotOrEntity as Snapshot).entity : Entity( snapshotOrEntity );
 			var source:Source = sourceFor(entity);
 			throwIfSourceIsNull(source, entity);
-			source[method](requestOrCommit, entity);
+			source[method](requestOrCommit, snapshotOrEntity);
 		}
 		
-		private function invokeEach(storeOrCommit:Object, method:String, entities:Array):void
+		private function invokeEach(storeOrCommit:Object, method:String, snapshotsOrEntities:Array):void
 		{
-			var grouped:Dictionary = groupBySource(entities);
+			var grouped:Dictionary = groupBySource(snapshotsOrEntities);
 			for (var source:* in grouped) {
 				source[method](storeOrCommit, grouped[source]);
 			}
 		}
 		
-		private function groupBySource(entities:Array):Dictionary
+		private function groupBySource(snapshotsOrEntities:Array):Dictionary
 		{
 			var result:Dictionary = new Dictionary();
-			for each (var entity:Entity in entities) {
+			for each (var snapshotOrEntity:Object in snapshotsOrEntities) {
+				var entity:Entity = snapshotOrEntity is Snapshot ? (snapshotOrEntity as Snapshot).entity : Entity( snapshotOrEntity );
 				var source:Source = sourceFor(entity);
 				throwIfSourceIsNull(source, entity);
 				
 				if (result[source] == null) {
 					result[source] = [];
 				}
-				(result[source] as Array).push(entity);
+				(result[source] as Array).push(snapshotOrEntity);
 			}
 			return result;
 		}
