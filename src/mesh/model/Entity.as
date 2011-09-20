@@ -9,6 +9,7 @@ package mesh.model
 	
 	import mesh.core.inflection.humanize;
 	import mesh.core.object.copy;
+	import mesh.core.object.merge;
 	import mesh.core.reflection.Type;
 	import mesh.core.state.StateEvent;
 	import mesh.model.associations.Association;
@@ -158,6 +159,16 @@ package mesh.model
 			fromObject(decodeJson(json));
 		}
 		
+		/**
+		 * Copies the values from a value object to this entity.
+		 * 
+		 * @param vo The object to copy from.
+		 */
+		public function fromVO(vo:Object):void
+		{
+			
+		}
+		
 		private function handlePropertyChange(event:PropertyChangeEvent):void
 		{
 			propertyChanged(event.property.toString(), event.oldValue, event.newValue);
@@ -271,7 +282,14 @@ package mesh.model
 		 */
 		public function serialize(options:Object = null):Object
 		{
-			return new Serializer(this, options == null ? serializableOptions : options).serialize();
+			options = options == null ? serializableOptions : options;
+			options.exclude = options.exclude is Array ? options.exclude : [];
+			
+			if (options.exclude.indexOf("storeKey") == -1) {
+				options.exclude.push("storeKey");
+			}
+			
+			return new Serializer(this, options).serialize();
 		}
 		
 		/**
@@ -304,6 +322,17 @@ package mesh.model
 		public function toJSON(options:Object = null):String
 		{
 			return encodeJson(serialize(options));
+		}
+		
+		/**
+		 * Returns a value object that contains the values of this entity.
+		 * 
+		 * @param options Any options to configure the serialization.
+		 * @return A new value object.
+		 */
+		public function toVO(options:Object = null):*
+		{
+			return null;
 		}
 		
 		/**
@@ -439,7 +468,7 @@ package mesh.model
 		 */
 		protected function get serializableOptions():Object
 		{
-			return {exclude:["store", "storeKey"]};
+			return {};
 		}
 		
 		private var _status:EntityStatus;
@@ -485,6 +514,15 @@ package mesh.model
 				throw new IllegalOperationError("Cannot reassign an entity's store key.");
 			}
 			_storeKey = value;
+		}
+		
+		/**
+		 * The type of value object to use when turning the entity into a value object. This property must
+		 * be overridden by sub-classes.
+		 */
+		protected function get valueObjectType():Class
+		{
+			throw new IllegalOperationError(reflect.name + ".valueObjectType is not implemented.");
 		}
 	}
 }
