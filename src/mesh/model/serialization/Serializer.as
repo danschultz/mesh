@@ -18,6 +18,8 @@ package mesh.model.serialization
 	 * <li><code>exclude:Array</code> - A list of leaf node properties to exclude from serializing.</li>
 	 * <li><code>includes:Object</code> - A hash of association nodes to serialize. You can map each
 	 * 	association to additional hashes of these options.</li>
+	 * <li><code>mapping:Object</code> - A hash that will transform the name of a property to a 
+	 * 	different property name on the serialized object.
 	 * </ul>
 	 * </p>
 	 * 
@@ -53,13 +55,13 @@ package mesh.model.serialization
 			var reflection:Type = reflect(_object);
 			for each (var property:String in properties()) {
 				if (isImplicitLeaf(property) || isExplicitLeaf(reflection.property(property))) {
-					serialized[property] = leafValue(property);
+					serialized[mapped(property)] = leafValue(property);
 				}
 			}
 			
 			// Serialize the associated includes.
 			for (var association:String in includes) {
-				serialized[association] = nodeValue(association, includes[association] is Boolean ? null : includes[association]);
+				serialized[mapped(association)] = nodeValue(association, includes[association] is Boolean ? null : includes[association]);
 			}
 			
 			return serialized;
@@ -102,7 +104,7 @@ package mesh.model.serialization
 		{
 			var value:* = _object[property];
 			
-			// Attempt to simply the value to an array if possible.
+			// Attempt to simplify the value to an array if possible.
 			if (value != null && value.hasOwnProperty("toArray")) {
 				value = value.toArray();
 			}
@@ -145,6 +147,18 @@ package mesh.model.serialization
 			}
 			
 			return properties;
+		}
+		
+		/**
+		 * Returns the name of the property on the serialized object that the specified property
+		 * is mapped to.
+		 * 
+		 * @param property The property to get the mapping for.
+		 * @return A mapped property name.
+		 */
+		protected function mapped(property:String):String
+		{
+			return _options.mapping == null || !_options.mapping.hasOwnProperty(property) ? property : _options.mapping[property];
 		}
 		
 		private function isSerializable(property:Property):Boolean

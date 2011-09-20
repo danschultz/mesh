@@ -18,6 +18,7 @@ package mesh.model.serialization
 	import org.hamcrest.object.hasProperties;
 	import org.hamcrest.object.hasProperty;
 	import org.hamcrest.object.hasPropertyWithValue;
+	import org.hamcrest.object.notNullValue;
 	import org.hamcrest.object.nullValue;
 
 	public class SerializerTests
@@ -79,6 +80,20 @@ package mesh.model.serialization
 			
 			assertThat(serialized.id, equalTo(_customer.id));
 			assertThat(serialized.age, nullValue());
+		}
+		
+		[Test]
+		public function testSerializeWithMapping():void
+		{
+			var serialized:Object = _customer.serialize({
+				includes:{orders:true},
+				mapping:{age:"yearsOld", orders:"purchases"}
+			});
+			
+			assertThat(serialized.age, nullValue());
+			assertThat(serialized.yearsOld, notNullValue());
+			assertThat(serialized.orders, nullValue());
+			assertThat(serialized.purchases, notNullValue());
 		}
 		
 		[Test]
