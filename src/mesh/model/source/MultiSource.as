@@ -85,9 +85,7 @@ package mesh.model.source
 		 */
 		override public function fetch(request:AsyncRequest, query:Query):void
 		{
-			for each (var source:Source in _mapping) {
-				source.fetch(request, query);
-			}
+			sourceFor(query.entityType).fetch(request, query);
 		}
 		
 		/**

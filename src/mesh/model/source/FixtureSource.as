@@ -64,23 +64,21 @@ package mesh.model.source
 		 */
 		override public function fetch(request:AsyncRequest, query:Query):void
 		{
-			if (query.entityType == _entityType) {
-				var entities:Array = [];
-				for each (var hash:Object in _fixtures) {
-					var entity:Entity = newInstance(_entityType);
-					entity.fromObject(hash);
-					entities.push(entity);
-				}
-				
-				if (query is RemoteQuery) {
-					entities = entities.filter(function(entity:Entity, ...args):Boolean
-					{
-						return query.contains(entity);
-					});
-				}
-				
-				request.result(new ArrayList(entities));
+			var entities:Array = [];
+			for each (var hash:Object in _fixtures) {
+				var entity:Entity = newInstance(_entityType);
+				entity.fromObject(hash);
+				entities.push(entity);
 			}
+			
+			if (query is RemoteQuery) {
+				entities = entities.filter(function(entity:Entity, ...args):Boolean
+				{
+					return query.contains(entity);
+				});
+			}
+			
+			request.result(new ArrayList(entities));
 		}
 		
 		/**
