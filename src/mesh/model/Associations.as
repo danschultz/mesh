@@ -1,5 +1,6 @@
 package mesh.model
 {
+	import flash.errors.IllegalOperationError;
 	import flash.utils.Proxy;
 	import flash.utils.flash_proxy;
 	
@@ -67,6 +68,9 @@ package mesh.model
 		 */
 		public function mappedTo(property:String):Association
 		{
+			if (!isAssociation(property)) {
+				throw new IllegalOperationError("Association undefined for " + _entity.reflect.name + "." + property);
+			}
 			return _mappings[property];
 		}
 		
