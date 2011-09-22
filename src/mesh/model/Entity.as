@@ -5,11 +5,9 @@ package mesh.model
 	
 	import flash.errors.IllegalOperationError;
 	import flash.events.EventDispatcher;
-	import flash.utils.flash_proxy;
 	
 	import mesh.core.inflection.humanize;
 	import mesh.core.object.copy;
-	import mesh.core.object.merge;
 	import mesh.core.reflection.Type;
 	import mesh.core.state.StateEvent;
 	import mesh.model.associations.Association;
@@ -22,9 +20,6 @@ package mesh.model
 	import mesh.model.validators.Validator;
 	
 	import mx.events.PropertyChangeEvent;
-	import mx.utils.ObjectUtil;
-	
-	use namespace flash_proxy;
 	
 	/**
 	 * An entity.
@@ -93,16 +88,6 @@ package mesh.model
 		protected function hasMany(property:String, options:Object = null):void
 		{
 			_associations.map(property, new HasManyAssociation(this, property, options));
-		}
-		
-		/**
-		 * Clones the entity using native AMF3 serialization.
-		 * 
-		 * @return A cloned entity.
-		 */
-		public function clone():*
-		{
-			return ObjectUtil.copy(this);
 		}
 		
 		/**
