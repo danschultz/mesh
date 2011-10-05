@@ -213,7 +213,7 @@ package mesh.model.associations
 		 */
 		override flash_proxy function hasProperty(name:*):Boolean
 		{
-			return flash_proxy::getProperty(name) !== undefined;
+			return getProperty(name) !== undefined;
 		}
 	}
 }

@@ -6,6 +6,8 @@ package mesh.services
 	
 	import mx.managers.CursorManager;
 	
+	use namespace flash_proxy;
+	
 	public dynamic class Request extends DataProxy
 	{
 		private var _block:Function;
@@ -73,7 +75,7 @@ package mesh.services
 		
 		protected function result(data:Object):void
 		{
-			flash_proxy::object = data;
+			object = data;
 		}
 		
 		protected function success():void

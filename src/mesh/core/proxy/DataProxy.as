@@ -8,6 +8,8 @@ package mesh.core.proxy
 	
 	import mx.events.PropertyChangeEvent;
 	
+	use namespace flash_proxy;
+	
 	/**
 	 * The <code>DataProxy</code> class represents a base <code>Proxy</code> implementation. A
 	 * proxy wraps an arbitrary object and forwards function and property calls to it. In 
@@ -23,11 +25,11 @@ package mesh.core.proxy
 		/**
 		 * Constructor.
 		 */
-		public function DataProxy(object:Object = null)
+		public function DataProxy(obj:Object = null)
 		{
 			super();
 			_dispatcher = new EventDispatcher(this);
-			flash_proxy::object = object;
+			object = obj;
 		}
 		
 		/**
@@ -35,8 +37,8 @@ package mesh.core.proxy
 		 */
 		override flash_proxy function callProperty(name:*, ...parameters):*
 		{
-			if (flash_proxy::object != null) {
-				return flash_proxy::object[name].apply(null, parameters);
+			if (object != null) {
+				return object[name].apply(null, parameters);
 			}
 			return undefined;
 		}
@@ -46,8 +48,8 @@ package mesh.core.proxy
 		 */
 		override flash_proxy function getProperty(name:*):*
 		{
-			if (flash_proxy::object != null) {
-				return flash_proxy::object[name];
+			if (object != null) {
+				return object[name];
 			}
 			return undefined;
 		}
@@ -63,7 +65,7 @@ package mesh.core.proxy
 		override flash_proxy function hasProperty(name:*):Boolean
 		{
 			try {
-				return flash_proxy::getProperty(name) !== undefined;
+				return getProperty(name) !== undefined;
 			} catch (e:Error) {
 				
 			}
@@ -75,8 +77,8 @@ package mesh.core.proxy
 		 */
 		override flash_proxy function setProperty(name:*, value:*):void
 		{
-			if (flash_proxy::object != null) {
-				flash_proxy::object[name] = value;
+			if (object != null) {
+				object[name] = value;
 			}
 		}
 		
