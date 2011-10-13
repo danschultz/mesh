@@ -1,10 +1,5 @@
 package mesh.model.store
 {
-	import mesh.model.Entity;
-	
-	import mx.collections.ArrayList;
-	import mx.collections.IList;
-
 	/**
 	 * A request that wraps the loading of a query.
 	 * 
@@ -35,41 +30,6 @@ package mesh.model.store
 		override protected function executeRequest():void
 		{
 			store.dataSource.fetch(this, _query);
-			
-			if (_query is LocalQuery && _query.entityType != null) {
-				result(store.entities.findByType(_query.entityType));
-			}
-		}
-		
-		/**
-		 * @inheritDoc
-		 */
-		override public function result(data:*):void
-		{
-			// Assert the data is the right type, and convert the array to a list.
-			if (!(data is IList || data is Array)) {
-				throw new ArgumentError("Result must be an IList or Array");
-			}
-			data = data is IList ? data.toArray() : data;
-			
-			// Replace any elements in the result that exist in the store.
-			data = data.map(function(entity:Entity, ...args):Entity
-			{
-				var storeEntity:Entity = store.entities.findByTypeAndID(entity.reflect.clazz, entity.id);
-				return storeEntity != null ? storeEntity : entity;
-			});
-			
-			// Add elements to the store if they need to be added.
-			for each (var entity:Entity in data) {
-				if (!store.entities.contains(entity)) {
-					entity.synced();
-					store.add(entity);
-				}
-			}
-			
-			// We're done.
-			_result.loaded(new ArrayList(data));
-			super.result(_result);
 		}
 		
 		/**

@@ -18,13 +18,13 @@ package mesh.model.store
 			_store = store;
 		}
 		
-		public function add(storeKey:Object, entityType:Class, data:Object, id:Object = null):void
+		public function add(storeKey:Object, entityType:Class, data:Object, id:Object):void
 		{
 			if (contains(storeKey)) {
 				throw new IllegalOperationError("Cannot reindex data for store key '" + storeKey + "'");
 			}
 			
-			var obj:SourceData = new SourceData(storeKey, entityType, data);
+			var obj:SourceData = new SourceData(storeKey, entityType, data, id);
 			_keyToData[storeKey] = obj;
 			findByType(entityType).add(obj);
 		}
@@ -32,11 +32,6 @@ package mesh.model.store
 		public function contains(storeKey:Object):Boolean
 		{
 			return _keyToData[storeKey] != null;
-		}
-		
-		public function findByKey(key:Object):SourceData
-		{
-			return _typeToData[key];
 		}
 		
 		public function findByType(type:Object):List

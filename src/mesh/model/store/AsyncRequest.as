@@ -46,25 +46,18 @@ package mesh.model.store
 		}
 		
 		/**
-		 * Invoked by the data source when the result is received. The data must be an entity or list.
-		 * 
-		 * @param data An <code>Entity</code> or <code>IList</code>.
+		 * @copy Store#insert()
 		 */
-		public function result(data:*):void
+		public function loaded(entityType:Class, data:Object, id:Object = null):Object
 		{
-			for each (var responder:Object in _responders) {
-				if (responder.hasOwnProperty("result")) {
-					responder.result(data);
-				}
-			}
-			finished();
+			return store.insert(entityType, data, id);
 		}
 		
 		/**
 		 * Called after either a successful or failed attempt to request data. This method is used
 		 * for cleaning up any data used during the request.
 		 */
-		protected function finished():void
+		public function finished():void
 		{
 			_isBusy = false;
 		}

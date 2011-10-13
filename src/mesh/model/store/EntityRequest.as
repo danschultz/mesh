@@ -36,19 +36,6 @@ package mesh.model.store
 		/**
 		 * @inheritDoc
 		 */
-		override public function result(data:*):void
-		{
-			if (!(data is Entity)) {
-				throw new ArgumentError("Result must be an Entity");
-			}
-			store.add(data);
-			(data as Entity).loaded();
-			super.result(data);
-		}
-		
-		/**
-		 * @inheritDoc
-		 */
 		override protected function get isLoaded():Boolean
 		{
 			return _entity.status.isSynced;

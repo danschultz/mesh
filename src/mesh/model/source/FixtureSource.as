@@ -64,21 +64,9 @@ package mesh.model.source
 		 */
 		override public function fetch(request:AsyncRequest, query:Query):void
 		{
-			var entities:Array = [];
 			for each (var hash:Object in _fixtures) {
-				var entity:Entity = newInstance(_entityType);
-				entity.fromObject(hash);
-				entities.push(entity);
+				request.loaded(_entityType, hash);
 			}
-			
-			if (query is RemoteQuery) {
-				entities = entities.filter(function(entity:Entity, ...args):Boolean
-				{
-					return query.contains(entity);
-				});
-			}
-			
-			request.result(new ArrayList(entities));
 		}
 		
 		/**
@@ -107,8 +95,7 @@ package mesh.model.source
 			invoke(function():void
 			{
 				if (_fixtures[data.id] != null) {
-					entity.fromObject(_fixtures[data.id]);
-					request.result(entity);
+					request.loaded(_entityType, _fixtures[data.id]);
 				} else {
 					request.failed(new SourceFault(entity.reflect.name + " not found with ID=" + entity.id));
 				}

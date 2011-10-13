@@ -136,8 +136,9 @@ package mesh.model.store
 		 * @param data The data to insert.
 		 * @param id The primary ID for the data. If <code>null</code> the ID is parsed from
 		 * 	the data.
+		 * @return The store key of the inserted data.
 		 */
-		public function insert(entityType:Class, data:Object, id:Object = null):void
+		public function insert(entityType:Class, data:Object, id:Object = null):Object
 		{
 			if (id == null) {
 				if (!data.hasOwnProperty("id")) {
@@ -145,7 +146,10 @@ package mesh.model.store
 				}
 				id = data.id;
 			}
-			_data.add(generateStoreKey(), entityType, data, id);
+			
+			var key:Object = generateStoreKey();
+			_data.add(key, entityType, data, id);
+			return key;
 		}
 		
 		private function register(entity:Entity):void
