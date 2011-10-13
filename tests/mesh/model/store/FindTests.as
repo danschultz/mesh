@@ -66,7 +66,7 @@ package mesh.model.store
 				}
 			}).request();
 			
-			assertThat(_store.index.contains(person), equalTo(true));
+			assertThat(_store.entities.contains(person), equalTo(true));
 			assertThat(person.id, equalTo(_jimmyPage.id));
 			assertThat(person.name, hasProperties({first:_jimmyPage.name.first, last:_jimmyPage.name.last}));
 			assertThat(person.status.isSynced, equalTo(true));

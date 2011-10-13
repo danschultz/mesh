@@ -37,7 +37,7 @@ package mesh.model.store
 			store.dataSource.fetch(this, _query);
 			
 			if (_query is LocalQuery && _query.entityType != null) {
-				result(store.index.findByType(_query.entityType));
+				result(store.entities.findByType(_query.entityType));
 			}
 		}
 		
@@ -55,13 +55,13 @@ package mesh.model.store
 			// Replace any elements in the result that exist in the store.
 			data = data.map(function(entity:Entity, ...args):Entity
 			{
-				var storeEntity:Entity = store.index.findByTypeAndID(entity.reflect.clazz, entity.id);
+				var storeEntity:Entity = store.entities.findByTypeAndID(entity.reflect.clazz, entity.id);
 				return storeEntity != null ? storeEntity : entity;
 			});
 			
 			// Add elements to the store if they need to be added.
 			for each (var entity:Entity in data) {
-				if (!store.index.contains(entity)) {
+				if (!store.entities.contains(entity)) {
 					entity.synced();
 					store.add(entity);
 				}

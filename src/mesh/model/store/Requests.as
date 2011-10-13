@@ -91,7 +91,7 @@ package mesh.model.store
 		
 		private function findEntity(type:Class, id:Object):Entity
 		{
-			var entity:Entity = _store.index.findByTypeAndID(type, id);
+			var entity:Entity = _store.entities.findByTypeAndID(type, id);
 			
 			// The entity doesn't exist in the store yet. Load it.
 			if (entity == null) {

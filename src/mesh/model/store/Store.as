@@ -2,6 +2,7 @@ package mesh.model.store
 {
 	import collections.HashSet;
 	
+	import flash.errors.IllegalOperationError;
 	import flash.events.EventDispatcher;
 	
 	import mesh.core.state.StateEvent;
@@ -31,7 +32,8 @@ package mesh.model.store
 		{
 			super();
 			
-			_index = new EntityIndex();
+			_data = new StoreIndex(this);
+			_entities = new EntityIndex();
 			_queries = new Queries(this);
 			_commits = new Commits(this, _changes);
 			_requests = new Requests(this);
@@ -127,6 +129,25 @@ package mesh.model.store
 			dispatchEvent(PropertyChangeEvent.createUpdateEvent(this, "hasChanges", oldHasChanges, hasChanges));
 		}
 		
+		/**
+		 * Adds data that was retrieved from a data source into the store.
+		 * 
+		 * @param entityType The type of entity to map the data to.
+		 * @param data The data to insert.
+		 * @param id The primary ID for the data. If <code>null</code> the ID is parsed from
+		 * 	the data.
+		 */
+		public function insert(entityType:Class, data:Object, id:Object = null):void
+		{
+			if (id == null) {
+				if (!data.hasOwnProperty("id")) {
+					throw new IllegalOperationError("Could not parse ID from data.");
+				}
+				id = data.id;
+			}
+			_data.add(generateStoreKey(), entityType, data, id);
+		}
+		
 		private function register(entity:Entity):void
 		{
 			entity.storeKey = generateStoreKey();
@@ -137,7 +158,7 @@ package mesh.model.store
 				_changes.add(entity);
 			}
 			
-			index.add(entity);
+			entities.add(entity);
 		}
 		
 		/**
@@ -154,12 +175,12 @@ package mesh.model.store
 		
 		private function unregister(entity:Entity):void
 		{
-			if (!index.contains(entity)) {
+			if (!entities.contains(entity)) {
 				throw new ArgumentError("Entity '" + entity + "' not found in store");
 			}
 			entity.store = null;
 			entity.removeEventListener(StateEvent.ENTER, handleEntityStatusStateChange);
-			index.remove(entity);
+			entities.remove(entity);
 			_changes.remove(entity);
 		}
 		
@@ -172,6 +193,15 @@ package mesh.model.store
 			return _commits;
 		}
 		
+		private var _data:StoreIndex;
+		/**
+		 * The internal index used by the store.
+		 */
+		internal function get data():StoreIndex
+		{
+			return _data;
+		}
+		
 		private var _dataSource:Source;
 		/**
 		 * The data source assigned to this store, which is responsible for persisting changed entities
@@ -182,6 +212,15 @@ package mesh.model.store
 			return _dataSource;
 		}
 		
+		private var _entities:EntityIndex;
+		/**
+		 * The internal index of <code>Entity</code>s used by the store.
+		 */
+		internal function get entities():EntityIndex
+		{
+			return _entities;
+		}
+		
 		[Bindable(event="propertyChange")]
 		/**
 		 * <code>true</code> if the store has uncommitted changes.
@@ -189,15 +228,6 @@ package mesh.model.store
 		public function get hasChanges():Boolean
 		{
 			return _changes.length > 0;
-		}
-		
-		private var _index:EntityIndex;
-		/**
-		 * The internal index of <code>Entity</code>s used by the store.
-		 */
-		internal function get index():EntityIndex
-		{
-			return _index;
 		}
 		
 		private var _queries:Queries;
