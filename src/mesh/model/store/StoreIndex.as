@@ -34,6 +34,11 @@ package mesh.model.store
 			return _keyToData[storeKey] != null;
 		}
 		
+		public function findByKey(key:Object):SourceData
+		{
+			return _typeToData[key];
+		}
+		
 		public function findByType(type:Object):List
 		{
 			type = reflect(type).clazz;
