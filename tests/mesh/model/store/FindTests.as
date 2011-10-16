@@ -59,7 +59,7 @@ package mesh.model.store
 		public function testFindEntity():void
 		{
 			var person:Person;
-			_store.find(Person, _jimmyPage.id).responder({
+			_store.findAsync(Person, _jimmyPage.id).responder({
 				result:function(data:Person):void
 				{
 					person = data;
@@ -77,7 +77,7 @@ package mesh.model.store
 		public function testFindEntityWithNonLazyAssociationsDoesNotMarkStoreAsDirty():void
 		{
 			var customer:Customer;
-			_store.find(Customer, _customer.id).responder({
+			_store.findAsync(Customer, _customer.id).responder({
 				result:function(data:Customer):void
 				{
 					customer = data;
@@ -91,7 +91,7 @@ package mesh.model.store
 		public function testFindQuery():void
 		{
 			var result:ResultList;
-			_store.find(new LocalQuery().on(Person)).responder({
+			_store.findAsync(new LocalQuery().on(Person)).responder({
 				result:function(data:ResultList):void
 				{
 					result = data;

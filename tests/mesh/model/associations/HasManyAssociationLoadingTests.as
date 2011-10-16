@@ -41,7 +41,7 @@ package mesh.model.associations
 		public function testLoadLazyAssociation():void
 		{
 			var organization:Organization;
-			_store.find(Organization, _organization.id).responder({
+			_store.findAsync(Organization, _organization.id).responder({
 				result:function(data:Organization):void
 				{
 					organization = data;

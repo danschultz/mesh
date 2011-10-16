@@ -94,7 +94,7 @@ package mesh.model.store
 		 * @param args A entity type and an ID, or a <code>Query</code>.
 		 * @return An request object.
 		 */
-		public function find(...args):AsyncRequest
+		public function findAsync(...args):AsyncRequest
 		{
 			var request:AsyncRequest = _requests.request.apply(null, args);
 			

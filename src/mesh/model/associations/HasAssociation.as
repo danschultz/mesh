@@ -44,7 +44,7 @@ package mesh.model.associations
 		 */
 		override protected function createLoadRequest():AsyncRequest
 		{
-			return owner.store.find(entityType, owner[foreignKey]);
+			return owner.store.findAsync(entityType, owner[foreignKey]);
 		}
 		
 		private function handleAssociatedEntityPropertyChange(event:PropertyChangeEvent):void
