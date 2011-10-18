@@ -22,7 +22,7 @@ package mesh.model.store
 	{
 		private var _query:Query;
 		private var _store:Store;
-		private var _list:ListCollectionView;
+		private var _keyList:KeyList;
 		
 		/**
 		 * Constructor.
@@ -33,9 +33,11 @@ package mesh.model.store
 		public function ResultList(query:Query, store:Store)
 		{
 			super();
-			
 			_query = query;
 			_store = store;
+			
+			_keyList = new KeyList(store.entities);
+			list = createList(_keyList);
 		}
 		
 		/**
@@ -48,29 +50,35 @@ package mesh.model.store
 			
 		}
 		
-		private function createList(results:IList):void
+		/**
+		 * Adds a store key as a result for this list.
+		 * 
+		 * @param key The key to add.
+		 */
+		public function addKey(key:Object):void
 		{
-			if (_list == null) {
-				_list = new ListCollectionView(results);
-				_list.filterFunction = _query.contains;
-				_list.sort = new Sort();
-				_list.sort.compareFunction = function(entity1:Entity, entity2:Entity, fields:Array = null):int
-				{
-					return _query.compare(entity1, entity2);
-				};
-				_list.refresh();
-				list = _list;
-			}
+			_keyList.addItem(key);
+		}
+		
+		private function createList(list:IList):IList
+		{
+			var sortedList:ListCollectionView = new ListCollectionView(list);
+			sortedList = new ListCollectionView(list);
+			sortedList.filterFunction = _query.contains;
+			sortedList.sort = new Sort();
+			sortedList.sort.compareFunction = function(entity1:Entity, entity2:Entity, fields:Array = null):int
+			{
+				return _query.compare(entity1, entity2);
+			};
+			sortedList.refresh();
+			return sortedList;
 		}
 		
 		/**
-		 * Used internally by Mesh to load the fetched data from a data source into the result list.
-		 * 
-		 * @param list The list of data to populate the result with.
+		 * Invoke this method when the results for the list have been retrieved.
 		 */
-		internal function loaded(results:IList):void
+		public function complete():void
 		{
-			createList(results);
 			_isLoaded = true;
 		}
 		
@@ -92,5 +100,51 @@ package mesh.model.store
 		{
 			return _isLoaded;
 		}
+	}
+}
+
+import mesh.model.Entity;
+import mesh.model.store.EntityIndex;
+import mesh.model.store.Store;
+
+import mx.collections.ArrayList;
+
+/**
+ * A list that holds the store keys for a result list. This list will turn store keys into
+ * entities when requested.
+ * 
+ * @author Dan Schultz
+ */
+class KeyList extends ArrayList
+{
+	private var _entities:EntityIndex;
+	
+	/**
+	 * Constructor.
+	 * 
+	 * @param store The store to retrieve entities from.
+	 */
+	public function KeyList(entities:EntityIndex)
+	{
+		super();
+		_entities = entities;
+		
+	}
+	
+	/**
+	 * @inheritDoc
+	 */
+	override public function getItemAt(index:int, prefetch:int=0):Object
+	{
+		return _entities.findByKey(getItemAt(index, prefetch));
+	}
+	
+	/**
+	 * @inheritDoc
+	 */
+	override public function getItemIndex(item:Object):int
+	{
+		item = item is Entity ? (item as Entity).storeKey : item;
+		return super.getItemIndex(item);
 	}
 }
