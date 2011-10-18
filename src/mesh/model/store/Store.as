@@ -5,14 +5,11 @@ package mesh.model.store
 	import flash.errors.IllegalOperationError;
 	import flash.events.EventDispatcher;
 	
-	import mesh.core.reflection.newInstance;
 	import mesh.core.state.StateEvent;
 	import mesh.model.Entity;
 	import mesh.model.source.Source;
 	
 	import mx.events.PropertyChangeEvent;
-	
-	import org.flexunit.runner.Result;
 	
 	/**
 	 * The store represents a repository for all <code>Entity</code>s in your application. The store
@@ -205,6 +202,26 @@ package mesh.model.store
 			var key:Object = generateStoreKey();
 			_data.add(key, entityType, data, id);
 			return key;
+		}
+		
+		/**
+		 * Materializes the data hash that's mapped to the given key into an <code>Entity</code>.
+		 * 
+		 * @param key The key to materialize.
+		 * @return An entity.
+		 */
+		public function materialize(key:Object):Entity
+		{
+			var entity:Entity = entities.findByKey(key);
+			
+			if (entity == null) {
+				var source:SourceData = data.findByKey(key);
+				if (source == null) throw new ArgumentError("Data undefined for key '" + key + "'");
+				entity = source.materialize();
+				register(entity);
+			}
+			
+			return entity;
 		}
 		
 		private function register(entity:Entity):void

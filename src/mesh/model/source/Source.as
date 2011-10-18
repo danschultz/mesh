@@ -8,6 +8,7 @@ package mesh.model.source
 	import mesh.model.store.Query;
 	import mesh.model.store.ResultList;
 	import mesh.model.store.Snapshot;
+	import mesh.model.store.Store;
 
 	/**
 	 * The <code>Source</code> class is responsible for persisting an <code>Entity</code>.
@@ -50,7 +51,7 @@ package mesh.model.source
 			}
 		}
 		
-		public function fetch(query:Query, results:ResultList):void
+		public function fetch(query:Query, store:Store, results:ResultList):void
 		{
 			throw new IllegalOperationError("Source.fetch() is not implemented.");
 		}

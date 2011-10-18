@@ -1,5 +1,10 @@
+import mesh.model.Entity;
+
 package mesh.model.store
 {
+	import mesh.core.reflection.newInstance;
+	import mesh.model.Entity;
+
 	public class SourceData
 	{
 		public function SourceData(storeKey:Object, entityType:Class, data:Object, id:Object)
@@ -8,6 +13,13 @@ package mesh.model.store
 			_entityType = entityType;
 			_data = data;
 			_id = id;
+		}
+		
+		public function materialize():Entity
+		{
+			var entity:Entity = new _storeKey();
+			entity.fromObject(data);
+			return entity;
 		}
 		
 		private var _data:Object;

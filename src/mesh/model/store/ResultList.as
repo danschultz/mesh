@@ -104,7 +104,6 @@ package mesh.model.store
 }
 
 import mesh.model.Entity;
-import mesh.model.store.EntityIndex;
 import mesh.model.store.Store;
 
 import mx.collections.ArrayList;
@@ -117,18 +116,17 @@ import mx.collections.ArrayList;
  */
 class KeyList extends ArrayList
 {
-	private var _entities:EntityIndex;
+	private var _store:Store;
 	
 	/**
 	 * Constructor.
 	 * 
 	 * @param store The store to retrieve entities from.
 	 */
-	public function KeyList(entities:EntityIndex)
+	public function KeyList(store:Store)
 	{
 		super();
-		_entities = entities;
-		
+		_store = store;
 	}
 	
 	/**
@@ -136,7 +134,7 @@ class KeyList extends ArrayList
 	 */
 	override public function getItemAt(index:int, prefetch:int=0):Object
 	{
-		return _entities.findByKey(getItemAt(index, prefetch));
+		return _store.materialize(super.getItemAt(index, prefetch));
 	}
 	
 	/**

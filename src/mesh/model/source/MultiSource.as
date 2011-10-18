@@ -9,6 +9,7 @@ package mesh.model.source
 	import mesh.model.store.Query;
 	import mesh.model.store.ResultList;
 	import mesh.model.store.Snapshot;
+	import mesh.model.store.Store;
 
 	/**
 	 * An entity source that maps a type of entity to its source.
@@ -83,9 +84,9 @@ package mesh.model.source
 		/**
 		 * @inheritDoc
 		 */
-		override public function fetch(query:Query, results:ResultList):void
+		override public function fetch(query:Query, store:Store, results:ResultList):void
 		{
-			sourceFor(query.entityType).fetch(query, results);
+			sourceFor(query.entityType).fetch(query, store, results);
 		}
 		
 		/**

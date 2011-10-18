@@ -9,6 +9,7 @@ package mesh.model.source
 	import mesh.model.store.Query;
 	import mesh.model.store.ResultList;
 	import mesh.model.store.Snapshot;
+	import mesh.model.store.Store;
 
 	public class FixtureSource extends Source
 	{
@@ -58,11 +59,12 @@ package mesh.model.source
 		/**
 		 * @inheritDoc
 		 */
-		override public function fetch(query:Query, results:ResultList):void
+		override public function fetch(query:Query, store:Store, results:ResultList):void
 		{
 			for each (var hash:Object in _fixtures) {
-				//request.loaded(_entityType, hash);
+				results.addKey(store.insert(_entityType, hash));
 			}
+			results.complete();
 		}
 		
 		/**
