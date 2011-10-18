@@ -4,15 +4,11 @@ package mesh.model.source
 	import flash.utils.setTimeout;
 	
 	import mesh.core.object.merge;
-	import mesh.core.reflection.newInstance;
 	import mesh.model.Entity;
-	import mesh.model.store.AsyncRequest;
 	import mesh.model.store.Commit;
 	import mesh.model.store.Query;
-	import mesh.model.store.RemoteQuery;
+	import mesh.model.store.ResultList;
 	import mesh.model.store.Snapshot;
-	
-	import mx.collections.ArrayList;
 
 	public class FixtureSource extends Source
 	{
@@ -62,10 +58,10 @@ package mesh.model.source
 		/**
 		 * @inheritDoc
 		 */
-		override public function fetch(request:AsyncRequest, query:Query):void
+		override public function fetch(query:Query, results:ResultList):void
 		{
 			for each (var hash:Object in _fixtures) {
-				request.loaded(_entityType, hash);
+				//request.loaded(_entityType, hash);
 			}
 		}
 		
@@ -89,16 +85,18 @@ package mesh.model.source
 		/**
 		 * @inheritDoc
 		 */
-		override public function retrieve(request:AsyncRequest, entity:Entity):void
+		override public function retrieve(entity:Entity):void
 		{
 			var data:Object = entity.serialize();
 			invoke(function():void
 			{
+				/*
 				if (_fixtures[data.id] != null) {
 					request.loaded(_entityType, _fixtures[data.id]);
 				} else {
 					request.failed(new SourceFault(entity.reflect.name + " not found with ID=" + entity.id));
 				}
+				*/
 			});
 		}
 		

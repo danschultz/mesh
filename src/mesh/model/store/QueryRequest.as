@@ -20,7 +20,7 @@ package mesh.model.store
 		public function QueryRequest(store:Store, query:Query, options:Object = null)
 		{
 			_query = query;
-			_result = store.query.results(query);
+			_result = store.queries.results(query);
 			super(store, _result, options);
 		}
 		
@@ -29,7 +29,7 @@ package mesh.model.store
 		 */
 		override protected function executeRequest():void
 		{
-			store.dataSource.fetch(this, _query);
+			//store.dataSource.fetch(this, _query);
 		}
 		
 		/**

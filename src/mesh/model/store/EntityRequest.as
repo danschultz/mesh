@@ -30,7 +30,7 @@ package mesh.model.store
 		override protected function executeRequest():void
 		{
 			super.executeRequest();
-			store.dataSource.retrieve(this, _entity);
+			//store.dataSource.retrieve(this, _entity);
 		}
 		
 		/**

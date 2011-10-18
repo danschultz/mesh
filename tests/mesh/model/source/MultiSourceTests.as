@@ -23,21 +23,21 @@ package mesh.model.source
 		[Test]
 		public function testEntityIsMappedToSource():void
 		{
-			_source.retrieveEach(null, [new Person()]);
+			//_source.retrieveEach(null, [new Person()]);
 			assertThat(_subSource.called, equalTo(true));
 		}
 		
 		[Test]
 		public function testEntityInheritsMappedSource():void
 		{
-			_source.retrieveEach(null, [new Customer()]);
+			//_source.retrieveEach(null, [new Customer()]);
 			assertThat(_subSource.called, equalTo(true));
 		}
 		
 		[Test(expects="Error")]
 		public function testErrorIfSourceIsUnmapped():void
 		{
-			_source.retrieveEach(null, [new Organization()]);
+			//_source.retrieveEach(null, [new Organization()]);
 		}
 	}
 }
@@ -50,7 +50,7 @@ class MultiSourceTestSource extends Source
 {
 	public var called:Boolean;
 	
-	override public function retrieve(request:AsyncRequest, entity:Entity):void
+	override public function retrieve(entity:Entity):void
 	{
 		called = true;
 	}

@@ -5,11 +5,14 @@ package mesh.model.store
 	import flash.errors.IllegalOperationError;
 	import flash.events.EventDispatcher;
 	
+	import mesh.core.reflection.newInstance;
 	import mesh.core.state.StateEvent;
 	import mesh.model.Entity;
 	import mesh.model.source.Source;
 	
 	import mx.events.PropertyChangeEvent;
+	
+	import org.flexunit.runner.Result;
 	
 	/**
 	 * The store represents a repository for all <code>Entity</code>s in your application. The store
@@ -94,6 +97,51 @@ package mesh.model.store
 		 * @param args A entity type and an ID, or a <code>Query</code>.
 		 * @return An request object.
 		 */
+		public function find(...args):*
+		{
+			// Retrieve an Entity
+			if (args.length == 2) {
+				return retrieveEntity(args[0], args[1]);
+			}
+			// Find a query.
+			else if (args is Query) {
+				return findQuery(args[0]);
+			}
+			
+			// Can't parse the arguments.
+			throw new ArgumentError("Invalid arguments for find(): " + args);
+		}
+		
+		/**
+		 * Finds a single entity for a specific ID, or a list of entities matching a query.
+		 * 
+		 * <p>
+		 * If you supply an entity type and an ID, then this method returns a single <code>Entity</code>. 
+		 * If the entity has not been loaded into the store, then the store will ask the data source 
+		 * to load it. All properties on the entity will be empty until the data source has loaded 
+		 * the data.
+		 * </p>
+		 * 
+		 * <p>
+		 * The last argument is an optional options hash to configure the find. The following options
+		 * are supported:
+		 * 
+		 * <ul>
+		 * <li><code>useBusyCursor:Boolean</code> - (default=<code>true</code>) Will display a busy 
+		 * 	cursor while data is loading.</li>
+		 * <li><code>reload:Boolean</code> - (default=<code>false</code>) Will reload the data if its 
+		 * 	already been loaded.</li>
+		 * </ul>
+		 * </p>
+		 * 
+		 * <p>
+		 * If you supply a query, then this method returns a <code>ResultList</code>
+		 * of all entities that match the conditions of the query.
+		 * </p>
+		 * 
+		 * @param args A entity type and an ID, or a <code>Query</code>.
+		 * @return An request object.
+		 */
 		public function findAsync(...args):AsyncRequest
 		{
 			var request:AsyncRequest = _requests.request.apply(null, args);
@@ -103,6 +151,13 @@ package mesh.model.store
 			}
 			
 			return request;
+		}
+		
+		private function findQuery(q:Query):ResultList
+		{
+			var results:ResultList = queries.results(q);
+			dataSource.fetch(q, results);
+			return results;
 		}
 		
 		/**
@@ -177,6 +232,17 @@ package mesh.model.store
 			}
 		}
 		
+		private function retrieveEntity(type:Class, id:Object):Entity
+		{
+			var entity:Entity = entities.findByTypeAndID(type, id);
+			if (entity == null) {
+				entity = new type();
+				entity.id = id;
+			}
+			dataSource.retrieve(entity);
+			return entity;
+		}
+		
 		private function unregister(entity:Entity):void
 		{
 			if (!entities.contains(entity)) {
@@ -238,7 +304,7 @@ package mesh.model.store
 		/**
 		 * The queries and their cached results that have been invoked on this store.
 		 */
-		public function get query():Queries
+		public function get queries():Queries
 		{
 			return _queries;
 		}

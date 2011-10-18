@@ -4,11 +4,10 @@ package mesh.model.source
 	
 	import mesh.core.reflection.reflect;
 	import mesh.model.Entity;
-	import mesh.model.store.AsyncRequest;
 	import mesh.model.store.Commit;
 	import mesh.model.store.Query;
+	import mesh.model.store.ResultList;
 	import mesh.model.store.Snapshot;
-	import mesh.model.store.Store;
 
 	/**
 	 * The <code>Source</code> class is responsible for persisting an <code>Entity</code>.
@@ -51,20 +50,20 @@ package mesh.model.source
 			}
 		}
 		
-		public function fetch(request:AsyncRequest, query:Query):void
+		public function fetch(query:Query, results:ResultList):void
 		{
 			throw new IllegalOperationError("Source.fetch() is not implemented.");
 		}
 		
-		public function retrieve(request:AsyncRequest, entity:Entity):void
+		public function retrieve(entity:Entity):void
 		{
 			throw new IllegalOperationError("Source.retrieve() is not implemented.");
 		}
 		
-		public function retrieveEach(request:AsyncRequest, entities:Array):void
+		public function retrieveEach(entities:Array):void
 		{
 			for each (var entity:Entity in entities) {
-				retrieve(request, entity);
+				retrieve(entity);
 			}
 		}
 		

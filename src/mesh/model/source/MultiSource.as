@@ -5,9 +5,9 @@ package mesh.model.source
 	
 	import mesh.core.reflection.reflect;
 	import mesh.model.Entity;
-	import mesh.model.store.AsyncRequest;
 	import mesh.model.store.Commit;
 	import mesh.model.store.Query;
+	import mesh.model.store.ResultList;
 	import mesh.model.store.Snapshot;
 
 	/**
@@ -83,25 +83,25 @@ package mesh.model.source
 		/**
 		 * @inheritDoc
 		 */
-		override public function fetch(request:AsyncRequest, query:Query):void
+		override public function fetch(query:Query, results:ResultList):void
 		{
-			sourceFor(query.entityType).fetch(request, query);
+			sourceFor(query.entityType).fetch(query, results);
 		}
 		
 		/**
 		 * @inheritDoc
 		 */
-		override public function retrieve(request:AsyncRequest, entity:Entity):void
+		override public function retrieve(entity:Entity):void
 		{
-			invoke(request, "retrieve", entity);
+			invoke(null, "retrieve", entity);
 		}
 		
 		/**
 		 * @inheritDoc
 		 */
-		override public function retrieveEach(request:AsyncRequest, entities:Array):void
+		override public function retrieveEach(entities:Array):void
 		{
-			invokeEach(request, "retrieveEach", entities);
+			invokeEach(null, "retrieveEach", entities);
 		}
 		
 		/**
@@ -144,19 +144,19 @@ package mesh.model.source
 			return null;
 		}
 		
-		private function invoke(requestOrCommit:Object, method:String, snapshotOrEntity:Object):void
+		private function invoke(commit:Object, method:String, snapshotOrEntity:Object):void
 		{
 			var entity:Entity = snapshotOrEntity is Snapshot ? (snapshotOrEntity as Snapshot).entity : Entity( snapshotOrEntity );
 			var source:Source = sourceFor(entity);
 			throwIfSourceIsNull(source, entity);
-			source[method](requestOrCommit, snapshotOrEntity);
+			source[method].apply(null, commit == null ? [snapshotOrEntity] : [commit, snapshotOrEntity]);
 		}
 		
-		private function invokeEach(storeOrCommit:Object, method:String, snapshotsOrEntities:Array):void
+		private function invokeEach(commit:Object, method:String, snapshotsOrEntities:Array):void
 		{
 			var grouped:Dictionary = groupBySource(snapshotsOrEntities);
 			for (var source:* in grouped) {
-				source[method](storeOrCommit, grouped[source]);
+				source[method].apply(null, commit == null ? [snapshotsOrEntities] : [commit, snapshotsOrEntities]);
 			}
 		}
 		
