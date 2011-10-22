@@ -36,7 +36,7 @@ package mesh.model.store
 			_query = query;
 			_store = store;
 			
-			_keyList = new KeyList(store.entities);
+			_keyList = new KeyList(store);
 			list = createList(_keyList);
 		}
 		

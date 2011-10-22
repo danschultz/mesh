@@ -1,10 +1,7 @@
-import mesh.model.Entity;
-
 package mesh.model.store
 {
-	import mesh.core.reflection.newInstance;
 	import mesh.model.Entity;
-
+	
 	public class SourceData
 	{
 		public function SourceData(storeKey:Object, entityType:Class, data:Object, id:Object)
