@@ -58,13 +58,7 @@ package mesh.model.store
 		[Test]
 		public function testFindEntity():void
 		{
-			var person:Person;
-			_store.findAsync(Person, _jimmyPage.id).responder({
-				result:function(data:Person):void
-				{
-					person = data;
-				}
-			}).request();
+			var person:Person = _store.find(Person, _jimmyPage.id);
 			
 			assertThat(_store.entities.contains(person), equalTo(true));
 			assertThat(person.id, equalTo(_jimmyPage.id));
@@ -76,13 +70,7 @@ package mesh.model.store
 		[Test]
 		public function testFindEntityWithNonLazyAssociationsDoesNotMarkStoreAsDirty():void
 		{
-			var customer:Customer;
-			_store.findAsync(Customer, _customer.id).responder({
-				result:function(data:Customer):void
-				{
-					customer = data;
-				}
-			}).request();
+			var customer:Customer = _store.find(Customer, _customer.id);
 			
 			assertThat(_store.hasChanges, equalTo(false));
 		}
@@ -90,13 +78,7 @@ package mesh.model.store
 		[Test]
 		public function testFindQuery():void
 		{
-			var result:ResultList;
-			_store.findAsync(new LocalQuery().on(Person)).responder({
-				result:function(data:ResultList):void
-				{
-					result = data;
-				}
-			}).request();
+			var result:ResultList = _store.find(new LocalQuery().on(Person));
 			
 			var results:Array = result.toArray();
 			assertThat(results.length, equalTo(2));

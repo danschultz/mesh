@@ -109,51 +109,10 @@ package mesh.model.store
 			throw new ArgumentError("Invalid arguments for find(): " + args);
 		}
 		
-		/**
-		 * Finds a single entity for a specific ID, or a list of entities matching a query.
-		 * 
-		 * <p>
-		 * If you supply an entity type and an ID, then this method returns a single <code>Entity</code>. 
-		 * If the entity has not been loaded into the store, then the store will ask the data source 
-		 * to load it. All properties on the entity will be empty until the data source has loaded 
-		 * the data.
-		 * </p>
-		 * 
-		 * <p>
-		 * The last argument is an optional options hash to configure the find. The following options
-		 * are supported:
-		 * 
-		 * <ul>
-		 * <li><code>useBusyCursor:Boolean</code> - (default=<code>true</code>) Will display a busy 
-		 * 	cursor while data is loading.</li>
-		 * <li><code>reload:Boolean</code> - (default=<code>false</code>) Will reload the data if its 
-		 * 	already been loaded.</li>
-		 * </ul>
-		 * </p>
-		 * 
-		 * <p>
-		 * If you supply a query, then this method returns a <code>ResultList</code>
-		 * of all entities that match the conditions of the query.
-		 * </p>
-		 * 
-		 * @param args A entity type and an ID, or a <code>Query</code>.
-		 * @return An request object.
-		 */
-		public function findAsync(...args):AsyncRequest
-		{
-			var request:AsyncRequest = _requests.request.apply(null, args);
-			
-			if (request == null) {
-				throw new ArgumentError("Invalid arguments for find(): " + args);
-			}
-			
-			return request;
-		}
-		
 		private function findQuery(q:Query):ResultList
 		{
 			var results:ResultList = queries.results(q);
-			dataSource.fetch(q, results);
+			dataSource.fetch(q, this, results);
 			return results;
 		}
 		

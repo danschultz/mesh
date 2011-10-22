@@ -3,7 +3,6 @@ package mesh.model.associations
 	import flash.errors.IllegalOperationError;
 	
 	import mesh.model.Entity;
-	import mesh.model.store.AsyncRequest;
 	
 	import mx.events.PropertyChangeEvent;
 	
@@ -37,14 +36,6 @@ package mesh.model.associations
 		{
 			if (entityType == null) throw new IllegalOperationError("Undefined entity type for " + this);
 			if (options.foreignKey != null && !owner.hasOwnProperty(options.foreignKey)) throw new IllegalOperationError("Undefined foreign key '" + options.foreignKey + " for " + this);
-		}
-		
-		/**
-		 * @inheritDoc
-		 */
-		override protected function createLoadRequest():AsyncRequest
-		{
-			return owner.store.findAsync(entityType, owner[foreignKey]);
 		}
 		
 		private function handleAssociatedEntityPropertyChange(event:PropertyChangeEvent):void

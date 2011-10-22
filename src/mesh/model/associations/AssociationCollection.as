@@ -1,7 +1,6 @@
 package mesh.model.associations
 {
 	import mesh.model.Entity;
-	import mesh.model.store.AsyncRequest;
 	import mesh.model.store.Query;
 	
 	import mx.collections.ListCollectionView;
@@ -23,14 +22,6 @@ package mesh.model.associations
 			
 			_list = new ListCollectionView();
 			_list.addEventListener(CollectionEvent.COLLECTION_CHANGE, handleListCollectionChange);
-		}
-		
-		/**
-		 * @inheritDoc
-		 */
-		override protected function createLoadRequest():AsyncRequest
-		{
-			return owner.store.findAsync(query);
 		}
 		
 		private function handleListCollectionChange(event:CollectionEvent):void
