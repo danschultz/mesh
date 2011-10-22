@@ -65,6 +65,20 @@ package mesh.model.store
 		}
 		
 		/**
+		 * Creates a new entity of the given type and given data.
+		 * 
+		 * @param entityType The type of entity to create.
+		 * @param data The data for the entity.
+		 * @return A new entity.
+		 */
+		public function create(entityType:Class, data:Object):Entity
+		{
+			var key:Object = generateStoreKey();
+			_data.add(key, entityType, data, null);
+			return materialize(key);
+		}
+		
+		/**
 		 * Finds a single entity for a specific ID, or a list of entities matching a query.
 		 * 
 		 * <p>
@@ -151,10 +165,7 @@ package mesh.model.store
 		 */
 		public function insert(entityType:Class, data:Object, id:Object = null):Object
 		{
-			if (id == null) {
-				if (!data.hasOwnProperty("id")) {
-					throw new IllegalOperationError("Could not parse ID from data.");
-				}
+			if (id == null && data.hasOwnProperty("id")) {
 				id = data.id;
 			}
 			
