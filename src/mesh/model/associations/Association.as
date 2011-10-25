@@ -3,12 +3,12 @@ package mesh.model.associations
 	import collections.HashSet;
 	
 	import flash.errors.IllegalOperationError;
+	import flash.events.Event;
 	import flash.events.EventDispatcher;
 	
 	import mesh.core.inflection.humanize;
 	import mesh.core.reflection.Type;
 	import mesh.model.Entity;
-	import mesh.model.store.AsyncRequest;
 	
 	import mx.events.PropertyChangeEvent;
 	
@@ -21,6 +21,12 @@ package mesh.model.associations
 	 */
 	public class Association extends EventDispatcher
 	{
+		private static const UNINITIALIZED:int = 0;
+		private static const LOADING:int = 1;
+		private static const LOADED:int = 2;
+		
+		private var _state:int = UNINITIALIZED;
+		
 		/**
 		 * Constructor.
 		 * 
@@ -53,6 +59,14 @@ package mesh.model.associations
 			populateInverseRelationship(entity);
 		}
 		
+		private function changeState(state:int):void
+		{
+			if (_state != state) {
+				_state = state;
+				dispatchEvent(new Event("stateChange"));
+			}
+		}
+		
 		private function handleOwnerPropertyChange(event:PropertyChangeEvent):void
 		{
 			if (event.property is String && event.property.toString() == property) {
@@ -73,41 +87,25 @@ package mesh.model.associations
 		 */
 		public function load():void
 		{
-			loadAssociation();
-			
-			setBindableReadOnlyProperty("isLoading", function():void
-			{
-				_isLoading = true;
-			});
+			changeState(LOADING);
+			performLoad();
+		}
+		
+		/**
+		 * Called by sub-classes to indicate that the data for the association has been loaded
+		 * from the store.
+		 */
+		protected function loaded():void
+		{
+			changeState(LOADED);
 		}
 		
 		/**
 		 * Called by <code>load()</code> to load the data for the association.
 		 */
-		protected function loadAssociation():void
+		protected function performLoad():void
 		{
 			
-		}
-		
-		/**
-		 * Marks this association as being loaded.
-		 */
-		public function loaded():void
-		{
-			if (!_isLoaded) {
-				setBindableReadOnlyProperty("isLoaded", function():void
-				{
-					_isLoaded = true;
-				});
-				setBindableReadOnlyProperty("isLoading", function():void
-				{
-					_isLoading = false;
-				});
-				
-				for each (var entity:Entity in entities) {
-					entity.loaded();
-				}
-			}
 		}
 		
 		private function populateInverseRelationship(entity:Entity):void
@@ -116,14 +114,6 @@ package mesh.model.associations
 				if (entity.hasOwnProperty(inverse)) entity[inverse] = owner;
 				else throw new IllegalOperationError("Inverse property '" + entity.reflect.name + "." + inverse + "' does not exist.");
 			}
-		}
-		
-		/**
-		 * Changes the state of the object for this association back to what it was at the last save.
-		 */
-		public function revert():void
-		{
-			
 		}
 		
 		private function setBindableReadOnlyProperty(property:String, setter:Function):void
@@ -168,24 +158,22 @@ package mesh.model.associations
 			return options.inverse;
 		}
 		
-		private var _isLoaded:Boolean;
-		[Bindable(event="propertyChange")]
+		[Bindable(event="stateChange")]
 		/**
 		 * Indicates if the data for this association has been loaded.
 		 */
 		public function get isLoaded():Boolean
 		{
-			return _isLoaded;
+			return _state == LOADED;
 		}
 		
-		private var _isLoading:Boolean;
-		[Bindable(event="propertyChange")]
+		[Bindable(event="stateChange")]
 		/**
 		 * Indicates if the data for this association is loading.
 		 */
 		public function get isLoading():Boolean
 		{
-			return _isLoading;
+			return _state == LOADING;
 		}
 		
 		/**

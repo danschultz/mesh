@@ -1,18 +1,22 @@
 package mesh.model.associations
 {
+	import flash.events.Event;
+	
 	import mesh.model.Entity;
 	import mesh.model.store.Query;
+	import mesh.model.store.ResultList;
 	
+	import mx.collections.ArrayList;
 	import mx.collections.IList;
-	import mx.collections.ListCollectionView;
 	import mx.events.CollectionEvent;
 	import mx.events.CollectionEventKind;
 	import mx.events.PropertyChangeEvent;
 	
 	public class AssociationCollection extends Association implements IList
 	{
-		private var _list:ListCollectionView;
+		private var _list:SynchronizedList;
 		private var _snapshot:Array = [];
+		private var _results:ResultList;
 		
 		/**
 		 * @copy AssociationProxy#AssociationProxy()
@@ -21,7 +25,7 @@ package mesh.model.associations
 		{
 			super(source, property, options);
 			
-			_list = new ListCollectionView();
+			_list = new SynchronizedList();
 			_list.addEventListener(CollectionEvent.COLLECTION_CHANGE, handleListCollectionChange);
 		}
 		
@@ -114,12 +118,37 @@ package mesh.model.associations
 			}
 		}
 		
+		private function handleResultsComplete(event:Event):void
+		{
+			loaded();
+		}
+		
 		/**
 		 * @inheritDoc
 		 */
 		public function itemUpdated(item:Object, property:Object = null, oldValue:Object = null, newValue:Object = null):void
 		{
 			_list.itemUpdated(item, property, oldValue, newValue);
+		}
+		
+		/**
+		 * @inheritDoc
+		 */
+		override protected function performLoad():void
+		{
+			super.performLoad();
+			
+			if (_results != null) {
+				_results.removeEventListener(Event.COMPLETE, handleResultsComplete);
+			}
+			
+			_results = owner.store.find(query);
+			_results.addEventListener(Event.COMPLETE, handleResultsComplete);
+			_list.list = _results;
+			
+			if (_results.isLoaded) {
+				loaded();
+			}
 		}
 		
 		/**
@@ -163,20 +192,96 @@ package mesh.model.associations
 		}
 		
 		/**
-		 * @inheritDoc
-		 */
-		override public function set object(value:*):void
-		{
-			super.object = value;
-			_list.list = value;
-		}
-		
-		/**
 		 * The query to load the data for this association.
 		 */
 		protected function get query():Query
 		{
 			return options.query is Function ? options.query() : options.query;
+		}
+	}
+}
+
+import mesh.model.Entity;
+import mesh.model.store.ResultList;
+
+import mx.collections.ArrayList;
+import mx.collections.IList;
+import mx.events.CollectionEvent;
+import mx.events.CollectionEventKind;
+import mx.events.PropertyChangeEvent;
+
+class SynchronizedList extends ArrayList
+{
+	private var _copy:Array;
+	
+	public function SynchronizedList()
+	{
+		super();
+	}
+	
+	private function handleListCollectionChange(event:CollectionEvent):void
+	{
+		switch (event.kind) {
+			case CollectionEventKind.ADD:
+				handleListItemsAdded(event.items);
+				break;
+			case CollectionEventKind.REMOVE:
+				handleListItemsRemoved(event.items);
+				break;
+			case CollectionEventKind.REPLACE:
+				handleListItemsReplaced(event.items);
+				break;
+			case CollectionEventKind.RESET:
+				handleListReset();
+				break;
+				
+		}
+		
+		if (event.kind != CollectionEventKind.UPDATE) {
+			_copy = list.toArray();
+		}
+	}
+	
+	private function handleListItemsAdded(items:Array):void
+	{
+		for each (var result:Entity in items) {
+			addItem(result);
+		}
+	}
+	
+	private function handleListItemsRemoved(items:Array):void
+	{
+		for each (var result:Entity in items) {
+			removeItem(result);
+		}
+	}
+	
+	private function handleListItemsReplaced(items:Array):void
+	{
+		for each (var change:PropertyChangeEvent in items) {
+			handleListItemsAdded([change.oldValue]);
+			handleListItemsRemoved([change.newValue]);
+		}
+	}
+	
+	private function handleListReset():void
+	{
+		handleListItemsRemoved(_copy);
+		handleListItemsAdded(list.toArray());
+	}
+	
+	private var _list:IList;
+	public function get list():IList
+	{
+		return _list;
+	}
+	public function set list(value:IList):void
+	{
+		if (_list != value) {
+			if (_list != null) _list.removeEventListener(CollectionEvent.COLLECTION_CHANGE, handleListCollectionChange);
+			_list = value;
+			if (_list != null) _list.addEventListener(CollectionEvent.COLLECTION_CHANGE, handleListCollectionChange);
+			handleListReset();
 		}
 	}
 }

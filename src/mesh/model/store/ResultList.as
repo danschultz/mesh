@@ -1,5 +1,7 @@
 package mesh.model.store
 {
+	import flash.events.Event;
+	
 	import mesh.core.List;
 	import mesh.model.Entity;
 	
@@ -7,6 +9,11 @@ package mesh.model.store
 	import mx.collections.IList;
 	import mx.collections.ListCollectionView;
 	import mx.collections.Sort;
+	
+	/**
+	 * Dispatched when the results for the list are complete.
+	 */
+	[Event(name="complete", type="flash.events.Event")]
 	
 	/**
 	 * The <code>ResultList</code> is a list of entities after an execution of a query.
@@ -100,6 +107,7 @@ package mesh.model.store
 		public function complete():void
 		{
 			_isLoaded = true;
+			dispatchEvent( new Event(Event.COMPLETE) );
 		}
 		
 		/**
