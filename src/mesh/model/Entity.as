@@ -216,12 +216,6 @@ package mesh.model
 		 */
 		public function loaded():void
 		{
-			for each (var association:Association in associations) {
-				if (!association.isLazy) {
-					association.loaded();
-				}
-			}
-			
 			synced();
 		}
 		

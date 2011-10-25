@@ -3,6 +3,7 @@ package mesh.model.store
 	import mesh.core.List;
 	import mesh.model.Entity;
 	
+	import mx.collections.ArrayList;
 	import mx.collections.IList;
 	import mx.collections.ListCollectionView;
 	import mx.collections.Sort;
@@ -22,7 +23,7 @@ package mesh.model.store
 	{
 		private var _query:Query;
 		private var _store:Store;
-		private var _keyList:KeyList;
+		private var _keyList:ArrayList;
 		
 		/**
 		 * Constructor.
@@ -36,7 +37,7 @@ package mesh.model.store
 			_query = query;
 			_store = store;
 			
-			_keyList = new KeyList(store);
+			_keyList = new ArrayList();
 			list = createList(_keyList);
 		}
 		
@@ -63,15 +64,34 @@ package mesh.model.store
 		private function createList(list:IList):IList
 		{
 			var sortedList:ListCollectionView = new ListCollectionView(list);
-			sortedList = new ListCollectionView(list);
-			sortedList.filterFunction = _query.contains;
-			sortedList.sort = new Sort();
-			sortedList.sort.compareFunction = function(entity1:Entity, entity2:Entity, fields:Array = null):int
+			sortedList.filterFunction = function(key:Object):Boolean
 			{
-				return _query.compare(entity1, entity2);
+				return _query.contains(_store.materialize(key));
+			};
+			sortedList.sort = new Sort();
+			sortedList.sort.compareFunction = function(key1:Object, key2:Object, ...args):int
+			{
+				return _query.compare(_store.materialize(key1), _store.materialize(key2));
 			};
 			sortedList.refresh();
 			return sortedList;
+		}
+		
+		/**
+		 * @inheritDoc
+		 */
+		override public function getItemAt(index:int, prefetch:int=0):Object
+		{
+			return _store.materialize(super.getItemAt(index, prefetch));
+		}
+		
+		/**
+		 * @inheritDoc
+		 */
+		override public function getItemIndex(item:Object):int
+		{
+			item = item is Entity ? (item as Entity).storeKey : item;
+			return super.getItemIndex(item);
 		}
 		
 		/**
@@ -100,49 +120,5 @@ package mesh.model.store
 		{
 			return _isLoaded;
 		}
-	}
-}
-
-import mesh.model.Entity;
-import mesh.model.store.Store;
-
-import mx.collections.ArrayList;
-
-/**
- * A list that holds the store keys for a result list. This list will turn store keys into
- * entities when requested.
- * 
- * @author Dan Schultz
- */
-class KeyList extends ArrayList
-{
-	private var _store:Store;
-	
-	/**
-	 * Constructor.
-	 * 
-	 * @param store The store to retrieve entities from.
-	 */
-	public function KeyList(store:Store)
-	{
-		super();
-		_store = store;
-	}
-	
-	/**
-	 * @inheritDoc
-	 */
-	override public function getItemAt(index:int, prefetch:int=0):Object
-	{
-		return _store.materialize(super.getItemAt(index, prefetch));
-	}
-	
-	/**
-	 * @inheritDoc
-	 */
-	override public function getItemIndex(item:Object):int
-	{
-		item = item is Entity ? (item as Entity).storeKey : item;
-		return super.getItemIndex(item);
 	}
 }

@@ -20,9 +20,8 @@ package mesh.model.associations
 		public function setup():void
 		{
 			_store = new Store(new TestSource());
-			_customer = new Customer();
+			_customer = _store.create(Customer, {});
 			_customer.orders = new ArrayList();
-			_store.add(_customer);
 		}
 		
 		[Test]

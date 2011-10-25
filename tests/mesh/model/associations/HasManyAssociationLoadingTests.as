@@ -23,15 +23,9 @@ package mesh.model.associations
 		{
 			var dataSource:TestSource = new TestSource();
 			
-			_organization = new Organization({
-				name:"Apple",
-				employees:new ArrayList([
-					new Employee({name:new Name("Steve", "Jobs")})
-				])
-			});
-			
 			var store:Store = new Store(dataSource);
-			store.add(_organization);
+			_organization = store.create(Organization, {name:"Apple"});
+			_organization.employees = new ArrayList([store.create(Employee, {name: new Name("Steve", "Jobs")})]);
 			store.commit();
 			
 			_store = new Store(dataSource);

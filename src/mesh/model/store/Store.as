@@ -49,7 +49,7 @@ package mesh.model.store
 		public function add(...entities):void
 		{
 			for each (var entity:Entity in entities) {
-				register(entity);
+				register(entity, generateStoreKey());
 			}
 		}
 		
@@ -71,7 +71,7 @@ package mesh.model.store
 		 * @param data The data for the entity.
 		 * @return A new entity.
 		 */
-		public function create(entityType:Class, data:Object):Entity
+		public function create(entityType:Class, data:Object):*
 		{
 			var key:Object = generateStoreKey();
 			_data.add(key, entityType, data, null);
@@ -115,7 +115,7 @@ package mesh.model.store
 				return retrieveEntity(args[0], args[1]);
 			}
 			// Find a query.
-			else if (args is Query) {
+			else if (args[0] is Query) {
 				return findQuery(args[0]);
 			}
 			
@@ -188,15 +188,15 @@ package mesh.model.store
 				var source:SourceData = data.findByKey(key);
 				if (source == null) throw new ArgumentError("Data undefined for key '" + key + "'");
 				entity = source.materialize();
-				register(entity);
+				register(entity, source.storeKey);
 			}
 			
 			return entity;
 		}
 		
-		private function register(entity:Entity):void
+		private function register(entity:Entity, storeKey:Object):void
 		{
-			entity.storeKey = generateStoreKey();
+			entity.storeKey = storeKey;
 			entity.store = this;
 			entity.addEventListener(StateEvent.ENTER, handleEntityStatusStateChange);
 			

@@ -49,7 +49,6 @@ package mesh.model.associations
 		 */
 		protected function associate(entity:Entity):void
 		{
-			if (owner.store != null && entity.store == null) owner.store.add(entity);
 			_entities.add(entity);
 			populateInverseRelationship(entity);
 		}
@@ -72,24 +71,22 @@ package mesh.model.associations
 		/**
 		 * Loads the data for this association. If this is a non-lazy association, then nothing happens.
 		 */
-		public function load():AsyncRequest
+		public function load():void
 		{
-			var request:AsyncRequest = createLoadRequest();
-			request.responder({
-				result:function(data:*):void
-				{
-					owner[property] = data;
-					object = data;
-					loaded();
-				}
-			});
+			loadAssociation();
 			
 			setBindableReadOnlyProperty("isLoading", function():void
 			{
 				_isLoading = true;
 			});
+		}
+		
+		/**
+		 * Called by <code>load()</code> to load the data for the association.
+		 */
+		protected function loadAssociation():void
+		{
 			
-			return request;
 		}
 		
 		/**
@@ -111,16 +108,6 @@ package mesh.model.associations
 					entity.loaded();
 				}
 			}
-		}
-		
-		/**
-		 * Called during a load to create the request that will load the data for this association.
-		 * 
-		 * @return A request.
-		 */
-		protected function createLoadRequest():AsyncRequest
-		{
-			throw new IllegalOperationError("Association.createLoadRequest() is not implemented.");
 		}
 		
 		private function populateInverseRelationship(entity:Entity):void
@@ -181,14 +168,6 @@ package mesh.model.associations
 			return options.inverse;
 		}
 		
-		/**
-		 * Indicates that the data has not been loaded for this association when the owner was loaded.
-		 */
-		public function get isLazy():Boolean
-		{
-			return options.isLazy || options.lazy;
-		}
-		
 		private var _isLoaded:Boolean;
 		[Bindable(event="propertyChange")]
 		/**
@@ -196,7 +175,7 @@ package mesh.model.associations
 		 */
 		public function get isLoaded():Boolean
 		{
-			return !isLazy || _isLoaded;
+			return _isLoaded;
 		}
 		
 		private var _isLoading:Boolean;

@@ -6,8 +6,6 @@ package mesh.model.store
 	import mesh.Order;
 	import mesh.TestSource;
 	import mesh.model.Entity;
-	import mesh.model.source.FixtureSource;
-	import mesh.model.source.MultiSource;
 	
 	import mx.collections.ArrayList;
 	
@@ -34,8 +32,7 @@ package mesh.model.store
 		
 		private function createCustomer(properties:Object):Customer
 		{
-			var customer:Customer = new Customer(properties);
-			_store.add(customer);
+			var customer:Customer = _store.create(Customer, properties);
 			_store.commit();
 			return customer;
 		}
@@ -56,17 +53,11 @@ package mesh.model.store
 		{
 			var customer:Customer = createCustomer({
 				name: new Name("Jimmy", "Page"),
-				age: 67,
-				orders: new ArrayList([
-					new Order({
-						total:5
-					}),
-					new Order({
-						total:10
-					})
-				]),
-				account: new Account({number:"001-001"})
+				age: 67
 			});
+			customer.orders = new ArrayList([_store.create(Order, {total:5}), _store.create(Order, {total:10})]);
+			customer.account = _store.create(Account, {number:"001-001"});
+			_store.commit();
 			
 			checkIfPersisted(customer);
 			checkIfPersisted(customer.account);

@@ -14,7 +14,7 @@ package mesh.model.store
 		
 		public function materialize():Entity
 		{
-			var entity:Entity = new _storeKey();
+			var entity:Entity = new _entityType();
 			entity.fromObject(data);
 			return entity;
 		}
