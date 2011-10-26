@@ -147,6 +147,21 @@ package mesh.core
 		}
 		
 		/**
+		 * Returns an immutable list where each item is a remapping of an item in this list. 
+		 * This method accepts either a property to map to, or a block function that returns
+		 * the mapped value. The returned list will receive updates when items are either
+		 * added or removed from this list.
+		 * 
+		 * @param propertyOrBlock The property or function to map.
+		 * @return A new list.
+		 * 
+		 */
+		public function map(propertyOrBlock:Object):IList
+		{
+			return new MappedList(propertyOrBlock);
+		}
+		
+		/**
 		 * Removes an item from the list if it exists.
 		 * 
 		 * @param item The item to remove.
@@ -305,5 +320,67 @@ package mesh.core
 		{
 			return _dispatcher.willTrigger(type);
 		}
+	}
+}
+
+import mesh.core.List;
+
+import mx.events.CollectionEvent;
+import mx.events.CollectionEventKind;
+
+class MappedList extends List
+{
+	private var _block:Function;
+	
+	public function MappedList(propertyOrBlock:Object)
+	{
+		super();
+		
+		if (propertyOrBlock is String) {
+			_block = function(item:Object):Object
+			{
+				return item[propertyOrBlock];
+			};
+		}
+		
+		addEventListener(CollectionEvent.COLLECTION_CHANGE, handleCollectionChange);
+	}
+	
+	override public function addItemAt(item:Object, index:int):void
+	{
+		// Do nothing. The list is immutable.
+	}
+	
+	override public function getItemAt(index:int, prefetch:int=0):Object
+	{
+		return mappedValue(super.getItemAt(index, prefetch));
+	}
+	
+	private function handleCollectionChange(event:CollectionEvent):void
+	{
+		switch (event.kind) {
+			case CollectionEventKind.ADD:
+			case CollectionEventKind.REMOVE:
+				replaceEventValues(event);
+				break;
+		}
+	}
+	
+	private function replaceEventValues(event:CollectionEvent):void
+	{
+		event.items.map(function(item:Object, index:int, array:Array):Object
+		{
+			return mappedValue(item);
+		});
+	}
+	
+	private function mappedValue(obj:Object):Object
+	{
+		return _block(obj);
+	}
+	
+	override public function removeItemAt(index:int):Object
+	{
+		// Do nothing. The list is immutable.
 	}
 }

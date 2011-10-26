@@ -30,7 +30,9 @@ package mesh.model.store
 	{
 		private var _query:Query;
 		private var _store:Store;
-		private var _keyList:ArrayList;
+		
+		private var _keys:ListCollectionView;
+		private var _entities:ArrayList;
 		
 		/**
 		 * Constructor.
@@ -41,11 +43,11 @@ package mesh.model.store
 		public function ResultList(query:Query, store:Store)
 		{
 			super();
+			
 			_query = query;
 			_store = store;
 			
-			_keyList = new ArrayList();
-			list = createList(_keyList);
+			_keys = createKeyList();
 		}
 		
 		/**
@@ -65,23 +67,22 @@ package mesh.model.store
 		 */
 		public function addKey(key:Object):void
 		{
-			_keyList.addItem(key);
+			_keys.addItem(key);
 		}
 		
-		private function createList(list:IList):IList
+		private function createKeyList():ListCollectionView
 		{
-			var sortedList:ListCollectionView = new ListCollectionView(list);
-			sortedList.filterFunction = function(key:Object):Boolean
+			var keys:ListCollectionView = new ListCollectionView();
+			keys.filterFunction = function(key:Object):Boolean
 			{
 				return _query.contains(_store.materialize(key));
 			};
-			sortedList.sort = new Sort();
-			sortedList.sort.compareFunction = function(key1:Object, key2:Object, ...args):int
+			keys.sort = new Sort();
+			keys.sort.compareFunction = function(key1:Object, key2:Object, ...args):int
 			{
 				return _query.compare(_store.materialize(key1), _store.materialize(key2));
 			};
-			sortedList.refresh();
-			return sortedList;
+			return keys;
 		}
 		
 		/**
@@ -118,6 +119,11 @@ package mesh.model.store
 		override public function removeItemAt(index:int):Object
 		{
 			return null;
+		}
+		
+		public function refresh():void
+		{
+			
 		}
 		
 		private var _isLoaded:Boolean;
