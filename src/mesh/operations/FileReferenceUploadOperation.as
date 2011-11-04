@@ -47,6 +47,12 @@ package mesh.operations
 		{
 			super();
 			_file = file;
+			_file.addEventListener(ProgressEvent.PROGRESS, handleFileProgress);
+			_file.addEventListener(IOErrorEvent.IO_ERROR, handleFileIOError);
+			_file.addEventListener(SecurityErrorEvent.SECURITY_ERROR, handleFileSecurityError);
+			_file.addEventListener(DataEvent.UPLOAD_COMPLETE_DATA, handleFileCompleteWithData);
+			_file.addEventListener(Event.COMPLETE, handleFileComplete);
+			
 			_request = request;
 			_options = merge({uploadDataFieldName:"Filedata", testUpload:false, finishOn:Event.COMPLETE}, options);
 		}
@@ -72,11 +78,7 @@ package mesh.operations
 		{
 			super.request();
 			
-			_file.addEventListener(ProgressEvent.PROGRESS, handleFileProgress);
-			_file.addEventListener(IOErrorEvent.IO_ERROR, handleFileIOError);
-			_file.addEventListener(SecurityErrorEvent.SECURITY_ERROR, handleFileSecurityError);
-			_file.addEventListener(DataEvent.UPLOAD_COMPLETE_DATA, handleFileCompleteWithData);
-			_file.addEventListener(Event.COMPLETE, handleFileComplete);
+			_file.cancel();
 			_file.upload(_request, _options.uploadDataFieldName, _options.testUpload);
 		}
 		

@@ -118,6 +118,7 @@ package mesh.operations
 		
 		private function handleAttemptTimerComplete(event:TimerEvent):void
 		{
+			startTimeoutTimer();
 			request();
 		}
 		
