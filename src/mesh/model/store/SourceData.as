@@ -4,19 +4,29 @@ package mesh.model.store
 	
 	public class SourceData
 	{
-		public function SourceData(storeKey:Object, entityType:Class, data:Object, id:Object)
+		private var _materializer:Function;
+		
+		public function SourceData(storeKey:Object, entityType:Class, data:Object, id:Object, materializer:Function)
 		{
 			_storeKey = storeKey;
 			_entityType = entityType;
 			_data = data;
 			_id = id;
+			_materializer = materializer;
 		}
 		
 		public function materialize():Entity
 		{
 			var entity:Entity = new _entityType();
-			entity.fromObject(data);
+			_materializer(entity, data);
 			return entity;
+		}
+		
+		public function update(store:Store, data:Object):void
+		{
+			_data = data;
+			
+			// TODO: Update the values in the mapped Entity.
 		}
 		
 		private var _data:Object;

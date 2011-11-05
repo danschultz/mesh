@@ -379,8 +379,14 @@ class MappedList extends List
 		return _block(obj);
 	}
 	
+	override public function removeAll():void
+	{
+		// Do nothing. The list is immutable.
+	}
+	
 	override public function removeItemAt(index:int):Object
 	{
 		// Do nothing. The list is immutable.
+		return null;
 	}
 }

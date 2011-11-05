@@ -6,9 +6,10 @@ package mesh.model.store
 	import mesh.model.Entity;
 	
 	import mx.collections.ArrayList;
-	import mx.collections.IList;
 	import mx.collections.ListCollectionView;
 	import mx.collections.Sort;
+	import mx.events.CollectionEvent;
+	import mx.events.CollectionEventKind;
 	
 	/**
 	 * Dispatched when the results for the list are complete.
@@ -48,6 +49,8 @@ package mesh.model.store
 			_store = store;
 			
 			_keys = createKeyList();
+			_keys.addEventListener(CollectionEvent.COLLECTION_CHANGE, handleKeyListChange);
+			handleKeysReset();
 		}
 		
 		/**
@@ -70,9 +73,18 @@ package mesh.model.store
 			_keys.addItem(key);
 		}
 		
+		/**
+		 * Invoke this method when the results for the list have been retrieved.
+		 */
+		public function complete():void
+		{
+			_isLoaded = true;
+			dispatchEvent( new Event(Event.COMPLETE) );
+		}
+		
 		private function createKeyList():ListCollectionView
 		{
-			var keys:ListCollectionView = new ListCollectionView();
+			var keys:ListCollectionView = new ListCollectionView(_store.data.keysForType(_query.entityType));
 			keys.filterFunction = function(key:Object):Boolean
 			{
 				return _query.contains(_store.materialize(key));
@@ -82,15 +94,8 @@ package mesh.model.store
 			{
 				return _query.compare(_store.materialize(key1), _store.materialize(key2));
 			};
+			keys.refresh();
 			return keys;
-		}
-		
-		/**
-		 * @inheritDoc
-		 */
-		override public function getItemAt(index:int, prefetch:int=0):Object
-		{
-			return _store.materialize(super.getItemAt(index, prefetch));
 		}
 		
 		/**
@@ -102,13 +107,49 @@ package mesh.model.store
 			return super.getItemIndex(item);
 		}
 		
-		/**
-		 * Invoke this method when the results for the list have been retrieved.
-		 */
-		public function complete():void
+		private function handleKeyListChange(event:CollectionEvent):void
 		{
-			_isLoaded = true;
-			dispatchEvent( new Event(Event.COMPLETE) );
+			switch (event.kind) {
+				case CollectionEventKind.ADD:
+					handleKeysAdded(event.items);
+					break;
+				case CollectionEventKind.REMOVE:
+					handleKeysRemoved(event.location, event.items.length);
+					break;
+				case CollectionEventKind.RESET:
+					handleKeysReset();
+					break;
+			}
+		}
+		
+		private function handleKeysAdded(keys:Array):void
+		{
+			for each (var key:Object in keys) {
+				super.addItemAt(_store.materialize(key), length);
+			}
+		}
+		
+		private function handleKeysRemoved(index:int, length:int):void
+		{
+			for (var i:int = 0; i < length; i++) {
+				super.removeItemAt(index);
+			}
+		}
+		
+		private function handleKeysReset():void
+		{
+			super.removeAll();
+			handleKeysAdded(_keys.toArray());
+		}
+		
+		/**
+		 * @private
+		 * 
+		 * Don't allow removal of entities, since it would affect the store's behavior.
+		 */
+		override public function removeAll():void
+		{
+			
 		}
 		
 		/**
@@ -119,11 +160,6 @@ package mesh.model.store
 		override public function removeItemAt(index:int):Object
 		{
 			return null;
-		}
-		
-		public function refresh():void
-		{
-			
 		}
 		
 		private var _isLoaded:Boolean;

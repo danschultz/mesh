@@ -2,9 +2,9 @@ package mesh.model.store
 {
 	import collections.HashSet;
 	
-	import flash.errors.IllegalOperationError;
 	import flash.events.EventDispatcher;
 	
+	import mesh.core.object.merge;
 	import mesh.core.state.StateEvent;
 	import mesh.model.Entity;
 	import mesh.model.source.Source;
@@ -19,6 +19,11 @@ package mesh.model.store
 	 */
 	public class Store extends EventDispatcher
 	{
+		private static const DEFAULT_MATERIALIZER:Function = function(entity:Entity, data:Object):void
+		{
+			entity.fromObject(data);
+		}
+		
 		private var _keyCounter:Number = 0;
 		private var _changes:HashSet = new HashSet();
 		private var _requests:Requests;
@@ -74,7 +79,7 @@ package mesh.model.store
 		public function create(entityType:Class, data:Object):*
 		{
 			var key:Object = generateStoreKey();
-			_data.add(key, entityType, data, null);
+			_data.add(key, entityType, data, null, DEFAULT_MATERIALIZER);
 			return materialize(key);
 		}
 		
@@ -157,21 +162,37 @@ package mesh.model.store
 		/**
 		 * Adds data that was retrieved from a data source into the store.
 		 * 
+		 * <p>
+		 * This method accepts an options hash to configure the insert:
+		 * 
+		 * <ul>
+		 * <li>id:<code>Object</code> – The ID to assign to the data. If undefined, the ID is 
+		 * 	parsed from the data's <code>id</code> property.</li>
+		 * <li>materializer:<code>Function</code> – The function that copies the values from
+		 * 	the <code>data</code> object, to an <code>Entity</code> when it's initialized. The
+		 * 	function must have the following signature: 
+		 * 	<code>function(entity:Entity, data:Object):void</code>.
+		 * </ul>
+		 * </p>
+		 * 
 		 * @param entityType The type of entity to map the data to.
 		 * @param data The data to insert.
-		 * @param id The primary ID for the data. If <code>null</code> the ID is parsed from
-		 * 	the data.
+		 * @param options An options hash to configure the insert.
 		 * @return The store key of the inserted data.
 		 */
-		public function insert(entityType:Class, data:Object, id:Object = null):Object
+		public function insert(entityType:Class, data:Object, options:Object = null):Object
 		{
-			if (id == null && data.hasOwnProperty("id")) {
-				id = data.id;
+			options = merge({id:data.id, materializer:DEFAULT_MATERIALIZER}, options);
+			
+			var source:SourceData = this.data.findByTypeAndID(entityType, options.id);
+			if (source == null) {
+				var key:Object = generateStoreKey();
+				_data.add(key, entityType, data, options.id, options.materializer);
+				return key;
 			}
 			
-			var key:Object = generateStoreKey();
-			_data.add(key, entityType, data, id);
-			return key;
+			source.update(this, data);
+			return source.storeKey;
 		}
 		
 		/**

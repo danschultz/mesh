@@ -259,8 +259,8 @@ class SynchronizedList extends ArrayList
 	private function handleListItemsReplaced(items:Array):void
 	{
 		for each (var change:PropertyChangeEvent in items) {
-			handleListItemsAdded([change.oldValue]);
-			handleListItemsRemoved([change.newValue]);
+			handleListItemsRemoved([change.oldValue]);
+			handleListItemsAdded([change.newValue]);
 		}
 	}
 	

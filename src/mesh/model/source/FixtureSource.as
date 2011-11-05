@@ -62,7 +62,7 @@ package mesh.model.source
 		override public function fetch(query:Query, store:Store, results:ResultList):void
 		{
 			for each (var hash:Object in _fixtures) {
-				results.addKey(store.insert(_entityType, hash));
+				store.insert(_entityType, hash);
 			}
 			results.complete();
 		}

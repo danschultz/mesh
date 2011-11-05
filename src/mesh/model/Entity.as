@@ -87,7 +87,9 @@ package mesh.model
 		 */
 		protected function hasMany(property:String, options:Object = null):void
 		{
-			_associations.map(property, new HasManyAssociation(this, property, options));
+			var association:HasManyAssociation = new HasManyAssociation(this, property, options);
+			this[property] = association;
+			_associations.map(property, association);
 		}
 		
 		/**
