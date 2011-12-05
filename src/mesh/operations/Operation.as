@@ -272,7 +272,7 @@ package mesh.operations
 		 * 
 		 * @param unitsComplete The number of units completed.
 		 */
-		final protected function progressed(unitsComplete:Number):void
+		protected function progressed(unitsComplete:Number):void
 		{
 			progress.complete = unitsComplete;
 			fireProgress();
