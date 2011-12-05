@@ -1,7 +1,6 @@
 package mesh.operations
 {
 	import flash.errors.IllegalOperationError;
-	import flash.events.Event;
 	import flash.events.TimerEvent;
 	import flash.utils.Timer;
 
@@ -44,12 +43,6 @@ package mesh.operations
 			// sets the attempt count back to 0
 			addEventListener(OperationEvent.BEFORE_EXECUTE, handleBeforeExecute);
 			addEventListener(FinishedOperationEvent.FINISHED, handleFinished);
-		}
-		
-		override protected function progressed(unitsComplete:Number):void
-		{
-			_timeoutTimer.reset();
-			_timeoutTimer.start();
 		}
 		
 		private function attemptExecution(attempt:int):void
@@ -142,6 +135,16 @@ package mesh.operations
 		private function handleTimeoutTimerComplete(event:TimerEvent):void
 		{
 			fault(this + " timed out after " + _timeout);
+		}
+		
+		/**
+		 * @inheritDoc
+		 */
+		override protected function progressed(unitsComplete:Number):void
+		{
+			super.progressed(unitsComplete);
+			stopTimeoutTimer();
+			startTimeoutTimer();
 		}
 		
 		/**
