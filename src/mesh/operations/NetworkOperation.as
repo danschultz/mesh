@@ -1,9 +1,9 @@
 package mesh.operations
 {
 	import flash.errors.IllegalOperationError;
+	import flash.events.Event;
 	import flash.events.TimerEvent;
 	import flash.utils.Timer;
-	import flash.events.Event;
 
 	/**
 	 * A base class for asynchronous operations that make a network connection. Network
@@ -44,6 +44,12 @@ package mesh.operations
 			// sets the attempt count back to 0
 			addEventListener(OperationEvent.BEFORE_EXECUTE, handleBeforeExecute);
 			addEventListener(FinishedOperationEvent.FINISHED, handleFinished);
+		}
+		
+		override protected function progressed(unitsComplete:Number):void
+		{
+			_timeoutTimer.reset();
+			_timeoutTimer.start();
 		}
 		
 		private function attemptExecution(attempt:int):void
