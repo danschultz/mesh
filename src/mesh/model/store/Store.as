@@ -184,7 +184,7 @@ package mesh.model.store
 		{
 			options = merge({id:data.id, materializer:DEFAULT_MATERIALIZER}, options);
 			
-			var source:SourceData = this.data.findByTypeAndID(entityType, options.id);
+			var source:StoreData = this.data.findByTypeAndID(entityType, options.id);
 			if (source == null) {
 				var key:Object = generateStoreKey();
 				_data.add(key, entityType, data, options.id, options.materializer);
@@ -206,7 +206,7 @@ package mesh.model.store
 			var entity:Entity = entities.findByKey(key);
 			
 			if (entity == null) {
-				var source:SourceData = data.findByKey(key);
+				var source:StoreData = data.findByKey(key);
 				if (source == null) throw new ArgumentError("Data undefined for key '" + key + "'");
 				entity = source.materialize();
 				register(entity, source.storeKey);

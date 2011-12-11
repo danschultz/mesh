@@ -2,11 +2,11 @@ package mesh.model.store
 {
 	import mesh.model.Entity;
 	
-	public class SourceData
+	public class StoreData
 	{
 		private var _materializer:Function;
 		
-		public function SourceData(storeKey:Object, entityType:Class, data:Object, id:Object, materializer:Function)
+		public function StoreData(storeKey:Object, entityType:Class, data:Object, id:Object, materializer:Function)
 		{
 			_storeKey = storeKey;
 			_entityType = entityType;

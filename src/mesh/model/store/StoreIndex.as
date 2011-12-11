@@ -26,7 +26,7 @@ package mesh.model.store
 				throw new IllegalOperationError("Cannot reindex data for store key '" + storeKey + "'");
 			}
 			
-			var obj:SourceData = new SourceData(storeKey, entityType, data, id, materializer);
+			var obj:StoreData = new StoreData(storeKey, entityType, data, id, materializer);
 			_keyToData[storeKey] = obj;
 			findByType(entityType).add(obj);
 			keysForType(entityType).add(storeKey);
@@ -38,7 +38,7 @@ package mesh.model.store
 			return _keyToData[storeKey] != null;
 		}
 		
-		public function findByKey(key:Object):SourceData
+		public function findByKey(key:Object):StoreData
 		{
 			return _keyToData[key];
 		}
@@ -52,13 +52,13 @@ package mesh.model.store
 			return _typeToData[type];
 		}
 		
-		public function findByTypeAndID(type:Object, id:Object):SourceData
+		public function findByTypeAndID(type:Object, id:Object):StoreData
 		{
 			var index:Dictionary = typeIndex(type);
 			return index != null ? index[id] : null;
 		}
 		
-		private function indexDataID(data:SourceData):void
+		private function indexDataID(data:StoreData):void
 		{
 			if (data.id != null && data.id != 0) {
 				var index:Dictionary = typeIndex(data.entityType);
@@ -87,7 +87,7 @@ package mesh.model.store
 				throw new IllegalOperationError("Data not found for store key '" + storeKey + "'");
 			}
 			
-			var data:SourceData = _keyToData[storeKey];
+			var data:StoreData = _keyToData[storeKey];
 			delete _keyToData[storeKey];
 			findByType(data.entityType).remove(data);
 			keysForType(data.entityType).remove(storeKey);
