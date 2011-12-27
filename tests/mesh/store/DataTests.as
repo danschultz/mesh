@@ -8,11 +8,11 @@ package mesh.store
 	public class DataTests
 	{
 		public static var READ_DATA:Array = [
-			[{name:"Bill Clinton"}, "name"]
+			[{name:"Jimmy Page"}, "name"]
 		];
 		
 		public static var SET_DATA:Array = [
-			[{}, "name", "Bill Clinton"]
+			[{}, "name", "Jimmy Page"]
 		];
 		
 		[Test]
