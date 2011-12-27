@@ -1,10 +1,9 @@
-package mesh.record
+package mesh.model
 {
 	import flash.events.EventDispatcher;
 	
 	import mesh.core.reflection.Type;
-	import mesh.model.Changes;
-	import mesh.store.Data;
+	import mesh.model.store.Data;
 	
 	import mx.events.PropertyChangeEvent;
 	

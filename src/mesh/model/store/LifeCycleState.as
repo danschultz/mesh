@@ -1,4 +1,4 @@
-package mesh.store
+package mesh.model.store
 {
 	public class LifeCycleState
 	{

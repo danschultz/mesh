@@ -1,4 +1,4 @@
-package mesh.store
+package mesh.model.store
 {
 	import flash.utils.Proxy;
 	import flash.utils.flash_proxy;

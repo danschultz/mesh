@@ -1,4 +1,4 @@
-package mesh.store
+package mesh.model.store
 {
 	import org.flexunit.assertThat;
 	import org.hamcrest.object.equalTo;

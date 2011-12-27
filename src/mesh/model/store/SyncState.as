@@ -1,4 +1,4 @@
-package mesh.store
+package mesh.model.store
 {
 	/**
 	 * The <code>SyncState</code> class represents the state of the store data in 
