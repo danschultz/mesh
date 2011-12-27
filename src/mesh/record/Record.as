@@ -4,7 +4,7 @@ package mesh.record
 	
 	import mesh.core.reflection.Type;
 	import mesh.model.Changes;
-	import mesh.store.Data;
+	import mesh.store.ExternalData;
 	
 	import mx.events.PropertyChangeEvent;
 	
@@ -54,15 +54,15 @@ package mesh.record
 			return _changes;
 		}
 		
-		private var _data:Data;
+		private var _data:ExternalData;
 		/**
 		 * The data from the store that the record is wrapping.
 		 */
-		public function get data():Data
+		public function get data():ExternalData
 		{
 			return _data;
 		}
-		public function set data(value:Data):void
+		public function set data(value:ExternalData):void
 		{
 			_data = value;
 		}
