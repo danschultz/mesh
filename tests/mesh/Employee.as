@@ -1,7 +1,5 @@
 package mesh
 {
-	import mesh.model.store.LocalQuery;
-	
 	import mx.collections.IList;
 	
 	public class Employee extends Person
@@ -15,6 +13,7 @@ package mesh
 			super(properties);
 			
 			hasOne("employer", {lazy:true, foreignKey:"employerId"});
+			/*
 			hasMany("tasks", {
 				lazy:true,
 				isMaster:true,
@@ -23,6 +22,7 @@ package mesh
 					return equals(task.owner);
 				})
 			});
+			*/
 		}
 	}
 }

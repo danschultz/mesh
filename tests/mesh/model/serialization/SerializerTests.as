@@ -5,8 +5,6 @@ package mesh.model.serialization
 	import mesh.Customer;
 	import mesh.Name;
 	import mesh.Order;
-	import mesh.TestSource;
-	import mesh.model.store.Store;
 	
 	import mx.collections.ArrayList;
 	
@@ -46,9 +44,9 @@ package mesh.model.serialization
 				])
 			});
 			
-			var store:Store = new Store(new TestSource());
-			store.add(_customer);
-			store.commit();
+			//var store:Store = new Store(new TestSource());
+			//store.add(_customer);
+			//store.commit();
 		}
 		
 		[Test]

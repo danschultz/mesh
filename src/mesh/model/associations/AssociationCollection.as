@@ -3,8 +3,6 @@ package mesh.model.associations
 	import flash.events.Event;
 	
 	import mesh.model.Entity;
-	import mesh.model.store.Query;
-	import mesh.model.store.ResultList;
 	
 	import mx.collections.ArrayList;
 	import mx.collections.IList;
@@ -16,7 +14,6 @@ package mesh.model.associations
 	{
 		private var _list:SynchronizedList;
 		private var _snapshot:Array = [];
-		private var _results:ResultList;
 		
 		/**
 		 * @copy AssociationProxy#AssociationProxy()
@@ -136,19 +133,7 @@ package mesh.model.associations
 		 */
 		override protected function performLoad():void
 		{
-			super.performLoad();
 			
-			if (_results != null) {
-				_results.removeEventListener(Event.COMPLETE, handleResultsComplete);
-			}
-			
-			_results = owner.store.find(query);
-			_results.addEventListener(Event.COMPLETE, handleResultsComplete);
-			_list.list = _results;
-			
-			if (_results.isLoaded) {
-				loaded();
-			}
 		}
 		
 		/**
@@ -190,19 +175,10 @@ package mesh.model.associations
 		{
 			return _list.length;
 		}
-		
-		/**
-		 * The query to load the data for this association.
-		 */
-		protected function get query():Query
-		{
-			return options.query is Function ? options.query() : options.query;
-		}
 	}
 }
 
 import mesh.model.Entity;
-import mesh.model.store.ResultList;
 
 import mx.collections.ArrayList;
 import mx.collections.IList;

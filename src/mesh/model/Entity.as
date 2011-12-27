@@ -14,8 +14,6 @@ package mesh.model
 	import mesh.model.associations.HasManyAssociation;
 	import mesh.model.associations.HasOneAssociation;
 	import mesh.model.serialization.Serializer;
-	import mesh.model.source.SourceFault;
-	import mesh.model.store.Store;
 	import mesh.model.validators.Errors;
 	import mesh.model.validators.Validator;
 	
@@ -101,17 +99,6 @@ package mesh.model
 		{
 			status.destroy();
 			return this;
-		}
-		
-		private var _fault:SourceFault;
-		/**
-		 * Puts the entity into an errored lifecycle state. This state signifies that an error 
-		 * occurred after a load or commit.
-		 */
-		public function failed(fault:SourceFault):void
-		{
-			_fault = fault;
-			status.failed();
 		}
 		
 		/**
@@ -459,25 +446,6 @@ package mesh.model
 		public function get status():EntityStatus
 		{
 			return _status;
-		}
-		
-		private var _store:Store;
-		[Transient]
-		/**
-		 * The store that owns this entity.
-		 */
-		public function get store():Store
-		{
-			return _store;
-		}
-		public function set store(value:Store):void
-		{
-			if (store != null && value != null) {
-				throw new IllegalOperationError("Cannot reassign an entity's store.");
-			}
-			
-			_store = value;
-			initializeAssociations();
 		}
 		
 		private var _storeKey:Object;
