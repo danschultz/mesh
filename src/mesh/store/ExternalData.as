@@ -3,6 +3,7 @@ package mesh.store
 	import flash.utils.Proxy;
 	import flash.utils.flash_proxy;
 	
+	import mesh.core.object.merge;
 	import mesh.mesh_internal;
 	
 	/**
@@ -14,17 +15,25 @@ package mesh.store
 	public dynamic class ExternalData extends Proxy
 	{
 		private var _data:Object;
+		private var _options:Object;
 		
 		/**
-		 * Constructor.
+		 * Constructor. When instantiating a new data object, you can pass an options hash with the
+		 * following options:
+		 * 
+		 * <ul>
+		 * <li><code>idField:String</code> - (default="<code>id</code>") The name of the ID field on
+		 * 	the data object.</li>
+		 * </ul>
 		 * 
 		 * @param data The data from the data source.
-		 * @param id The ID that has been given to the data from the data source.
+		 * @param options A set of options to configure this data object.
 		 */
-		public function ExternalData(data:Object, id:Object = null)
+		public function ExternalData(data:Object, options:Object = null)
 		{
 			super();
 			_data = data;
+			_options = merge({idField:"id"}, options);
 		}
 		
 		/**
@@ -41,6 +50,14 @@ package mesh.store
 		override flash_proxy function setProperty(name:*, value:*):void
 		{
 			_data[name] = value;
+		}
+		
+		/**
+		 * The ID that was assigned to this data by the data source.
+		 */
+		public function get id():Object
+		{
+			return this[_options.idField];
 		}
 		
 		private var _state:LifeCycleState = LifeCycleState.CREATED;
