@@ -27,12 +27,14 @@ package mesh.store
 		 * </ul>
 		 * 
 		 * @param data The data from the data source.
+		 * @param type The record type that maps to this data.
 		 * @param options A set of options to configure this data object.
 		 */
-		public function ExternalData(data:Object, options:Object = null)
+		public function ExternalData(data:Object, type:Class, options:Object = null)
 		{
 			super();
 			_data = data;
+			_type = type;
 			_options = merge({idField:"id"}, options);
 		}
 		
@@ -76,6 +78,15 @@ package mesh.store
 		mesh_internal function get status():SyncState
 		{
 			return _status;
+		}
+		
+		private var _type:Class;
+		/**
+		 * The record type that maps to this data.
+		 */
+		mesh_internal function get type():Class
+		{
+			return _type;
 		}
 	}
 }
