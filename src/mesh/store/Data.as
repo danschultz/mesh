@@ -12,7 +12,7 @@ package mesh.store
 	 * 
 	 * @author Dan Schultz
 	 */
-	public dynamic class ExternalData extends Proxy
+	public dynamic class Data extends Proxy
 	{
 		private var _data:Object;
 		private var _options:Object;
@@ -30,7 +30,7 @@ package mesh.store
 		 * @param type The record type that maps to this data.
 		 * @param options A set of options to configure this data object.
 		 */
-		public function ExternalData(data:Object, type:Class, options:Object = null)
+		public function Data(data:Object, type:Class, options:Object = null)
 		{
 			super();
 			_data = data;
