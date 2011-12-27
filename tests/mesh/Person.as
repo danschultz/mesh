@@ -25,15 +25,5 @@ package mesh
 			super.fromObject(object);
 			name = object.name != null ? new Name(object.name.first, object.name.last) : null;
 		}
-		
-		override protected function get serializableOptions():Object
-		{
-			return {
-				exclude:["state", "storeKey"],
-				includes:{
-					name:true
-				}
-			};
-		}
 	}
 }

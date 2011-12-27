@@ -64,9 +64,9 @@ package mesh.model.associations
 			order.total = 10.00;
 			_customer.orders = new ArrayList([order]);
 			//_store.commit();
-			assertThat("Precondition failed", order.status.isSynced, equalTo(true));
+			//assertThat("Precondition failed", order.status.isSynced, equalTo(true));
 			
-			order.synced();
+			//order.synced();
 			assertThat(_customer.orders.length, equalTo(1));
 		}
 	}

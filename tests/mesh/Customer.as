@@ -1,6 +1,5 @@
 package mesh
 {
-	import mesh.core.object.merge;
 	import mesh.model.validators.PresenceValidator;
 	
 	import mx.collections.ArrayList;
@@ -35,13 +34,6 @@ package mesh
 			{
 				return new Order(order);
 			})) : null;
-		}
-		
-		override protected function get serializableOptions():Object
-		{
-			var inherited:Object = super.serializableOptions;
-			inherited.includes = merge(inherited.includes, {address:true, account:true, orders:true});
-			return inherited;
 		}
 	}
 }

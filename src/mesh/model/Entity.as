@@ -1,19 +1,14 @@
 package mesh.model
 {
 	import com.brokenfunction.json.decodeJson;
-	import com.brokenfunction.json.encodeJson;
 	
-	import flash.errors.IllegalOperationError;
 	import flash.events.EventDispatcher;
 	
 	import mesh.core.inflection.humanize;
 	import mesh.core.object.copy;
 	import mesh.core.reflection.Type;
-	import mesh.core.state.StateEvent;
-	import mesh.model.associations.Association;
 	import mesh.model.associations.HasManyAssociation;
 	import mesh.model.associations.HasOneAssociation;
-	import mesh.model.serialization.Serializer;
 	import mesh.model.validators.Errors;
 	import mesh.model.validators.Validator;
 	
@@ -40,15 +35,6 @@ package mesh.model
 			
 			_associations = new Associations(this);
 			_aggregates = new Aggregates(this);
-			
-			_status = new EntityStatus();
-			_status.addEventListener(StateEvent.ENTER, function(event:StateEvent):void
-			{
-				if (status.isPersisted) {
-					changes.clear();
-				}
-				dispatchEvent(event.clone());
-			});
 			
 			copy(values, this);
 			addEventListener(PropertyChangeEvent.PROPERTY_CHANGE, handlePropertyChange);
@@ -91,17 +77,6 @@ package mesh.model
 		}
 		
 		/**
-		 * Marks this entity as destroyed and dirty.
-		 * 
-		 * @return This instance.
-		 */
-		public function destroy():Entity
-		{
-			status.destroy();
-			return this;
-		}
-		
-		/**
 		 * Checks if two entities are equal.  By default, two entities are equal
 		 * when they are of the same type, and their ID's are the same.
 		 * 
@@ -110,7 +85,7 @@ package mesh.model
 		 */
 		public function equals(obj:Object):Boolean
 		{
-			return obj != null && (this === obj || (obj is Entity && status.isPersisted && id === obj.id));
+			return obj != null && (this === obj || (reflect.clazz == obj.reflect.clazz && id === obj.id));
 		}
 		
 		/**
@@ -156,7 +131,7 @@ package mesh.model
 		 */
 		public function hashCode():Object
 		{
-			return storeKey;
+			return id;
 		}
 		
 		/**
@@ -199,15 +174,6 @@ package mesh.model
 			return validate().length == 0;
 		}
 		
-		/**
-		 * Called by the data source when the entity has loaded. This method marks the entity as 
-		 * synced and goes through each non-lazy association marking it as loaded.
-		 */
-		public function loaded():void
-		{
-			synced();
-		}
-		
 		private static const IGNORED_PROPERTY_CHANGES:Object = {id:true};
 		/**
 		 * Marks a property on the entity as being dirty. This method allows sub-classes to manually 
@@ -223,7 +189,6 @@ package mesh.model
 			{
 				changes.changed(property, oldValue, newValue);
 				_aggregates.changed(property);
-				status.dirty();
 			}
 		}
 		
@@ -233,74 +198,6 @@ package mesh.model
 		public function revert():void
 		{
 			changes.revert();
-		}
-		
-		private function initializeAssociations():void
-		{
-			for each (var association:Association in associations) {
-				association.initialize();
-			}
-		}
-		
-		/**
-		 * Returns a hash of the serialized properties of this entity.
-		 * 
-		 * @param options An options hash to configure the serialization.
-		 * @return A serialized hash.
-		 */
-		public function serialize(options:Object = null):Object
-		{
-			options = options == null ? serializableOptions : options;
-			options.exclude = options.exclude is Array ? options.exclude : [];
-			
-			if (options.exclude.indexOf("storeKey") == -1) {
-				options.exclude.push("storeKey");
-			}
-			
-			return new Serializer(this, options).serialize();
-		}
-		
-		/**
-		 * Marks the entity as being synced with the server.
-		 * 
-		 * @return This instance.
-		 */
-		public function synced():Entity
-		{
-			status.synced();
-			return this;
-		}
-		
-		/**
-		 * Returns an AS3 <code>Object</code> that contains the values of the serialized properties
-		 * on this entity.
-		 * 
-		 * @return An object.
-		 */
-		public function toObject(options:Object = null):Object
-		{
-			return serialize(options);
-		}
-		
-		/**
-		 * Returns a JSON encoded string from this entity.
-		 * 
-		 * @return A JSON encoded string.
-		 */
-		public function toJSON(options:Object = null):String
-		{
-			return encodeJson(serialize(options));
-		}
-		
-		/**
-		 * Returns a value object that contains the values of this entity.
-		 * 
-		 * @param options Any options to configure the serialization.
-		 * @return A new value object.
-		 */
-		public function toVO(options:Object = null):*
-		{
-			return null;
 		}
 		
 		/**
@@ -424,54 +321,6 @@ package mesh.model
 				_reflect = Type.reflect(this);
 			}
 			return _reflect;
-		}
-		
-		/**
-		 * The default options to use when <code>serialize()</code> is called. By default, this property is 
-		 * <code>null</code> and falls back to the <code>Serializer</code>s default behavior. Sub-classes may 
-		 * override this and supply their own default options.
-		 * 
-		 * @copy mesh.model.serialization.Serializer
-		 * @see mesh.model.serialization.Serializer 
-		 */
-		protected function get serializableOptions():Object
-		{
-			return {};
-		}
-		
-		private var _status:EntityStatus;
-		/**
-		 * The current state of the entity in its lifecycle.
-		 */
-		public function get status():EntityStatus
-		{
-			return _status;
-		}
-		
-		private var _storeKey:Object;
-		[Transient]
-		/**
-		 * The global unique identifier assigned to this entity by the store.
-		 */
-		public function get storeKey():Object
-		{
-			return _storeKey;
-		}
-		public function set storeKey(value:Object):void
-		{
-			if (storeKey != null) {
-				throw new IllegalOperationError("Cannot reassign an entity's store key.");
-			}
-			_storeKey = value;
-		}
-		
-		/**
-		 * The type of value object to use when turning the entity into a value object. This property must
-		 * be overridden by sub-classes.
-		 */
-		protected function get valueObjectType():Class
-		{
-			throw new IllegalOperationError(reflect.name + ".valueObjectType is not implemented.");
 		}
 	}
 }
