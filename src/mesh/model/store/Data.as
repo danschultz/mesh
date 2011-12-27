@@ -6,6 +6,10 @@ package mesh.model.store
 	import mesh.core.object.merge;
 	import mesh.mesh_internal;
 	
+	import mx.utils.UIDUtil;
+	
+	use namespace mesh_internal;
+	
 	/**
 	 * The <code>ExternalData</code> class wraps data that is retrieved from a data source and is
 	 * inserted into the store.
@@ -39,11 +43,36 @@ package mesh.model.store
 		}
 		
 		/**
+		 * Checks if two data objects are equal. Data objects are equal if they're keys are the same,
+		 * or if the record types are the same and the objects have the same ID.
+		 * 
+		 * @param obj The object to check.
+		 * @return <code>true</code> if the data is equal.
+		 */
+		public function equals(obj:Object):Boolean
+		{
+			if (obj is Data) {
+				return (key == (obj as Data).key) || (type == (obj as Data).type && id == (obj as Data).id);
+			}
+			return false;
+		}
+		
+		/**
 		 * @inheritDoc
 		 */
 		override flash_proxy function getProperty(name:*):*
 		{
 			return _data[name];
+		}
+		
+		/**
+		 * Returns the key that has been given to this data; 
+		 * 
+		 * @return The data's key.
+		 */
+		public function hashCode():Object
+		{
+			return key;
 		}
 		
 		/**
@@ -60,6 +89,18 @@ package mesh.model.store
 		public function get id():Object
 		{
 			return this[_options.idField];
+		}
+		
+		private var _key:Object;
+		/**
+		 * A global unique key given to this data by the store.
+		 */
+		mesh_internal function get key():Object
+		{
+			if (_key == null) {
+				_key = UIDUtil.createUID();
+			}
+			return _key;
 		}
 		
 		private var _state:LifeCycleState = LifeCycleState.CREATED;
