@@ -7,6 +7,7 @@ package mesh.model
 	import mesh.core.reflection.Type;
 	import mesh.model.associations.HasManyAssociation;
 	import mesh.model.associations.HasOneAssociation;
+	import mesh.model.store.Data;
 	import mesh.model.validators.Errors;
 	import mesh.model.validators.Validator;
 	
@@ -130,7 +131,6 @@ package mesh.model
 			return validate().length == 0;
 		}
 		
-		private static const IGNORED_PROPERTY_CHANGES:Object = {id:true};
 		/**
 		 * Marks a property on the entity as being dirty. This method allows sub-classes to manually 
 		 * manage when a property changes.
@@ -141,8 +141,7 @@ package mesh.model
 		 */
 		protected function propertyChanged(property:String, oldValue:Object, newValue:Object):void
 		{
-			if (!IGNORED_PROPERTY_CHANGES.hasOwnProperty(property) && !associations.isAssociation(property))
-			{
+			if (!associations.isAssociation(property)) {
 				changes.changed(property, oldValue, newValue);
 				_aggregates.changed(property);
 			}
@@ -207,6 +206,19 @@ package mesh.model
 				_changes = new Changes(this);
 			}
 			return _changes;
+		}
+		
+		private var _data:Data;
+		/**
+		 * The store data that this entity wraps.
+		 */
+		public function get data():Data
+		{
+			return _data;
+		}
+		public function set data(value:Data):void
+		{
+			_data = value;
 		}
 		
 		private var _errors:Errors;
