@@ -103,18 +103,6 @@ package mesh.model
 		}
 		
 		/**
-		 * Performs a check on the property of this entity to see if it has changed since the 
-		 * last save.
-		 * 
-		 * @param property The property to check.
-		 * @return <code>true</code> if the property has been updated.
-		 */
-		public function hasChanged(property:String):Boolean
-		{
-			return changes.hasChanged(property);
-		}
-		
-		/**
 		 * Runs the validations defined for this entity and returns <code>true</code> if any
 		 * validations failed.
 		 * 
@@ -161,30 +149,11 @@ package mesh.model
 		}
 		
 		/**
-		 * Reverts all changes made to this entity since the last save.
-		 */
-		public function revert():void
-		{
-			changes.revert();
-		}
-		
-		/**
 		 * @private
 		 */
 		override public function toString():String
 		{
 			return humanize(reflect.className);
-		}
-		
-		/**
-		 * Returns the value for a given property before the entity's last save.
-		 * 
-		 * @param property The property to retrieve.
-		 * @return The property's previous value.
-		 */
-		public function whatWas(property:String):*
-		{
-			return changes.whatWas(property);
 		}
 		
 		/**
@@ -228,12 +197,15 @@ package mesh.model
 			return _associations;
 		}
 		
-		private var _changes:Changes = new Changes(this);
+		private var _changes:Changes;
 		/**
 		 * @copy Changes
 		 */
 		public function get changes():Changes
 		{
+			if (_changes == null) {
+				_changes = new Changes(this);
+			}
 			return _changes;
 		}
 		
@@ -263,18 +235,6 @@ package mesh.model
 		public function set id(value:*):void
 		{
 			_id = value;
-		}
-		
-		/**
-		 * <code>true</code> if this entity has any changes to its properties that need to be 
-		 * persisted. This does not include auto-saved associations. To check if any associations
-		 * need to be persisted, use <code>isDirty</code>.
-		 * 
-		 * @see #isDirty
-		 */
-		public function get hasPropertyChanges():Boolean
-		{
-			return changes.hasChanges;
 		}
 		
 		private var _reflect:Type;
