@@ -1,7 +1,5 @@
 package mesh.model
 {
-	import com.brokenfunction.json.decodeJson;
-	
 	import flash.events.EventDispatcher;
 	
 	import mesh.core.inflection.humanize;
@@ -86,36 +84,6 @@ package mesh.model
 		public function equals(obj:Object):Boolean
 		{
 			return obj != null && (this === obj || (reflect.clazz == obj.reflect.clazz && id === obj.id));
-		}
-		
-		/**
-		 * Copies the values from an object to this entity.
-		 * 
-		 * @param object The object to copy from.
-		 */
-		public function fromObject(object:Object):void
-		{
-			copy(object, this);
-		}
-		
-		/**
-		 * Decodes a JSON string and copies the result to this entity.
-		 * 
-		 * @param json A JSON string.
-		 */
-		public function fromJSON(json:String):void
-		{
-			fromObject(decodeJson(json));
-		}
-		
-		/**
-		 * Copies the values from a value object to this entity.
-		 * 
-		 * @param vo The object to copy from.
-		 */
-		public function fromVO(vo:Object):void
-		{
-			
 		}
 		
 		private function handlePropertyChange(event:PropertyChangeEvent):void
@@ -285,7 +253,6 @@ package mesh.model
 		}
 		
 		private var _id:*;
-		[Bindable]
 		/**
 		 * An object that represents the ID for this entity.
 		 */

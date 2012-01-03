@@ -19,11 +19,5 @@ package mesh
 		{
 			super(properties);
 		}
-		
-		override public function fromObject(object:Object):void
-		{
-			super.fromObject(object);
-			name = object.name != null ? new Name(object.name.first, object.name.last) : null;
-		}
 	}
 }
