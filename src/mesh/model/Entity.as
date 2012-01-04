@@ -1,5 +1,6 @@
 package mesh.model
 {
+	import flash.errors.IllegalOperationError;
 	import flash.events.EventDispatcher;
 	
 	import mesh.core.inflection.humanize;
@@ -7,7 +8,7 @@ package mesh.model
 	import mesh.core.reflection.Type;
 	import mesh.model.associations.HasManyAssociation;
 	import mesh.model.associations.HasOneAssociation;
-	import mesh.model.store.Data;
+	import mesh.model.store.Store;
 	import mesh.model.validators.Errors;
 	import mesh.model.validators.Validator;
 	
@@ -208,19 +209,6 @@ package mesh.model
 			return _changes;
 		}
 		
-		private var _data:Data;
-		/**
-		 * The store data that this entity wraps.
-		 */
-		public function get data():Data
-		{
-			return _data;
-		}
-		public function set data(value:Data):void
-		{
-			_data = value;
-		}
-		
 		private var _errors:Errors;
 		/**
 		 * A set of <code>ValidationResult</code>s that failed during the last call to 
@@ -260,6 +248,22 @@ package mesh.model
 				_reflect = Type.reflect(this);
 			}
 			return _reflect;
+		}
+		
+		private var _store:Store;
+		/**
+		 * The data store that this entity belongs to.
+		 */
+		public function get store():Store
+		{
+			return _store;
+		}
+		public function set store(value:Store):void
+		{
+			if (_store != null) {
+				throw new IllegalOperationError("Cannot reset store on Entity.");
+			}
+			_store = value;
 		}
 	}
 }

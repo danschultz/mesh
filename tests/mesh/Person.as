@@ -13,11 +13,14 @@ package mesh
 		};
 		
 		[Bindable] public var age:Number;
+		[Bindable] public var firstName:String;
+		[Bindable] public var lastName:String;
 		[Bindable] public var name:Name;
 		
 		public function Person(properties:Object = null)
 		{
 			super(properties);
+			aggregate("name", Name, ["first:firstName", "last:lastName"]);
 		}
 	}
 }

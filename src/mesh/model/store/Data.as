@@ -84,6 +84,18 @@ package mesh.model.store
 		}
 		
 		/**
+		 * Transfers the values on this data to the given object.
+		 * 
+		 * @param to The object to set the values on.
+		 */
+		public function transferValues(to:Object):void
+		{
+			for (var key:String in _data) {
+				to[key] = _data[key];
+			}
+		}
+		
+		/**
 		 * The ID that was assigned to this data by the data source.
 		 */
 		public function get id():Object
@@ -101,24 +113,6 @@ package mesh.model.store
 				_key = UIDUtil.createUID();
 			}
 			return _key;
-		}
-		
-		private var _state:LifeCycleState = LifeCycleState.CREATED;
-		/**
-		 * The state of the data, i.e. new, persisted or destroyed.
-		 */
-		mesh_internal function get state():LifeCycleState
-		{
-			return _state;
-		}
-		
-		private var _status:SyncState = SyncState.SYNCED;
-		/**
-		 * The status of the data in relation to the data's source.
-		 */
-		mesh_internal function get status():SyncState
-		{
-			return _status;
 		}
 		
 		private var _type:Class;
