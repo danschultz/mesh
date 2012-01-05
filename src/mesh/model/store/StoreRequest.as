@@ -9,6 +9,11 @@ package mesh.model.store
 			_store = store;
 		}
 		
+		public function execute():void
+		{
+			
+		}
+		
 		public function fault(fault:Object):void
 		{
 			

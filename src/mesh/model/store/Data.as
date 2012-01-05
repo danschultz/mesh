@@ -100,7 +100,7 @@ package mesh.model.store
 		 */
 		public function get id():Object
 		{
-			return this[_options.idField];
+			return _data[_options.idField];
 		}
 		
 		private var _key:Object;

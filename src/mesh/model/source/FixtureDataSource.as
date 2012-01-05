@@ -2,6 +2,8 @@ package mesh.model.source
 {
 	import collections.HashMap;
 	
+	import flash.utils.setTimeout;
+	
 	import mesh.core.object.merge;
 	import mesh.model.store.Data;
 	import mesh.model.store.EntityRequest;
@@ -28,7 +30,7 @@ package mesh.model.source
 		{
 			super();
 			_type = type;
-			_options = merge({idField:"id"}, options);
+			_options = merge({idField:"id", latency:0}, options);
 		}
 		
 		/**
@@ -41,6 +43,12 @@ package mesh.model.source
 			_fixtures.put(data[_options.idField], data);
 		}
 		
+		private function invoke(block:Function):void
+		{
+			if (_options.latency > 0) setTimeout(block, _options.latency);
+			else block();
+		}
+		
 		/**
 		 * @inheritDoc
 		 */
@@ -49,7 +57,11 @@ package mesh.model.source
 			if (request.entity.reflect.clazz != _type) {
 				throw new ArgumentError("Invalid entity type.");
 			}
-			request.result( new Data(_fixtures.grab(request.entity.id), _type) );
+			
+			invoke(function():void
+			{
+				request.result( new Data(_fixtures.grab(request.entity.id), _type) );
+			});
 		}
 	}
 }

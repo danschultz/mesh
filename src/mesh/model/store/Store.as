@@ -20,14 +20,22 @@ package mesh.model.store
 		{
 			// Find an Entity by type and ID, i.e. store.find(Person, 1)
 			if (args.length == 2) {
-				var entity:Entity = entities.findByTypeAndID(args[0], args[1]);
-				if (entity == null) {
-					entity = newInstance(args[0]);
-					entity.id = args[1];
-					_dataSource.retrieve(new EntityRequest(entity, this));
-				}
-				return entity;
+				return findEntity(args[0], args[1]);
 			}
+		}
+		
+		private function findEntity(type:Class, id:Object):Entity
+		{
+			var entity:Entity = entities.findByTypeAndID(type, id);
+			
+			// An entity for this type and ID doesn't exist yet.
+			if (entity == null) {
+				entity = newInstance(type);
+				entity.id = id;
+				new EntityRequest(entity, this).execute();
+			}
+			
+			return entity;
 		}
 		
 		private var _data:DataIndex;
@@ -37,7 +45,7 @@ package mesh.model.store
 		}
 		
 		private var _dataSource:DataSource;
-		public function get dataSource():DataSource
+		internal function get dataSource():DataSource
 		{
 			return _dataSource;
 		}

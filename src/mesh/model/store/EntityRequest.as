@@ -12,6 +12,16 @@ package mesh.model.store
 			_entity = entity;
 		}
 		
+		override public function execute():void
+		{
+			var data:Data = store.data.findByTypeAndID(entity.reflect.clazz, entity.id);
+			if (data != null) {
+				result(data);
+			} else {
+				store.dataSource.retrieve(this);
+			}
+		}
+		
 		override public function result(data:Data):void
 		{
 			store.entities.add(entity);
