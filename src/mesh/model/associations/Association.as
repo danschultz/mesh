@@ -8,7 +8,7 @@ package mesh.model.associations
 	
 	import mesh.core.inflection.humanize;
 	import mesh.core.reflection.Type;
-	import mesh.model.Entity;
+	import mesh.model.Record;
 	
 	import mx.events.PropertyChangeEvent;
 	
@@ -34,7 +34,7 @@ package mesh.model.associations
 		 * @param property The property name on the owner that association is mapped to.
 		 * @param options The options for this association.
 		 */
-		public function Association(owner:Entity, property:String, options:Object = null)
+		public function Association(owner:Record, property:String, options:Object = null)
 		{
 			super();
 			
@@ -48,15 +48,15 @@ package mesh.model.associations
 		}
 		
 		/**
-		 * Called by sub-classes when an entity is added to an association.
+		 * Called by sub-classes when an record is added to an association.
 		 * 
-		 * @param entity The entity that was associated.
-		 * @param revive Indicates if the entity should be revived when associated.
+		 * @param record The record that was associated.
+		 * @param revive Indicates if the record should be revived when associated.
 		 */
-		protected function associate(entity:Entity):void
+		protected function associate(record:Record):void
 		{
-			_entities.add(entity);
-			populateInverseRelationship(entity);
+			_records.add(record);
+			populateInverseRelationship(record);
 		}
 		
 		private function changeState(state:int):void
@@ -75,7 +75,7 @@ package mesh.model.associations
 		}
 		
 		/**
-		 * Used internally by the entity to initialize the association with its data.
+		 * Used internally by the record to initialize the association with its data.
 		 */
 		public function initialize():void
 		{
@@ -108,11 +108,11 @@ package mesh.model.associations
 			
 		}
 		
-		private function populateInverseRelationship(entity:Entity):void
+		private function populateInverseRelationship(record:Record):void
 		{
 			if (inverse != null) {
-				if (entity.hasOwnProperty(inverse)) entity[inverse] = owner;
-				else throw new IllegalOperationError("Inverse property '" + entity.reflect.name + "." + inverse + "' does not exist.");
+				if (record.hasOwnProperty(inverse)) record[inverse] = owner;
+				else throw new IllegalOperationError("Inverse property '" + record.reflect.name + "." + inverse + "' does not exist.");
 			}
 		}
 		
@@ -132,22 +132,22 @@ package mesh.model.associations
 		}
 		
 		/**
-		 * Called by a sub-class when an entity has been removed from an association.
+		 * Called by a sub-class when an record has been removed from an association.
 		 * 
-		 * @param entity The entity to unassociate.
+		 * @param record The record to unassociate.
 		 */
-		protected function unassociate(entity:Entity):void
+		protected function unassociate(record:Record):void
 		{
-			_entities.remove(entity);
+			_records.remove(record);
 		}
 		
-		private var _entities:HashSet = new HashSet();
+		private var _records:HashSet = new HashSet();
 		/**
-		 * The set of entities belonging to this association.
+		 * The set of records belonging to this association.
 		 */
-		public function get entities():Array
+		public function get records():Array
 		{
-			return _entities.toArray();
+			return _records.toArray();
 		}
 		
 		/**
@@ -206,11 +206,11 @@ package mesh.model.associations
 			return _options;
 		}
 		
-		private var _owner:Entity;
+		private var _owner:Record;
 		/**
 		 * The instance of the parent owning this association.
 		 */
-		protected function get owner():Entity
+		protected function get owner():Record
 		{
 			return _owner;
 		}

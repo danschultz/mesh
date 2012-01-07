@@ -10,7 +10,7 @@ package mesh.model.store
 	public class FindTests
 	{
 		[Test]
-		public function testFindEntityThroughDataSource():void
+		public function testFindRecordThroughDataSource():void
 		{
 			var data:Object = {id:1, firstName:"Jimmy", lastName:"Page"};
 			var fixtures:FixtureDataSource = new FixtureDataSource(Person);
@@ -21,7 +21,7 @@ package mesh.model.store
 		}
 		
 		[Test]
-		public function testFindEntityThroughDataBelongingToStore():void
+		public function testFindRecordThroughDataBelongingToStore():void
 		{
 			var data:Object = {id:1, firstName:"Jimmy", lastName:"Page"};
 			var store:Store = new Store(new FixtureDataSource(Person));
@@ -31,7 +31,7 @@ package mesh.model.store
 		}
 		
 		[Test]
-		public function testFindEntityAlwaysReturnsSameEntity():void
+		public function testFindRecordAlwaysReturnsSameRecord():void
 		{
 			var data:Object = {id:1, firstName:"Jimmy", lastName:"Page"};
 			var fixtures:FixtureDataSource = new FixtureDataSource(Person);

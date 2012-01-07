@@ -1,10 +1,10 @@
 package mesh
 {
-	import mesh.model.Entity;
+	import mesh.model.Record;
 	import mesh.model.validators.NumericValidator;
 	import mesh.model.validators.PresenceValidator;
 	
-	public class Person extends Entity
+	public class Person extends Record
 	{
 		public static var validate:Object = 
 		{

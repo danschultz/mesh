@@ -7,9 +7,9 @@ package mesh.model
 	import mesh.model.associations.Association;
 
 	/**
-	 * The <code>Associations</code> class is a hash of properties to their associations for an entity.
-	 * Each <code>Entity</code> contains its own associations hash, and can be accessed through the
-	 * <code>Entity.associations</code> property.
+	 * The <code>Associations</code> class is a hash of properties to their associations for an record.
+	 * Each <code>Record</code> contains its own associations hash, and can be accessed through the
+	 * <code>Record.associations</code> property.
 	 * 
 	 * <p>
 	 * This class extends <code>Proxy</code> and provides looping over each association using the 
@@ -22,17 +22,17 @@ package mesh.model
 	 */
 	public dynamic class Associations extends Proxy
 	{
-		private var _entity:Entity;
+		private var _record:Record;
 		private var _mappings:Object = {};
 		private var _properties:Array = [];
 		
 		/**
 		 * Constructor.
 		 */
-		public function Associations(entity:Entity)
+		public function Associations(record:Record)
 		{
 			super();
-			_entity = entity;
+			_record = record;
 		}
 		
 		/**
@@ -47,7 +47,7 @@ package mesh.model
 		}
 		
 		/**
-		 * Maps a property on an entity to an association object.
+		 * Maps a property on an record to an association object.
 		 * 
 		 * @param property The property to map.
 		 * @param association The association to map.
@@ -69,7 +69,7 @@ package mesh.model
 		public function mappedTo(property:String):Association
 		{
 			if (!isAssociation(property)) {
-				throw new IllegalOperationError("Association undefined for " + _entity.reflect.name + "." + property);
+				throw new IllegalOperationError("Association undefined for " + _record.reflect.name + "." + property);
 			}
 			return _mappings[property];
 		}

@@ -7,7 +7,7 @@ package mesh.model
 	
 	/**
 	 * The <code>Changes</code> class represents a storage container for values that have
-	 * changed on an instance of an <code>Entity</code>.
+	 * changed on an instance of an <code>Record</code>.
 	 * 
 	 * @author Dan Schultz
 	 */
@@ -59,7 +59,7 @@ package mesh.model
 		
 		/**
 		 * Performs a check to see if the given property has changed. This method will
-		 * first check based on the identity of the changed values. If this fails, it 
+		 * first check based on the idrecord of the changed values. If this fails, it 
 		 * will use the <code>equals()</code> method defined on the value, if the method
 		 * exists.
 		 * 

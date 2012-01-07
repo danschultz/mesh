@@ -15,11 +15,11 @@ package mesh.model
 	import mx.events.PropertyChangeEvent;
 	
 	/**
-	 * An entity.
+	 * A record.
 	 * 
 	 * @author Dan Schultz
 	 */
-	public class Entity extends EventDispatcher
+	public class Record extends EventDispatcher
 	{
 		private var _associations:Associations;
 		private var _aggregates:Aggregates;
@@ -27,9 +27,9 @@ package mesh.model
 		/**
 		 * Constructor.
 		 * 
-		 * @param values A hash of values to set on the entity.
+		 * @param values A hash of values to set on the record.
 		 */
-		public function Entity(values:Object = null)
+		public function Record(values:Object = null)
 		{
 			super();
 			
@@ -49,7 +49,7 @@ package mesh.model
 		}
 		
 		/**
-		 * Maps a has-one association to a property on this entity.
+		 * Maps a has-one association to a property on this record.
 		 * 
 		 * @param property The property that owns the association.
 		 * @param query The query to retrieve data for the association.
@@ -62,7 +62,7 @@ package mesh.model
 		}
 		
 		/**
-		 * Maps up a has-many association to a property on this entity.
+		 * Maps up a has-many association to a property on this record.
 		 * 
 		 * @param property The property that owns the association.
 		 * @param query The query to retrieve data for the association.
@@ -77,11 +77,11 @@ package mesh.model
 		}
 		
 		/**
-		 * Checks if two entities are equal.  By default, two entities are equal
+		 * Checks if two records are equal.  By default, two records are equal
 		 * when they are of the same type, and their ID's are the same.
 		 * 
-		 * @param entity The entity to check.
-		 * @return <code>true</code> if the entities are equal.
+		 * @param obj The record to check.
+		 * @return <code>true</code> if the records are equal.
 		 */
 		public function equals(obj:Object):Boolean
 		{
@@ -94,7 +94,7 @@ package mesh.model
 		}
 		
 		/**
-		 * Returns a generated hash value for this entity.  Two entities that represent
+		 * Returns a generated hash value for this record.  Two records that represent
 		 * the same data should return the same hash code.
 		 * 
 		 * @return A hash value.
@@ -105,7 +105,7 @@ package mesh.model
 		}
 		
 		/**
-		 * Runs the validations defined for this entity and returns <code>true</code> if any
+		 * Runs the validations defined for this record and returns <code>true</code> if any
 		 * validations failed.
 		 * 
 		 * @return <code>true</code> if any validations failed.
@@ -119,7 +119,7 @@ package mesh.model
 		}
 		
 		/**
-		 * Runs the validations defined for this entity and returns <code>true</code> if all
+		 * Runs the validations defined for this record and returns <code>true</code> if all
 		 * validations passed.
 		 * 
 		 * @return <code>true</code> if all validations passed.
@@ -133,7 +133,7 @@ package mesh.model
 		}
 		
 		/**
-		 * Marks a property on the entity as being dirty. This method allows sub-classes to manually 
+		 * Marks a property on the record as being dirty. This method allows sub-classes to manually 
 		 * manage when a property changes.
 		 * 
 		 * @param property The property that was changed.
@@ -157,12 +157,12 @@ package mesh.model
 		}
 		
 		/**
-		 * Runs the validations defined on this entity and returns the set of errors for
+		 * Runs the validations defined on this record and returns the set of errors for
 		 * any validations that failed. If all validations passed, this method returns an
 		 * empty array.
 		 * 
 		 * <p>
-		 * Calling this method will also populate the <code>Entity.errors</code> property with
+		 * Calling this method will also populate the <code>Record.errors</code> property with
 		 * the validation results.
 		 * </p>
 		 * 
@@ -174,7 +174,7 @@ package mesh.model
 		{
 			errors.clear();
 			
-			for (var reflection:Type = reflect; reflection != null && reflection.clazz != Entity; reflection = reflection.parent) {
+			for (var reflection:Type = reflect; reflection != null && reflection.clazz != Record; reflection = reflection.parent) {
 				var validations:Object = reflection.clazz["validate"];
 				for (var property:String in validations) {
 					for each (var validation:Object in validations[property]) {
@@ -188,7 +188,7 @@ package mesh.model
 		}
 		
 		/**
-		 * The hash the associations defined on this entity. The associations hash is defined as 
+		 * The hash the associations defined on this record. The associations hash is defined as 
 		 * key-value pairs where the key is the property the associaiton is defined on, and the
 		 * value is the association object.
 		 */
@@ -226,7 +226,7 @@ package mesh.model
 		
 		private var _id:*;
 		/**
-		 * An object that represents the ID for this entity.
+		 * An object that represents the ID for this record.
 		 */
 		public function get id():*
 		{
@@ -240,7 +240,7 @@ package mesh.model
 		private var _reflect:Type;
 		/**
 		 * A reflection that contains the properties, methods and metadata defined on this
-		 * entity.
+		 * record.
 		 */
 		public function get reflect():Type
 		{
@@ -252,7 +252,7 @@ package mesh.model
 		
 		private var _store:Store;
 		/**
-		 * The data store that this entity belongs to.
+		 * The store that this record belongs to.
 		 */
 		public function get store():Store
 		{
@@ -261,7 +261,7 @@ package mesh.model
 		public function set store(value:Store):void
 		{
 			if (_store != null) {
-				throw new IllegalOperationError("Cannot reset store on Entity.");
+				throw new IllegalOperationError("Cannot reset store on Record.");
 			}
 			_store = value;
 		}

@@ -2,12 +2,12 @@ package mesh.model.associations
 {
 	import flash.errors.IllegalOperationError;
 	
-	import mesh.model.Entity;
+	import mesh.model.Record;
 	
 	import mx.events.PropertyChangeEvent;
 	
 	/**
-	 * The base class for any association that links to a single entity.
+	 * The base class for any association that links to a single record.
 	 * 
 	 * @author Dan Schultz
 	 */
@@ -16,7 +16,7 @@ package mesh.model.associations
 		/**
 		 * @copy AssociationProxy#AssociationProxy()
 		 */
-		public function HasAssociation(owner:Entity, property:String, options:Object = null)
+		public function HasAssociation(owner:Record, property:String, options:Object = null)
 		{
 			super(owner, property, options);
 			checkForRequiredFields();
@@ -25,20 +25,20 @@ package mesh.model.associations
 		/**
 		 * @inheritDoc
 		 */
-		override protected function associate(entity:Entity):void
+		override protected function associate(record:Record):void
 		{
-			super.associate(entity);
+			super.associate(record);
 			populateForeignKey();
-			entity.addEventListener(PropertyChangeEvent.PROPERTY_CHANGE, handleAssociatedEntityPropertyChange);
+			record.addEventListener(PropertyChangeEvent.PROPERTY_CHANGE, handleAssociatedRecordPropertyChange);
 		}
 		
 		private function checkForRequiredFields():void
 		{
-			if (entityType == null) throw new IllegalOperationError("Undefined entity type for " + this);
+			if (recordType == null) throw new IllegalOperationError("Undefined record type for " + this);
 			if (options.foreignKey != null && !owner.hasOwnProperty(options.foreignKey)) throw new IllegalOperationError("Undefined foreign key '" + options.foreignKey + " for " + this);
 		}
 		
-		private function handleAssociatedEntityPropertyChange(event:PropertyChangeEvent):void
+		private function handleAssociatedRecordPropertyChange(event:PropertyChangeEvent):void
 		{
 			if (event.property == "id") {
 				populateForeignKey();
@@ -68,10 +68,10 @@ package mesh.model.associations
 		/**
 		 * @inheritDoc
 		 */
-		override protected function unassociate(entity:Entity):void
+		override protected function unassociate(record:Record):void
 		{
-			super.unassociate(entity);
-			entity.removeEventListener(PropertyChangeEvent.PROPERTY_CHANGE, handleAssociatedEntityPropertyChange);
+			super.unassociate(record);
+			record.removeEventListener(PropertyChangeEvent.PROPERTY_CHANGE, handleAssociatedRecordPropertyChange);
 			unassociateForeignKey();
 		}
 		
@@ -84,13 +84,13 @@ package mesh.model.associations
 		}
 		
 		/**
-		 * The associated type of entity. If the type is not defined as an option, then the association
-		 * will look up the type defined on the entity through reflection.
+		 * The associated type of record. If the type is not defined as an option, then the association
+		 * will look up the type defined on the record through reflection.
 		 */
-		protected function get entityType():Class
+		protected function get recordType():Class
 		{
 			try {
-				return options.entityType != null ? options.entityType : owner.reflect.property(property).type.clazz;
+				return options.recordType != null ? options.recordType : owner.reflect.property(property).type.clazz;
 			} catch (e:Error) {
 				
 			}

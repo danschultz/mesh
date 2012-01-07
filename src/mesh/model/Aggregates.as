@@ -8,18 +8,18 @@ package mesh.model
 	 * The <code>Aggregates</code> class contains the logic for aggregating properties on an object. Aggregates 
 	 * allow your models to group related sets of properties into value objects. This feature allows you to 
 	 * express relationships such as a <em>Person is composed of an Address</em>. Each aggregate describes how 
-	 * to construct a value object from an entity's properties, and how value objects are turned back into values 
-	 * on the entity.
+	 * to construct a value object from an record's properties, and how value objects are turned back into values 
+	 * on the record.
 	 * 
 	 * <p>
-	 * Whenever an aggregated property on the entity changes, the aggregate will also be updated.
+	 * Whenever an aggregated property on the record changes, the aggregate will also be updated.
 	 * </p>
 	 * 
 	 * <p>
 	 * <strong>Example:</strong> Defining an address aggregate for a person:
 	 * 
 	 * <listing version="3.0">
-	 * public class Person extends Entity
+	 * public class Person extends Record
 	 * {
 	 * 	[Bindable] public var address:Address;
 	 * 	[Bindable] public var street:String;
@@ -76,7 +76,7 @@ package mesh.model
 		 * 
 		 * @param property The aggregate property.
 		 * @param type The type of class.
-		 * @param mappings The list of properties on the entity to aggregate. The list must be in the same order
+		 * @param mappings The list of properties on the record to aggregate. The list must be in the same order
 		 * 	as the argument's to the aggregate classes' constructor.
 		 */
 		public function add(property:String, type:Class, mappings:Array):void
@@ -114,8 +114,8 @@ class Aggregate
 	/**
 	 * Constructor.
 	 * 
-	 * @param entity The host entity.
-	 * @param property The property on the entity that the aggregate is mapped to.
+	 * @param record The host record.
+	 * @param property The property on the record that the aggregate is mapped to.
 	 * @param type The aggregate type class.
 	 * @param mapping
 	 */
@@ -183,7 +183,7 @@ class Aggregate
 	
 	private var _property:String;
 	/**
-	 * The property on the entity that the aggregate is mapped to.
+	 * The property on the record that the aggregate is mapped to.
 	 */
 	public function get property():String
 	{

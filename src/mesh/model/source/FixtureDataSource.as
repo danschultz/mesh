@@ -6,7 +6,7 @@ package mesh.model.source
 	
 	import mesh.core.object.merge;
 	import mesh.model.store.Data;
-	import mesh.model.store.EntityRequest;
+	import mesh.model.store.RecordRequest;
 
 	/**
 	 * A data source that is used for static or test data.
@@ -23,7 +23,7 @@ package mesh.model.source
 		/**
 		 * Constructor.
 		 * 
-		 * @param type The type of entities this data source is for.
+		 * @param type The type of records this data source is for.
 		 * @param options A hash of options.
 		 */
 		public function FixtureDataSource(type:Class, options:Object = null)
@@ -52,15 +52,15 @@ package mesh.model.source
 		/**
 		 * @inheritDoc
 		 */
-		override public function retrieve(request:EntityRequest):void
+		override public function retrieve(request:RecordRequest):void
 		{
-			if (request.entity.reflect.clazz != _type) {
-				throw new ArgumentError("Invalid entity type.");
+			if (request.record.reflect.clazz != _type) {
+				throw new ArgumentError("Invalid record type.");
 			}
 			
 			invoke(function():void
 			{
-				request.result( new Data(_fixtures.grab(request.entity.id), _type) );
+				request.result( new Data(_fixtures.grab(request.record.id), _type) );
 			});
 		}
 	}

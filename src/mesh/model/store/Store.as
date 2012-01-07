@@ -2,7 +2,7 @@ package mesh.model.store
 {
 	import mesh.core.reflection.newInstance;
 	import mesh.mesh_internal;
-	import mesh.model.Entity;
+	import mesh.model.Record;
 	import mesh.model.source.DataSource;
 	
 	use namespace mesh_internal;
@@ -11,31 +11,31 @@ package mesh.model.store
 	{
 		public function Store(dataSource:DataSource)
 		{
-			_entities = new EntityIndex(this);
+			_records = new RecordIndex(this);
 			_data = new DataIndex();
 			_dataSource = dataSource;
 		}
 		
 		public function find(...args):*
 		{
-			// Find an Entity by type and ID, i.e. store.find(Person, 1)
+			// Find an Record by type and ID, i.e. store.find(Person, 1)
 			if (args.length == 2) {
-				return findEntity(args[0], args[1]);
+				return findRecord(args[0], args[1]);
 			}
 		}
 		
-		private function findEntity(type:Class, id:Object):Entity
+		private function findRecord(type:Class, id:Object):Record
 		{
-			var entity:Entity = entities.findByTypeAndID(type, id);
+			var record:Record = records.findByTypeAndID(type, id);
 			
-			// An entity for this type and ID doesn't exist yet.
-			if (entity == null) {
-				entity = newInstance(type);
-				entity.id = id;
-				new EntityRequest(entity, this).execute();
+			// An record for this type and ID doesn't exist yet.
+			if (record == null) {
+				record = newInstance(type);
+				record.id = id;
+				new RecordRequest(record, this).execute();
 			}
 			
-			return entity;
+			return record;
 		}
 		
 		private var _data:DataIndex;
@@ -50,10 +50,10 @@ package mesh.model.store
 			return _dataSource;
 		}
 		
-		private var _entities:EntityIndex;
-		internal function get entities():EntityIndex
+		private var _records:RecordIndex;
+		internal function get records():RecordIndex
 		{
-			return _entities;
+			return _records;
 		}
 	}
 }
@@ -64,33 +64,33 @@ import flash.utils.Dictionary;
 
 import mesh.core.List;
 import mesh.mesh_internal;
-import mesh.model.Entity;
+import mesh.model.Record;
 import mesh.model.store.Data;
 import mesh.model.store.Store;
 
 use namespace mesh_internal;
 
-class EntityIndex
+class RecordIndex
 {
 	private var _index:HashSet = new HashSet();
 	private var _types:TypeIndex = new TypeIndex();
 	private var _store:Store;
 	
-	public function EntityIndex(store:Store)
+	public function RecordIndex(store:Store)
 	{
 		_store = store;
 	}
 	
-	public function add(entity:Entity):void
+	public function add(record:Record):void
 	{
-		if (!_index.contains(entity)) {
-			entity.store = _store;
-			_index.add(entity);
-			_types.add(entity.reflect.clazz, entity);
+		if (!_index.contains(record)) {
+			record.store = _store;
+			_index.add(record);
+			_types.add(record.reflect.clazz, record);
 		}
 	}
 	
-	public function findByTypeAndID(type:Class, id:Object):Entity
+	public function findByTypeAndID(type:Class, id:Object):Record
 	{
 		return _types.findByTypeAndID(type, id);
 	}

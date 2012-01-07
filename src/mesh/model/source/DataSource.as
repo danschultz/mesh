@@ -1,6 +1,6 @@
 package mesh.model.source
 {
-	import mesh.model.store.EntityRequest;
+	import mesh.model.store.RecordRequest;
 
 	public class DataSource
 	{
@@ -9,7 +9,7 @@ package mesh.model.source
 			
 		}
 		
-		public function retrieve(request:EntityRequest):void
+		public function retrieve(request:RecordRequest):void
 		{
 			
 		}

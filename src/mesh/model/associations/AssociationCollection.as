@@ -2,7 +2,7 @@ package mesh.model.associations
 {
 	import flash.events.Event;
 	
-	import mesh.model.Entity;
+	import mesh.model.Record;
 	
 	import mx.collections.ArrayList;
 	import mx.collections.IList;
@@ -18,7 +18,7 @@ package mesh.model.associations
 		/**
 		 * @copy AssociationProxy#AssociationProxy()
 		 */
-		public function AssociationCollection(source:Entity, property:String, options:Object = null)
+		public function AssociationCollection(source:Record, property:String, options:Object = null)
 		{
 			super(source, property, options);
 			
@@ -62,16 +62,16 @@ package mesh.model.associations
 		{
 			switch (event.kind) {
 				case CollectionEventKind.ADD:
-					handleEntitiesAdded(event.items);
+					handleRecordsAdded(event.items);
 					break;
 				case CollectionEventKind.REMOVE:
-					handleEntitiesRemoved(event.items);
+					handleRecordsRemoved(event.items);
 					break;
 				case CollectionEventKind.REPLACE:
-					handleEntitiesReplaced(event.items);
+					handleRecordsReplaced(event.items);
 					break;
 				case CollectionEventKind.RESET:
-					handleEntitiesReset();
+					handleRecordsReset();
 					break;
 			}
 			
@@ -82,36 +82,36 @@ package mesh.model.associations
 			dispatchEvent(event);
 		}
 		
-		private function handleEntitiesAdded(items:Array):void
+		private function handleRecordsAdded(items:Array):void
 		{
-			for each (var entity:Entity in items) {
-				associate(entity);
+			for each (var record:Record in items) {
+				associate(record);
 			}
 		}
 		
-		private function handleEntitiesRemoved(items:Array):void
+		private function handleRecordsRemoved(items:Array):void
 		{
-			for each (var entity:Entity in items) {
-				unassociate(entity);
+			for each (var record:Record in items) {
+				unassociate(record);
 			}
 		}
 		
-		private function handleEntitiesReplaced(items:Array):void
+		private function handleRecordsReplaced(items:Array):void
 		{
 			for each (var change:PropertyChangeEvent in items) {
-				handleEntitiesRemoved([change.oldValue]);
-				handleEntitiesAdded([change.newValue]);
+				handleRecordsRemoved([change.oldValue]);
+				handleRecordsAdded([change.newValue]);
 			}
 		}
 		
-		private function handleEntitiesReset():void
+		private function handleRecordsReset():void
 		{
-			for each (var oldEntity:Entity in _snapshot) {
-				handleEntitiesRemoved([oldEntity]);
+			for each (var oldRecord:Record in _snapshot) {
+				handleRecordsRemoved([oldRecord]);
 			}
 			
-			for each (var newEntity:Entity in _list.toArray()) {
-				handleEntitiesAdded([newEntity]);
+			for each (var newRecord:Record in _list.toArray()) {
+				handleRecordsAdded([newRecord]);
 			}
 		}
 		
@@ -178,7 +178,7 @@ package mesh.model.associations
 	}
 }
 
-import mesh.model.Entity;
+import mesh.model.Record;
 
 import mx.collections.ArrayList;
 import mx.collections.IList;
@@ -220,14 +220,14 @@ class SynchronizedList extends ArrayList
 	
 	private function handleListItemsAdded(items:Array):void
 	{
-		for each (var result:Entity in items) {
+		for each (var result:Record in items) {
 			addItem(result);
 		}
 	}
 	
 	private function handleListItemsRemoved(items:Array):void
 	{
-		for each (var result:Entity in items) {
+		for each (var result:Record in items) {
 			removeItem(result);
 		}
 	}

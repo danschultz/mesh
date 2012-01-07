@@ -5,7 +5,7 @@ package mesh.model.serialization
 	import mesh.core.reflection.reflect;
 
 	/**
-	 * The <code>Serializer</code> class is used by the <code>Entity</code> to serialize its properties 
+	 * The <code>Serializer</code> class is used by the <code>Record</code> to serialize its properties 
 	 * into a hash. By default, this serializer will only serialize properties on an object that are 
 	 * considered readable leaf nodes. These include: booleans, numbers and strings. You can do nested 
 	 * levels of serialization by supplying the <code>includes</code> option.
