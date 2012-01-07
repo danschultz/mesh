@@ -58,11 +58,11 @@ package mesh.model.store
 	}
 }
 
-import collections.ArraySequence;
 import collections.HashSet;
 
 import flash.utils.Dictionary;
 
+import mesh.core.List;
 import mesh.mesh_internal;
 import mesh.model.Entity;
 import mesh.model.store.Data;
@@ -114,6 +114,11 @@ class DataIndex
 		}
 	}
 	
+	public function findByType(type:Class):List
+	{
+		return _types.findByType(type);
+	}
+	
 	public function findByTypeAndID(type:Class, id:Object):Data
 	{
 		return _types.findByTypeAndID(type, id);
@@ -132,9 +137,14 @@ class TypeIndex
 	public function add(type:Class, data:Object):void
 	{
 		if (_index[type] == null) {
-			_index[type] = new ArraySequence();
+			_index[type] = new List();
 		}
 		_index[type].add(data);
+	}
+	
+	public function findByType(type:Class):List
+	{
+		return _index[type];
 	}
 	
 	public function findByTypeAndID(type:Class, id:Object):*
