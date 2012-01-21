@@ -6,7 +6,7 @@ Mesh provides the mechanisms for defining the associations between your models, 
 Mesh follows the guidelines of [semantic versioning](http://www.semver.org).
 
 ## Records
-Model classes in Mesh are defined as `Record` sub-classes. Records track how your application modifies them. They detect when their properties change, when the application destroys them, and when they're data is persisted to the backend. This information is used to determine when and how to persist your data.
+Model classes in Mesh are defined as `Record`s. Records track how your application modifies the model. They detect when their properties change, when the application destroys them, and when they're data is persisted to the backend. This information is used to determine when and how to persist your data.
 
 **Example:** A simple model.
 	package myapp
@@ -55,24 +55,37 @@ The `Store` is where the records of your application are kept. You use the store
 
 *Note:* Usually only one store is initialized per application.
 
-### Data Adaptor
-The store looks to its data adaptor to connect itself with the backend for retrieval and persistence of its data.
+### Data Source
+The store looks to its data source to connect itself with the backend for retrieval and persistence of its data.
+
+#### Operations
+The data source defines a set of methods to connect to the backend.
+
+- retrieve()
+- all()
+
+Each of these methods must be implemented to fully support all of Mesh's query operations. Unsupported APIs should throw a RTE.
 
 #### Data Caching
-Whenever a data adaptor receives data from the backend, it adds it to the store's data cache. On the next store query, the adaptor can opt to load cached data for records that haven't been materialized yet.
+Whenever the data source receives data from the backend, it adds it to the store's data cache. On the next store query, the adaptor can opt to load cached data for records that haven't been materialized yet.
 
 ### Finding Records
 Records are loaded by quering the store. Once a record is loaded, it's kept in the store until explicitly removed. Multiple queries to the same record ID will return the same record instance.
 
 **Example:** Executing queries
 	// Retrieve a person
-	var person:Person = records.find(Person).id(1);
+	var person:Person = records.query(Person).id(1).find();
 
 	// Retrieve everyone
-	var everyone:ResultList = records.find(Person).all();
+	var everyone:ResultList = records.query(Person).all().find();
 
 	// Search for people
-	var males:ResultList = records.find(Person).where({gender:"m"});
+	var males:ResultList = records.query(Person).where({gender:"m"}).find();
+
+	// Add a responder
+	var request:Request = records.query(Person).id(2).createRequest();
+	request.addResponder(responder);
+	request.execute();
 
 ### Saving Records
 The store is responsible for persisting your model. To prevent possible race conditions, only a single save can happen at a time. Multiple save calls will be queued.

@@ -6,7 +6,9 @@ package mesh.model.source
 	
 	import mesh.core.object.merge;
 	import mesh.model.store.Data;
-	import mesh.model.store.RecordRequest;
+	import mesh.model.store.RetrieveRequest;
+	import mesh.model.store.Store;
+	import mesh.operations.Operation;
 
 	/**
 	 * A data source that is used for static or test data.
@@ -46,22 +48,43 @@ package mesh.model.source
 		private function invoke(block:Function):void
 		{
 			if (_options.latency > 0) setTimeout(block, _options.latency);
-			else block();
+			else block()
 		}
 		
 		/**
 		 * @inheritDoc
 		 */
-		override public function retrieve(request:RecordRequest):void
+		override public function retrieve(request:RetrieveRequest):void
 		{
-			if (request.record.reflect.clazz != _type) {
+			if (request.recordType != _type) {
 				throw new ArgumentError("Invalid record type.");
 			}
 			
 			invoke(function():void
 			{
-				request.result( new Data(_fixtures.grab(request.record.id), _type) );
+				request.result( new Data(_fixtures.grab(request.id), request.recordType) );
 			});
 		}
+	}
+}
+
+import flash.utils.setTimeout;
+
+import mesh.operations.MethodOperation;
+
+class TimedOperation extends MethodOperation
+{
+	private var _timeout:Number;
+	
+	public function TimedOperation(timeout:Number, block:Function)
+	{
+		super(block);
+		_timeout = timeout;
+	}
+	
+	override protected function executeRequest():void
+	{
+		if (_timeout > 0) setTimeout(super.executeRequest, _timeout);
+		else super.executeRequest();
 	}
 }
