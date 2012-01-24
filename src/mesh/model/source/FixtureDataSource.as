@@ -6,9 +6,6 @@ package mesh.model.source
 	
 	import mesh.core.object.merge;
 	import mesh.model.store.Data;
-	import mesh.model.store.RetrieveRequest;
-	import mesh.model.store.Store;
-	import mesh.operations.Operation;
 
 	/**
 	 * A data source that is used for static or test data.
@@ -63,6 +60,22 @@ package mesh.model.source
 			invoke(function():void
 			{
 				request.result( new Data(_fixtures.grab(request.id), request.recordType) );
+			});
+		}
+		
+		override public function retrieveAll(request:DataSourceRequest):void
+		{
+			if (request.recordType != _type) {
+				throw new ArgumentError("Invalid record type.");
+			}
+			
+			invoke(function():void
+			{
+				var values:Array = _fixtures.values().map(function(fixture:Object, ...args):Data
+				{
+					return new Data(fixture, request.recordType);
+				});
+				request.result(values);
 			});
 		}
 	}

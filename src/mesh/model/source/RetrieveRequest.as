@@ -1,7 +1,8 @@
-package mesh.model.store
+package mesh.model.source
 {
 	import mesh.model.Record;
-	import mesh.model.source.DataSource;
+	import mesh.model.store.Data;
+	import mesh.model.store.Store;
 	import mesh.operations.Operation;
 
 	public class RetrieveRequest extends DataSourceRequest
@@ -10,28 +11,23 @@ package mesh.model.store
 		
 		public function RetrieveRequest(store:Store, record:Record)
 		{
-			super(store, record);
+			super(store, record.reflect.clazz, record);
 			_record = record;
 		}
 		
 		override protected function invoke(store:Store, dataSource:DataSource):Operation
 		{
-			return dataSource.retrieve(store, _record.id, _record.reflect.clazz);
+			return dataSource.retrieve(this);
 		}
 		
-		public function result(data:Data):void
+		override public function result(data:Object):void
 		{
-			data.transferValues(_record);
+			Data( data ).transferValues(_record);
 		}
 		
 		public function get id():*
 		{
 			return _record.id;
-		}
-		
-		public function get recordType():Class
-		{
-			return _record.reflect.clazz;
 		}
 	}
 }

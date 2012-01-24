@@ -1,6 +1,7 @@
 package mesh.model.store
 {
 	import mesh.model.source.DataSource;
+	import mesh.model.source.DataSourceRequest;
 
 	/**
 	 * A query contains the information necessary to fetch data from a store or data source.
