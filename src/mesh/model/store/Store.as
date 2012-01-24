@@ -32,7 +32,7 @@ package mesh.model.store
 		 */
 		public function query(recordType:Class):QueryBuilder
 		{
-			return new QueryBuilder(this, _dataSource, recordType);
+			return new QueryBuilder(this, recordType);
 		}
 		
 		private var _cache:DataCache;

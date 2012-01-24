@@ -1,14 +1,13 @@
 package mesh.model.store
 {
-	import mesh.model.source.DataSource;
-	import mesh.model.source.DataSourceRequest;
+	import flash.events.EventDispatcher;
 
 	/**
 	 * A query contains the information necessary to fetch data from a store or data source.
 	 * 
 	 * @author Dan Schultz
 	 */
-	public class Query
+	public class Query extends EventDispatcher
 	{
 		private var _store:Store;
 		
@@ -19,30 +18,18 @@ package mesh.model.store
 		 * @param dataSource The data source to query.
 		 * @param recordType The type of records to query.
 		 */
-		public function Query(store:Store, dataSource:DataSource, recordType:Class)
+		public function Query(store:Store, recordType:Class)
 		{
 			_store = store;
-			_dataSource = dataSource;
 			_recordType = recordType;
 		}
 		
-		public function createRequest():DataSourceRequest
-		{
-			
-		}
-		
-		public function find():*
-		{
-			
-		}
-		
-		private var _dataSource:DataSource;
 		/**
-		 * The data source to query.
+		 * Executes the query.
 		 */
-		protected function get dataSource():DataSource
+		public function execute():*
 		{
-			return _dataSource;
+			
 		}
 		
 		private var _recordType:Class;

@@ -1,28 +1,14 @@
 package mesh.model.store
 {
-	import mesh.model.source.DataSource;
-
 	public class QueryBuilder
 	{
 		private var _store:Store;
-		private var _dataSource:DataSource;
 		private var _recordType:Class;
 		
-		public function QueryBuilder(store:Store, dataSource:DataSource, recordType:Class)
+		public function QueryBuilder(store:Store, recordType:Class)
 		{
 			_store = store;
-			_dataSource = dataSource;
 			_recordType = recordType;
-		}
-		
-		/**
-		 * Generates a new query that fetches all records of a single type.
-		 * 
-		 * @return A query.
-		 */
-		public function all():Query
-		{
-			return new AllQuery(_store, _dataSource, _recordType);
 		}
 		
 		/**
@@ -31,40 +17,41 @@ package mesh.model.store
 		 * @param id The ID of the record to fetch.
 		 * @return A query.
 		 */
-		public function id(id:Object):Query
+		public function find(id:Object):Query
 		{
-			return new FindOneQuery(_store, _dataSource, _recordType, id);
+			return new FindQuery(_store, _recordType, id);
+		}
+		
+		/**
+		 * Generates a new query that fetches all records of a single type.
+		 * 
+		 * @return A query.
+		 */
+		public function findAll():Query
+		{
+			return new FindAllQuery(_store, _recordType);
 		}
 	}
 }
 
-import mesh.model.source.DataSource;
 import mesh.model.store.Query;
 import mesh.model.store.Store;
 
-class FindOneQuery extends Query
+class FindQuery extends Query
 {
 	private var _id:Object;
 	
-	public function FindOneQuery(store:Store, dataSource:DataSource, recordType:Class, id:Object)
+	public function FindQuery(store:Store, recordType:Class, id:Object)
 	{
-		super(store, dataSource, recordType);
+		super(store, recordType);
 		_id = id;
 	}
 }
 
-class FindManyQuery extends Query
+class FindAllQuery extends Query
 {
-	public function FindManyQuery(store:Store, dataSource:DataSource, recordType:Class)
+	public function FindAllQuery(store:Store, recordType:Class)
 	{
-		super(store, dataSource, recordType);
-	}
-}
-
-class AllQuery extends Query
-{
-	public function AllQuery(store:Store, dataSource:DataSource, recordType:Class)
-	{
-		super(store, dataSource, recordType);
+		super(store, recordType);
 	}
 }
