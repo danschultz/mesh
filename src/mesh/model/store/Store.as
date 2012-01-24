@@ -12,8 +12,6 @@ package mesh.model.store
 	 */
 	public class Store
 	{
-		private var _dataSource:DataSource;
-		
 		/**
 		 * Constructor.
 		 * 
@@ -25,10 +23,10 @@ package mesh.model.store
 		}
 		
 		/**
-		 * Generates a new query builder for a record type.
+		 * Returns a query builder for the given record type.
 		 * 
 		 * @param recordType The type of record to query.
-		 * @return A new query builder.
+		 * @return A query builder.
 		 */
 		public function query(recordType:Class):QueryBuilder
 		{
@@ -45,6 +43,27 @@ package mesh.model.store
 				_cache = new DataCache();
 			}
 			return _cache;
+		}
+		
+		private var _dataSource:DataSource;
+		/**
+		 * The store's data source.
+		 */
+		mesh_internal function get dataSource():DataSource
+		{
+			return _dataSource;
+		}
+		
+		private var _records:Records;
+		/**
+		 * @copy Records
+		 */
+		public function get records():Records
+		{
+			if (_records == null) {
+				_records = new Records();
+			}
+			return _records;
 		}
 	}
 }

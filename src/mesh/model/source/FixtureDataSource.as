@@ -6,6 +6,7 @@ package mesh.model.source
 	
 	import mesh.core.object.merge;
 	import mesh.model.store.Data;
+	import mesh.operations.Operation;
 
 	/**
 	 * A data source that is used for static or test data.
@@ -51,31 +52,30 @@ package mesh.model.source
 		/**
 		 * @inheritDoc
 		 */
-		override public function retrieve(request:RetrieveRequest):void
+		override public function retrieve(recordType:Class, id:Object):Operation
 		{
-			if (request.recordType != _type) {
+			if (recordType != _type) {
 				throw new ArgumentError("Invalid record type.");
 			}
 			
-			invoke(function():void
+			return new TimedOperation(_options.latency, function():Data
 			{
-				request.result( new Data(_fixtures.grab(request.id), request.recordType) );
+				return new Data(_fixtures.grab(id), recordType);
 			});
 		}
 		
-		override public function retrieveAll(request:DataSourceRequest):void
+		override public function retrieveAll(recordType:Class):Operation
 		{
-			if (request.recordType != _type) {
+			if (recordType != _type) {
 				throw new ArgumentError("Invalid record type.");
 			}
 			
-			invoke(function():void
+			return new TimedOperation(_options.latency, function():Array
 			{
-				var values:Array = _fixtures.values().map(function(fixture:Object, ...args):Data
+				return _fixtures.values().map(function(fixture:Object, ...args):Data
 				{
-					return new Data(fixture, request.recordType);
+					return new Data(fixture, recordType);
 				});
-				request.result(values);
 			});
 		}
 	}

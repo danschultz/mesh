@@ -6,13 +6,20 @@ package mesh.model
 	import mesh.core.inflection.humanize;
 	import mesh.core.object.copy;
 	import mesh.core.reflection.Type;
+	import mesh.mesh_internal;
 	import mesh.model.associations.HasManyAssociation;
 	import mesh.model.associations.HasOneAssociation;
+	import mesh.model.source.DataSource;
+	import mesh.model.store.Data;
 	import mesh.model.store.Store;
 	import mesh.model.validators.Errors;
 	import mesh.model.validators.Validator;
+	import mesh.operations.Operation;
+	import mesh.operations.ResultOperationEvent;
 	
 	import mx.events.PropertyChangeEvent;
+	
+	use namespace mesh_internal;
 	
 	/**
 	 * A record.
@@ -133,6 +140,19 @@ package mesh.model
 		}
 		
 		/**
+		 * Loads the data for this record if it has not been loaded yet.
+		 * 
+		 * @return This instance.
+		 */
+		public function load():*
+		{
+			if (!isLoaded) {
+				loadOperation.execute();
+			}
+			return this;
+		}
+		
+		/**
 		 * Marks a property on the record as being dirty. This method allows sub-classes to manually 
 		 * manage when a property changes.
 		 * 
@@ -209,6 +229,23 @@ package mesh.model
 			return _changes;
 		}
 		
+		private var _data:Data;
+		/**
+		 * The data for this record.
+		 */
+		protected function get data():Data
+		{
+			return _data;
+		}
+		
+		/**
+		 * The data source for this record.
+		 */
+		protected function get dataSource():DataSource
+		{
+			return store.dataSource;
+		}
+		
 		private var _errors:Errors;
 		/**
 		 * A set of <code>ValidationResult</code>s that failed during the last call to 
@@ -235,6 +272,31 @@ package mesh.model
 		public function set id(value:*):void
 		{
 			_id = value;
+		}
+		
+		/**
+		 * Checks if the data for this record has been loaded.
+		 */
+		public function get isLoaded():Boolean
+		{
+			return store.cache.find(reflect.clazz).byId(id) != null;
+		}
+		
+		private var _loadOperation:Operation;
+		/**
+		 * The operation that is used to load data for this record.
+		 */
+		public function get loadOperation():Operation
+		{
+			if (_loadOperation == null) {
+				_loadOperation = dataSource.retrieve(reflect.clazz, id);
+				_loadOperation.addEventListener(ResultOperationEvent.RESULT, function(event:ResultOperationEvent):void
+				{
+					store.cache.insert(_data);
+					_data = event.data;
+				});
+			}
+			return _loadOperation;
 		}
 		
 		private var _reflect:Type;

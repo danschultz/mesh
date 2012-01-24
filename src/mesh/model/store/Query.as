@@ -9,8 +9,6 @@ package mesh.model.store
 	 */
 	public class Query extends EventDispatcher
 	{
-		private var _store:Store;
-		
 		/**
 		 * Constructor.
 		 * 
@@ -39,6 +37,15 @@ package mesh.model.store
 		public function get recordType():Class
 		{
 			return _recordType;
+		}
+		
+		private var _store:Store;
+		/**
+		 * The store that will be queried.
+		 */
+		protected function get store():Store
+		{
+			return _store;
 		}
 	}
 }

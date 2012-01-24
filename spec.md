@@ -9,26 +9,29 @@ Mesh follows the guidelines of [semantic versioning](http://www.semver.org).
 At the heart of Mesh, is the store. The store is where all the models of your application are kept.
 
 ### Queries
-Queries are asynchronous objects used to find data within the store.
+Queries are used to find data within the store.
 
 	// Creating queries
-	query = store.query(Person).find(1);
-	query = store.query(Person).findAll();
+	var person:Person = store.query(Person).find(1);
+	var people:ResultsList = store.query(Person).findAll();
 
-	// Executing a query
-	query = store.query(Person).find(1);
-	var person:Person = query.execute();
+Sometimes the data for the query hasn't been loaded yet. In this case, you need to load the query's data. `load()` will only load the data if it hasn't ever been loaded. If you want to reload the data, then call `refresh()`.
 
-	query = store.query(Person).findAll();
-	var results:IList = query.execute();
+	// Load the data for the query if it hasn't been loaded.
+	person = store.query(Person).find(1).load(); // This can be a shortcut for.. person.loadOperation.execute();
 
-	// Listening to query completion
-	query = store.query(Person).findAll();
-	query.addEventListener(QueryEvent.FINISHED, function(event:QueryEvent):void
+	// Reload the data, even if it's already been loaded.
+	person = store.query(Person).find(1).refresh();
+
+Sometimes you'll want to know to when the data's been loaded. The event listener will need to be added before the call to `load()`. This ensures the listener exists for synchronous data calls.
+
+	// Listening to completion
+	person = store.query(Person).find(1);
+	person.loadOperation.addEventListener(FinishedOperationEvent.FINISHED, function(event:FinishedOperationEvent):void
 	{
 		
 	});
-	query.execute();
+	person.load();
 
 ### Data Source
 A data source is used to retrieve and persist data for the store. The data source class defines a template that sub-classes must override in order to fully function. These methods are used to create, retrieve, delete, and update data on the server.

@@ -1,6 +1,8 @@
 package mesh.model.source
 {
 	import flash.errors.IllegalOperationError;
+	
+	import mesh.operations.Operation;
 
 	public class DataSource
 	{
@@ -9,12 +11,12 @@ package mesh.model.source
 			
 		}
 		
-		public function retrieve(request:DataSourceRequest, recordType:Class, id:Object):void
+		public function retrieve(recordType:Class, id:Object):Operation
 		{
 			throw new IllegalOperationError();
 		}
 		
-		public function retrieveAll(request:DataSourceRequest, recordType:Class):void
+		public function retrieveAll(recordType:Class):Operation
 		{
 			throw new IllegalOperationError();
 		}

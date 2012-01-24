@@ -17,9 +17,9 @@ package mesh.model.store
 		 * @param id The ID of the record to fetch.
 		 * @return A query.
 		 */
-		public function find(id:Object):Query
+		public function find(id:Object):*
 		{
-			return new FindQuery(_store, _recordType, id);
+			return new FindQuery(_store, _recordType, id).execute();
 		}
 		
 		/**
@@ -27,13 +27,15 @@ package mesh.model.store
 		 * 
 		 * @return A query.
 		 */
-		public function findAll():Query
+		public function findAll():*
 		{
-			return new FindAllQuery(_store, _recordType);
+			return new FindAllQuery(_store, _recordType).execute();
 		}
 	}
 }
 
+import mesh.core.reflection.newInstance;
+import mesh.model.Record;
 import mesh.model.store.Query;
 import mesh.model.store.Store;
 
@@ -45,6 +47,20 @@ class FindQuery extends Query
 	{
 		super(store, recordType);
 		_id = id;
+	}
+	
+	override public function execute():*
+	{
+		var record:Record = store.records.find(recordType).byId(_id);
+		
+		// The record doesn't belong to the store. We need to retrieve it from the data source.
+		if (record == null) {
+			record = newInstance(recordType);
+			record.id = _id;
+			store.records.insert(record);
+		}
+		
+		return record;
 	}
 }
 
