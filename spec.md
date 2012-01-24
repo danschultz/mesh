@@ -5,6 +5,44 @@ Mesh provides the mechanisms for defining the associations between your models, 
 
 Mesh follows the guidelines of [semantic versioning](http://www.semver.org).
 
+## Store
+At the heart of Mesh, is the store. The store is where all the models of your application are kept.
+
+### Queries
+Queries are asynchronous objects used to find data within the store.
+
+	// Creating queries
+	query = store.query(Person).find(1);
+	query = store.query(Person).findAll();
+
+	// Executing a query
+	query = store.query(Person).find(1);
+	var person:Person = query.execute();
+
+	query = store.query(Person).findAll();
+	var results:IList = query.execute();
+
+	// Listening to query completion
+	query = store.query(Person).findAll();
+	query.addEventListener(QueryEvent.FINISHED, function(event:QueryEvent):void
+	{
+		
+	});
+	query.execute();
+
+### Data Source
+A data source is used to retrieve and persist data for the store. The data source class defines a template that sub-classes must override in order to fully function. These methods are used to create, retrieve, delete, and update data on the server.
+
+### Saving Records
+The store is responsible for persisting your model. To prevent possible race conditions, only a single save can happen at a time. Multiple save calls will be queued.
+
+**Example:** Executing a save.
+	// Saving all records.
+	var request:Request = records.save();
+
+	// Saving a subset of records.
+	request = records.save(person1, person2);
+
 ## Records
 Model classes in Mesh are defined as `Record`s. Records track how your application modifies the model. They detect when their properties change, when the application destroys them, and when they're data is persisted to the backend. This information is used to determine when and how to persist your data.
 
@@ -49,50 +87,3 @@ Records may define has-one or has-many associations with other records. These de
 Has-one associations are populated when the foreign keys change, and the record belongs to the store. If the record has not been retrieved from the adaptor, an empty record is created. The empty record will have its ID populated from the foreign key. The has-one association can then be loaded like so: `person.bestFriend.load();`.
 
 Has-many associations are populated through a call to load, like so: `person.friends.load();`.
-
-## Store
-The `Store` is where the records of your application are kept. You use the store to retrieve and persist the data in your application. Your application is responsible for initializing a store.
-
-*Note:* Usually only one store is initialized per application.
-
-### Data Source
-The store looks to its data source to connect itself with the backend for retrieval and persistence of its data.
-
-#### Operations
-The data source defines a set of methods to connect to the backend.
-
-- retrieve()
-- all()
-
-Each of these methods must be implemented to fully support all of Mesh's query operations. Unsupported APIs should throw a RTE.
-
-#### Data Caching
-Whenever the data source receives data from the backend, it adds it to the store's data cache. On the next store query, the adaptor can opt to load cached data for records that haven't been materialized yet.
-
-### Finding Records
-Records are loaded by quering the store. Once a record is loaded, it's kept in the store until explicitly removed. Multiple queries to the same record ID will return the same record instance.
-
-**Example:** Executing queries
-	// Retrieve a person
-	var person:Person = records.query(Person).id(1).find();
-
-	// Retrieve everyone
-	var everyone:ResultList = records.query(Person).all().find();
-
-	// Search for people
-	var males:ResultList = records.query(Person).where({gender:"m"}).find();
-
-	// Add a responder
-	var request:Request = records.query(Person).id(2).createRequest();
-	request.addResponder(responder);
-	request.execute();
-
-### Saving Records
-The store is responsible for persisting your model. To prevent possible race conditions, only a single save can happen at a time. Multiple save calls will be queued.
-
-**Example:** Executing a save.
-	// Saving all records.
-	var request:Request = records.save();
-
-	// Saving a subset of records.
-	request = records.save(person1, person2);
