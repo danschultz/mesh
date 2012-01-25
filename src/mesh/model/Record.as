@@ -140,14 +140,16 @@ package mesh.model
 		}
 		
 		/**
-		 * Loads the data for this record if it has not been loaded yet.
+		 * Loads the data for this record. If the data has already been loaded, then it will not
+		 * be reloaded. Use <code>refresh()</code> to reload the data.
 		 * 
+		 * @see #refresh()
 		 * @return This instance.
 		 */
 		public function load():*
 		{
 			if (!isLoaded) {
-				loadOperation.execute();
+				refresh();
 			}
 			return this;
 		}
@@ -166,6 +168,20 @@ package mesh.model
 				changes.changed(property, oldValue, newValue);
 				_aggregates.changed(property);
 			}
+		}
+		
+		/**
+		 * Reloads the data for this record. Unlike <code>load()</code>, this method will load
+		 * the data for the record even if it's already been retrieved.
+		 * 
+		 * @see #load()
+		 * @return This instance.
+		 */
+		public function refresh():*
+		{
+			loadOperation.queue();
+			loadOperation.execute();
+			return this;
 		}
 		
 		/**

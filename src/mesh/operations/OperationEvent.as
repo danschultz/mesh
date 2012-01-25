@@ -24,12 +24,12 @@ package mesh.operations
 		/**
 		 * The event type before an operation is executed.
 		 */
-		public static const BEFORE_EXECUTE:String = "preExecute";
+		public static const BEFORE_EXECUTE:String = "beforeExecute";
 		
 		/**
 		 * The event type after an operation is executed.
 		 */
-		public static const AFTER_EXECUTE:String = "postExecute";
+		public static const AFTER_EXECUTE:String = "afterExecute";
 		
 		/**
 		 * Constructor.
