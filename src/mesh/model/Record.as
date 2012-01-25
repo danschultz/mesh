@@ -237,6 +237,11 @@ package mesh.model
 		{
 			return _data;
 		}
+		protected function set data(value:Data):void
+		{
+			_data = value;
+			_data.transferValues(this);
+		}
 		
 		/**
 		 * The data source for this record.
@@ -292,8 +297,8 @@ package mesh.model
 				_loadOperation = dataSource.retrieve(reflect.clazz, id);
 				_loadOperation.addEventListener(ResultOperationEvent.RESULT, function(event:ResultOperationEvent):void
 				{
-					store.cache.insert(_data);
-					_data = event.data;
+					data = event.data;
+					store.cache.insert(data);
 				});
 			}
 			return _loadOperation;

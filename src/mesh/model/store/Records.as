@@ -12,13 +12,14 @@ package mesh.model.store
 	public class Records
 	{
 		private var _indexes:Dictionary = new Dictionary();
+		private var _store:Store;
 		
 		/**
 		 * Constructor.
 		 */
-		public function Records()
+		public function Records(store:Store)
 		{
-			
+			_store = store;
 		}
 		
 		/**
@@ -35,7 +36,7 @@ package mesh.model.store
 		private function index(type:Class):Index
 		{
 			if (_indexes[type] == null) {
-				_indexes[type] = new Index(type);
+				_indexes[type] = new Index();
 			}
 			return _indexes[type];
 		}
@@ -47,6 +48,7 @@ package mesh.model.store
 		 */
 		public function insert(record:Record):void
 		{
+			record.store = _store;
 			index(record.reflect.clazz).insert(record.id, record);
 		}
 	}

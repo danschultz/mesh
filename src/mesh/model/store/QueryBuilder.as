@@ -35,9 +35,12 @@ package mesh.model.store
 }
 
 import mesh.core.reflection.newInstance;
+import mesh.mesh_internal;
 import mesh.model.Record;
 import mesh.model.store.Query;
 import mesh.model.store.Store;
+
+use namespace mesh_internal;
 
 class FindQuery extends Query
 {

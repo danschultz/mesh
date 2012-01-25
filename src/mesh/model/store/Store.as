@@ -37,7 +37,7 @@ package mesh.model.store
 		/**
 		 * @copy DataCache
 		 */
-		public function get cache():DataCache
+		mesh_internal function get cache():DataCache
 		{
 			if (_cache == null) {
 				_cache = new DataCache();
@@ -58,10 +58,10 @@ package mesh.model.store
 		/**
 		 * @copy Records
 		 */
-		public function get records():Records
+		mesh_internal function get records():Records
 		{
 			if (_records == null) {
-				_records = new Records();
+				_records = new Records(this);
 			}
 			return _records;
 		}

@@ -12,7 +12,7 @@ package mesh.model.store
 	import org.hamcrest.object.equalTo;
 	import org.hamcrest.object.hasProperties;
 
-	public class FindTests
+	public class QueryTests
 	{
 		[Test]
 		public function testFindRecord():void
@@ -21,20 +21,20 @@ package mesh.model.store
 			var fixtures:FixtureDataSource = new FixtureDataSource(Person);
 			fixtures.add(data);
 			var store:Store = new Store(fixtures);
-			var person:Person = store.query(Person).find(1).execute();
+			var person:Person = store.query(Person).find(1).load();
 			assertThat(person, hasProperties(data));
 		}
 		
 		[Test]
-		public function testFindRecordAlwaysReturnsSameRecord():void
+		public function testFindAlwaysReturnsSameRecord():void
 		{
 			var data:Object = {id:1, firstName:"Jimmy", lastName:"Page"};
 			var fixtures:FixtureDataSource = new FixtureDataSource(Person);
 			fixtures.add(data);
 			
 			var store:Store = new Store(fixtures);
-			var person1:Person = store.query(Person).find(1).execute();
-			var person2:Person = store.query(Person).find(1).execute();
+			var person1:Person = store.query(Person).find(1).load();
+			var person2:Person = store.query(Person).find(1).load();
 			assertThat(person1, equalTo(person2));
 		}
 		
@@ -49,7 +49,7 @@ package mesh.model.store
 			fixtures.add(person2);
 			
 			var store:Store = new Store(fixtures);
-			var people:IList = store.query(Person).findAll().execute();
+			var people:IList = store.query(Person).findAll().load();
 			assertThat(people.toArray(), allOf(arrayWithSize(2), hasItems(hasProperties(person1), hasProperties(person2))));
 		}
 	}

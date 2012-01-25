@@ -9,7 +9,7 @@ Mesh follows the guidelines of [semantic versioning](http://www.semver.org).
 At the heart of Mesh, is the store. The store is where all the models of your application are kept.
 
 ### Queries
-Queries are used to find data within the store.
+Queries are used to find data within the store. You can query for a single record, or many records.
 
 	// Creating queries
 	var person:Person = store.query(Person).find(1);
@@ -25,13 +25,18 @@ Sometimes the data for the query hasn't been loaded yet. In this case, you need 
 
 Sometimes you'll want to know to when the data's been loaded. The event listener will need to be added before the call to `load()`. This ensures the listener exists for synchronous data calls.
 
-	// Listening to completion
+	// Listening for loaded data
 	person = store.query(Person).find(1);
 	person.loadOperation.addEventListener(FinishedOperationEvent.FINISHED, function(event:FinishedOperationEvent):void
 	{
 		
 	});
 	person.load();
+
+Sometimes you'll need to find data based on some condition.
+
+	// Search query
+	var people:ResultsList = store.query(Person).where({name:"Jimmy Page"});
 
 ### Data Source
 A data source is used to retrieve and persist data for the store. The data source class defines a template that sub-classes must override in order to fully function. These methods are used to create, retrieve, delete, and update data on the server.

@@ -37,7 +37,7 @@ package mesh.model.store
 		private function index(type:Class):Index
 		{
 			if (_indexes[type] == null) {
-				_indexes[type] = new Index(type);
+				_indexes[type] = new Index();
 			}
 			return _indexes[type];
 		}
