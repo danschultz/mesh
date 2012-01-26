@@ -2,8 +2,14 @@ package mesh.model.store
 {
 	import flash.utils.Dictionary;
 	
+	import mesh.core.reflection.newInstance;
+	import mesh.mesh_internal;
 	import mesh.model.Record;
-
+	import mesh.model.source.DataSource;
+	import mesh.operations.Operation;
+	
+	use namespace mesh_internal;
+	
 	/**
 	 * The index of records belonging to the store.
 	 * 
@@ -13,13 +19,17 @@ package mesh.model.store
 	{
 		private var _indexes:Dictionary = new Dictionary();
 		private var _store:Store;
+		private var _cache:DataCache;
+		private var _dataSource:DataSource;
 		
 		/**
 		 * Constructor.
 		 */
-		public function Records(store:Store)
+		public function Records(store:Store, dataSource:DataSource, cache:DataCache)
 		{
 			_store = store;
+			_dataSource = dataSource;
+			_cache = cache;
 		}
 		
 		/**
@@ -48,8 +58,34 @@ package mesh.model.store
 		 */
 		public function insert(record:Record):void
 		{
-			record.store = _store;
+			record.index = this;
 			index(record.reflect.clazz).insert(record.id, record);
+		}
+		
+		/**
+		 * Either creates, or returns an existing record from the store with the given data.
+		 * 
+		 * @param data The data to assign on the record.
+		 * @return A record.
+		 */
+		public function materialize(data:Data):*
+		{
+			_cache.insert(data);
+			
+			var record:Record = find(data.type).byId(data.id);
+			if (record == null) {
+				record = newInstance(data.type);
+				record.id = data.id;
+				insert(record);
+			}
+			
+			record.data = data;
+			return record;
+		}
+		
+		public function load(record:Record):Operation
+		{
+			return _dataSource.retrieve(record.reflect.clazz, record.id);
 		}
 	}
 }

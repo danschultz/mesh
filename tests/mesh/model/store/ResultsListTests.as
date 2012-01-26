@@ -13,21 +13,21 @@ package mesh.model.store
 	{
 		private var _person:Object;
 		private var _fixtures:FixtureDataSource;
-		private var _store:Store;
+		private var _records:Records;
 		
 		[Before]
 		public function setup():void
 		{
 			_person = {id:1, firstName:"Jimmy", lastName:"Page"};
 			_fixtures = new FixtureDataSource(Person);
-			_store = new Store(_fixtures);
+			_records = new Records(new Store(_fixtures), _fixtures, new DataCache());
 		}
 		
 		[Test]
 		public function testLoad():void
 		{
 			var called:Boolean;
-			var results:ResultsList = new ResultsList(_store, new ArrayList(), new MethodOperation(function():void
+			var results:ResultsList = new ResultsList(_records, new ArrayList(), new MethodOperation(function():void
 			{
 				called = true;
 			}));
@@ -41,7 +41,7 @@ package mesh.model.store
 		public function testLoadOnlyOnce():void
 		{
 			var called:Boolean;
-			var results:ResultsList = new ResultsList(_store, new ArrayList(), new MethodOperation(function():void
+			var results:ResultsList = new ResultsList(_records, new ArrayList(), new MethodOperation(function():void
 			{
 				called = true;
 			}));
@@ -57,7 +57,7 @@ package mesh.model.store
 		public function testRefresh():void
 		{
 			var called:Boolean;
-			var results:ResultsList = new ResultsList(_store, new ArrayList(), new MethodOperation(function():void
+			var results:ResultsList = new ResultsList(_records, new ArrayList(), new MethodOperation(function():void
 			{
 				called = true;
 			}));

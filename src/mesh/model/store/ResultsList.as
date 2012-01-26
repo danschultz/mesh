@@ -11,20 +11,17 @@ package mesh.model.store
 	
 	public class ResultsList extends List
 	{
-		private var _store:Store;
-		
-		public function ResultsList(store:Store, records:IList, loadOperation:Operation)
+		public function ResultsList(records:Records, results:IList, loadOperation:Operation)
 		{
 			super();
-			_store = store;
 			
-			list = records;
+			list = results;
 			
 			_loadOperation = loadOperation;
 			_loadOperation.addEventListener(ResultOperationEvent.RESULT, function(event:ResultOperationEvent):void
 			{
 				for each (var data:Data in event.data) {
-					_store.materialize(data);
+					records.materialize(data);
 				}
 				_isLoaded = true;
 			});

@@ -1,8 +1,6 @@
 package mesh.model.store
 {
-	import mesh.core.reflection.newInstance;
 	import mesh.mesh_internal;
-	import mesh.model.Record;
 	import mesh.model.source.DataSource;
 	
 	use namespace mesh_internal;
@@ -14,6 +12,10 @@ package mesh.model.store
 	 */
 	public class Store
 	{
+		private var _cache:DataCache;
+		private var _dataSource:DataSource;
+		private var _records:Records;
+		
 		/**
 		 * Constructor.
 		 * 
@@ -22,6 +24,9 @@ package mesh.model.store
 		public function Store(dataSource:DataSource)
 		{
 			_dataSource = dataSource;
+			_cache = new DataCache();
+			_records = new Records(this, _dataSource, _cache);
+			
 		}
 		
 		/**
@@ -32,61 +37,15 @@ package mesh.model.store
 		 */
 		public function query(recordType:Class):QueryBuilder
 		{
-			return new QueryBuilder(this, recordType);
+			return new QueryBuilder(_dataSource, _records, recordType);
 		}
 		
 		/**
-		 * Either creates, or returns an existing record from the store with the given data.
-		 * 
-		 * @param data The data to assign on the record.
-		 * @return A record.
+		 * @copy Records#materialize()
 		 */
 		public function materialize(data:Data):*
 		{
-			cache.insert(data);
-			
-			var record:Record = records.find(data.type).byId(data.id);
-			if (record == null) {
-				record = newInstance(data.type);
-				record.id = data.id;
-				records.insert(record);
-			}
-			
-			record.data = data;
-			return record;
-		}
-		
-		private var _cache:DataCache;
-		/**
-		 * @copy DataCache
-		 */
-		mesh_internal function get cache():DataCache
-		{
-			if (_cache == null) {
-				_cache = new DataCache();
-			}
-			return _cache;
-		}
-		
-		private var _dataSource:DataSource;
-		/**
-		 * The store's data source.
-		 */
-		mesh_internal function get dataSource():DataSource
-		{
-			return _dataSource;
-		}
-		
-		private var _records:Records;
-		/**
-		 * @copy Records
-		 */
-		mesh_internal function get records():Records
-		{
-			if (_records == null) {
-				_records = new Records(this);
-			}
-			return _records;
+			return _records.materialize(data);
 		}
 	}
 }

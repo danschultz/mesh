@@ -1,13 +1,17 @@
 package mesh.model.store
 {
+	import mesh.model.source.DataSource;
+
 	public class QueryBuilder
 	{
-		private var _store:Store;
+		private var _dataSource:DataSource;
+		private var _records:Records;
 		private var _recordType:Class;
 		
-		public function QueryBuilder(store:Store, recordType:Class)
+		public function QueryBuilder(dataSource:DataSource, records:Records, recordType:Class)
 		{
-			_store = store;
+			_dataSource = dataSource;
+			_records = records;
 			_recordType = recordType;
 		}
 		
@@ -19,7 +23,7 @@ package mesh.model.store
 		 */
 		public function find(id:Object):*
 		{
-			return new FindQuery(_store, _recordType, id).execute();
+			return new FindQuery(_dataSource, _records, _recordType, id).execute();
 		}
 		
 		/**
@@ -29,7 +33,7 @@ package mesh.model.store
 		 */
 		public function findAll():*
 		{
-			return new FindAllQuery(_store, _recordType).execute();
+			return new FindAllQuery(_dataSource, _records, _recordType).execute();
 		}
 		
 		/**
@@ -40,15 +44,17 @@ package mesh.model.store
 		 */
 		public function where(conditions:Object):*
 		{
-			return new WhereQuery(_store, _recordType, conditions).execute();
+			return new WhereQuery(_dataSource, _records, _recordType, conditions).execute();
 		}
 	}
 }
 
 import mesh.mesh_internal;
 import mesh.model.Record;
+import mesh.model.source.DataSource;
 import mesh.model.store.Data;
 import mesh.model.store.Query;
+import mesh.model.store.Records;
 import mesh.model.store.ResultsList;
 import mesh.model.store.Store;
 
@@ -60,19 +66,19 @@ class FindQuery extends Query
 {
 	private var _id:Object;
 	
-	public function FindQuery(store:Store, recordType:Class, id:Object)
+	public function FindQuery(dataSource:DataSource, records:Records, recordType:Class, id:Object)
 	{
-		super(store, recordType);
+		super(dataSource, records, recordType);
 		_id = id;
 	}
 	
 	override public function execute():*
 	{
-		var record:Record = store.records.find(recordType).byId(_id);
+		var record:Record = records.find(recordType).byId(_id);
 		
 		// The record doesn't belong to the store. We need to retrieve it from the data source.
 		if (record == null) {
-			record = store.materialize( new Data({id:_id}, recordType) );
+			record = records.materialize( new Data({id:_id}, recordType) );
 		}
 		
 		return record;
@@ -83,15 +89,15 @@ class FindAllQuery extends Query
 {
 	private var _results:ResultsList;
 	
-	public function FindAllQuery(store:Store, recordType:Class)
+	public function FindAllQuery(dataSource:DataSource, records:Records, recordType:Class)
 	{
-		super(store, recordType);
+		super(dataSource, records, recordType);
 	}
 	
 	override public function execute():*
 	{
 		if (_results == null) {
-			_results = new ResultsList(store, store.records.find(recordType).all(), store.dataSource.retrieveAll(recordType));
+			_results = new ResultsList(records, records.find(recordType).all(), dataSource.retrieveAll(recordType));
 		}
 		return _results;
 	}
@@ -102,16 +108,16 @@ class WhereQuery extends Query
 	private var _results:ResultsList;
 	private var _conditions:Object;
 	
-	public function WhereQuery(store:Store, recordType:Class, conditions:Object)
+	public function WhereQuery(dataSource:DataSource, records:Records, recordType:Class, conditions:Object)
 	{
-		super(store, recordType);
+		super(dataSource, records, recordType);
 		_conditions = conditions;
 	}
 	
 	override public function execute():*
 	{
 		if (_results == null) {
-			var collection:ListCollectionView = new ListCollectionView(store.records.find(recordType).all());
+			var collection:ListCollectionView = new ListCollectionView(records.find(recordType).all());
 			collection.filterFunction = function(record:Record):Boolean
 			{
 				for (var property:String in _conditions) {
@@ -122,7 +128,7 @@ class WhereQuery extends Query
 				return true;
 			};
 			collection.refresh();
-			_results = new ResultsList(store, collection, store.dataSource.search(recordType, _conditions));
+			_results = new ResultsList(records, collection, dataSource.search(recordType, _conditions));
 		}
 		return _results;
 	}
