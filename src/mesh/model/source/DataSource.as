@@ -20,5 +20,10 @@ package mesh.model.source
 		{
 			throw new IllegalOperationError();
 		}
+		
+		public function search(recordType:Class, params:Object):Operation
+		{
+			throw new IllegalOperationError();
+		}
 	}
 }

@@ -78,6 +78,31 @@ package mesh.model.source
 				});
 			});
 		}
+		
+		override public function search(recordType:Class, params:Object):Operation
+		{
+			if (recordType != _type) {
+				throw new ArgumentError("Invalid record type.");
+			}
+			
+			return new TimedOperation(_options.latency, function():Array
+			{
+				var results:Array = _fixtures.values().filter(function(fixture:Object, ...args):Boolean
+				{
+					for (var property:String in params) {
+						if (fixture[property] != params[property]) {
+							return false;
+						}
+					}
+					return true;
+				});
+				
+				return results.map(function(fixture:Object, ...args):Data
+				{
+					return new Data(fixture, recordType);
+				});
+			});
+		}
 	}
 }
 

@@ -15,7 +15,7 @@ package mesh.model.store
 	public class QueryTests
 	{
 		[Test]
-		public function testFindRecord():void
+		public function testFind():void
 		{
 			var data:Object = {id:1, firstName:"Jimmy", lastName:"Page"};
 			var fixtures:FixtureDataSource = new FixtureDataSource(Person);
@@ -39,7 +39,7 @@ package mesh.model.store
 		}
 		
 		[Test]
-		public function testFindAllRecords():void
+		public function testFindAll():void
 		{
 			var person1:Object = {id:1, firstName:"Jimmy", lastName:"Page"};
 			var person2:Object = {id:2, firstName:"Fox", lastName:"Mulder"};
@@ -51,6 +51,21 @@ package mesh.model.store
 			var store:Store = new Store(fixtures);
 			var people:IList = store.query(Person).findAll().load();
 			assertThat(people.toArray(), allOf(arrayWithSize(2), hasItems(hasProperties(person1), hasProperties(person2))));
+		}
+		
+		[Test]
+		public function testWhere():void
+		{
+			var person1:Object = {id:1, firstName:"Jimmy", lastName:"Page"};
+			var person2:Object = {id:2, firstName:"Fox", lastName:"Mulder"};
+			
+			var fixtures:FixtureDataSource = new FixtureDataSource(Person);
+			fixtures.add(person1);
+			fixtures.add(person2);
+			
+			var store:Store = new Store(fixtures);
+			var people:IList = store.query(Person).where({firstName:"Jimmy"}).load();
+			assertThat(people.toArray(), allOf(arrayWithSize(1), hasItems(hasProperties(person1))));
 		}
 	}
 }

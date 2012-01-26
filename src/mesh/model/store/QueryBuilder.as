@@ -25,22 +25,34 @@ package mesh.model.store
 		/**
 		 * Generates a new query that fetches all records of a single type.
 		 * 
-		 * @return A query.
+		 * @return A result list.
 		 */
 		public function findAll():*
 		{
 			return new FindAllQuery(_store, _recordType).execute();
 		}
+		
+		/**
+		 * Returns a new result list that contains the records that meet the given conditions.
+		 * 
+		 * @param conditions The conditions for the record.
+		 * @return A result list.
+		 */
+		public function where(conditions:Object):*
+		{
+			return new WhereQuery(_store, _recordType, conditions).execute();
+		}
 	}
 }
 
-import mesh.core.reflection.newInstance;
 import mesh.mesh_internal;
 import mesh.model.Record;
 import mesh.model.store.Data;
 import mesh.model.store.Query;
 import mesh.model.store.ResultsList;
 import mesh.model.store.Store;
+
+import mx.collections.ListCollectionView;
 
 use namespace mesh_internal;
 
@@ -80,6 +92,37 @@ class FindAllQuery extends Query
 	{
 		if (_results == null) {
 			_results = new ResultsList(store, store.records.find(recordType).all(), store.dataSource.retrieveAll(recordType));
+		}
+		return _results;
+	}
+}
+
+class WhereQuery extends Query
+{
+	private var _results:ResultsList;
+	private var _conditions:Object;
+	
+	public function WhereQuery(store:Store, recordType:Class, conditions:Object)
+	{
+		super(store, recordType);
+		_conditions = conditions;
+	}
+	
+	override public function execute():*
+	{
+		if (_results == null) {
+			var collection:ListCollectionView = new ListCollectionView(store.records.find(recordType).all());
+			collection.filterFunction = function(record:Record):Boolean
+			{
+				for (var property:String in _conditions) {
+					if (record[property] != _conditions[property]) {
+						return false;
+					}
+				}
+				return true;
+			};
+			collection.refresh();
+			_results = new ResultsList(store, collection, store.dataSource.search(recordType, _conditions));
 		}
 		return _results;
 	}
