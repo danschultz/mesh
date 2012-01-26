@@ -37,7 +37,9 @@ package mesh.model.store
 import mesh.core.reflection.newInstance;
 import mesh.mesh_internal;
 import mesh.model.Record;
+import mesh.model.store.Data;
 import mesh.model.store.Query;
+import mesh.model.store.ResultsList;
 import mesh.model.store.Store;
 
 use namespace mesh_internal;
@@ -58,9 +60,7 @@ class FindQuery extends Query
 		
 		// The record doesn't belong to the store. We need to retrieve it from the data source.
 		if (record == null) {
-			record = newInstance(recordType);
-			record.id = _id;
-			store.records.insert(record);
+			record = store.materialize( new Data({id:_id}, recordType) );
 		}
 		
 		return record;
@@ -69,8 +69,18 @@ class FindQuery extends Query
 
 class FindAllQuery extends Query
 {
+	private var _results:ResultsList;
+	
 	public function FindAllQuery(store:Store, recordType:Class)
 	{
 		super(store, recordType);
+	}
+	
+	override public function execute():*
+	{
+		if (_results == null) {
+			_results = new ResultsList(store, store.records.find(recordType).all(), store.dataSource.retrieveAll(recordType));
+		}
+		return _results;
 	}
 }

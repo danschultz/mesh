@@ -1,6 +1,8 @@
 package mesh.model.store
 {
+	import mesh.core.reflection.newInstance;
 	import mesh.mesh_internal;
+	import mesh.model.Record;
 	import mesh.model.source.DataSource;
 	
 	use namespace mesh_internal;
@@ -31,6 +33,27 @@ package mesh.model.store
 		public function query(recordType:Class):QueryBuilder
 		{
 			return new QueryBuilder(this, recordType);
+		}
+		
+		/**
+		 * Either creates, or returns an existing record from the store with the given data.
+		 * 
+		 * @param data The data to assign on the record.
+		 * @return A record.
+		 */
+		public function materialize(data:Data):*
+		{
+			cache.insert(data);
+			
+			var record:Record = records.find(data.type).byId(data.id);
+			if (record == null) {
+				record = newInstance(data.type);
+				record.id = data.id;
+				records.insert(record);
+			}
+			
+			record.data = data;
+			return record;
 		}
 		
 		private var _cache:DataCache;

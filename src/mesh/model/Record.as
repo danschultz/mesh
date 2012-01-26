@@ -249,11 +249,11 @@ package mesh.model
 		/**
 		 * The data for this record.
 		 */
-		protected function get data():Data
+		mesh_internal function get data():Data
 		{
 			return _data;
 		}
-		protected function set data(value:Data):void
+		mesh_internal function set data(value:Data):void
 		{
 			_data = value;
 			_data.transferValues(this);
@@ -295,12 +295,13 @@ package mesh.model
 			_id = value;
 		}
 		
+		private var _isLoaded:Boolean;
 		/**
 		 * Checks if the data for this record has been loaded.
 		 */
 		public function get isLoaded():Boolean
 		{
-			return store.cache.find(reflect.clazz).byId(id) != null;
+			return _isLoaded;
 		}
 		
 		private var _loadOperation:Operation;
@@ -313,8 +314,8 @@ package mesh.model
 				_loadOperation = dataSource.retrieve(reflect.clazz, id);
 				_loadOperation.addEventListener(ResultOperationEvent.RESULT, function(event:ResultOperationEvent):void
 				{
-					data = event.data;
-					store.cache.insert(data);
+					store.materialize(event.data);
+					_isLoaded = true;
 				});
 			}
 			return _loadOperation;

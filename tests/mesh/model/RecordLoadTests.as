@@ -2,6 +2,7 @@ package mesh.model
 {
 	import mesh.Person;
 	import mesh.model.source.FixtureDataSource;
+	import mesh.model.store.Data;
 	import mesh.model.store.Store;
 	import mesh.operations.OperationEvent;
 	
@@ -30,9 +31,7 @@ package mesh.model
 		 */
 		public function testLoad():void
 		{
-			var person:Person = new Person();
-			person.id = _data.id;
-			person.store = _store;
+			var person:Person = _store.materialize(new Data({id:_data.id}, Person));
 			person.load();
 			
 			assertThat(person, hasProperties(_data));
@@ -45,9 +44,7 @@ package mesh.model
 		 */
 		public function testOnlyLoadOnce():void
 		{
-			var person:Person = new Person();
-			person.id = _data.id;
-			person.store = _store;
+			var person:Person = _store.materialize(new Data({id:_data.id}, Person));
 			person.load();
 			
 			var reloaded:Boolean;
@@ -62,9 +59,7 @@ package mesh.model
 		[Test]
 		public function testRefresh():void
 		{
-			var person:Person = new Person();
-			person.id = _data.id;
-			person.store = _store;
+			var person:Person = _store.materialize(new Data({id:_data.id}, Person));
 			person.load();
 			
 			_data = {id:1, firstName:"Fox", lastName:"Mulder"};

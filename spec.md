@@ -38,6 +38,17 @@ Sometimes you'll need to find data based on some condition.
 	// Search query
 	var people:ResultsList = store.query(Person).where({name:"Jimmy Page"});
 
+`ResultsSet`'s are records from a query that have the potential for multiple results. These sets are automatically updated whenever the store is updated. You cannot add or remove elements directly from the result set. These operations must happen through the store.
+
+	// Query for everyone
+	var people:ResultsList = store.query(Person).findAll();
+	trace(people.length); // 5
+
+	// Remove a person from the store
+	var person:Person = store.query(Person).find(1);
+	person.remove();
+	trace(people.length); // 4
+
 ### Data Source
 A data source is used to retrieve and persist data for the store. The data source class defines a template that sub-classes must override in order to fully function. These methods are used to create, retrieve, delete, and update data on the server.
 
