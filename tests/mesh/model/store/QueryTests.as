@@ -3,8 +3,6 @@ package mesh.model.store
 	import mesh.Person;
 	import mesh.model.source.FixtureDataSource;
 	
-	import mx.collections.IList;
-	
 	import org.flexunit.assertThat;
 	import org.hamcrest.collection.arrayWithSize;
 	import org.hamcrest.collection.hasItems;
@@ -49,8 +47,20 @@ package mesh.model.store
 			fixtures.add(person2);
 			
 			var store:Store = new Store(fixtures);
-			var people:IList = store.query(Person).findAll().load();
+			var people:ResultsList = store.query(Person).findAll().load();
 			assertThat(people.toArray(), allOf(arrayWithSize(2), hasItems(hasProperties(person1), hasProperties(person2))));
+		}
+		
+		[Test]
+		public function testFindAllAutoUpdatesWithNewRecords():void
+		{
+			var store:Store = new Store(new FixtureDataSource(Person));
+			var people:ResultsList = store.query(Person).findAll().load();
+			
+			var person1:Object = {id:1, firstName:"Jimmy", lastName:"Page"};
+			store.materialize(new Data(person1, Person));
+			
+			assertThat(people.toArray(), allOf(arrayWithSize(1), hasItems(hasProperties(person1))));
 		}
 		
 		[Test]
@@ -64,7 +74,19 @@ package mesh.model.store
 			fixtures.add(person2);
 			
 			var store:Store = new Store(fixtures);
-			var people:IList = store.query(Person).where({firstName:"Jimmy"}).load();
+			var people:ResultsList = store.query(Person).where({firstName:"Jimmy"}).load();
+			assertThat(people.toArray(), allOf(arrayWithSize(1), hasItems(hasProperties(person1))));
+		}
+		
+		[Test]
+		public function testWhereAutoUpdatesWithNewRecords():void
+		{
+			var store:Store = new Store(new FixtureDataSource(Person));
+			var people:ResultsList = store.query(Person).where({firstName:"Jimmy"}).load();
+			
+			var person1:Object = {id:1, firstName:"Jimmy", lastName:"Page"};
+			store.materialize(new Data(person1, Person));
+			
 			assertThat(people.toArray(), allOf(arrayWithSize(1), hasItems(hasProperties(person1))));
 		}
 	}
