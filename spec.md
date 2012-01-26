@@ -15,15 +15,15 @@ Queries are used to find data within the store. You can query for a single recor
 	var person:Person = store.query(Person).find(1);
 	var people:ResultsList = store.query(Person).findAll();
 
-Sometimes the data for the query hasn't been loaded yet. In this case, you need to load the query's data. `load()` will only load the data if it hasn't ever been loaded. If you want to reload the data, then call `refresh()`.
+Sometimes you'll want to load the queries through the data source. Calling the query's `load()` method will tell the store's data source to load the data for that query. It's up to the data source to interpret the query and map it to the backend services that are available. Multiple calls to `load()` will ensure that the query is only loaded once. Calling `refresh()` will force an reload of the query.
 
-	// Load the data for the query if it hasn't been loaded.
-	person = store.query(Person).find(1).load(); // This can be a shortcut for.. person.loadOperation.execute();
+	// Load a query from the data source
+	var males:ResultsList = store.query(Person).where({sex:"m"}).load();
 
-	// Reload the data, even if it's already been loaded.
-	person = store.query(Person).find(1).refresh();
+	// Reload the query
+	males.refresh();
 
-Sometimes you'll want to know to when the data's been loaded. The event listener will need to be added before the call to `load()`. This ensures the listener exists for synchronous data calls.
+Sometimes you'll want to know to when the query's data has been loaded. The event listener will need to be added before the call to `load()`. This ensures the listener exists for synchronous data calls.
 
 	// Listening for loaded data
 	person = store.query(Person).find(1);
@@ -38,7 +38,7 @@ Sometimes you'll need to find data based on some condition.
 	// Search query
 	var people:ResultsList = store.query(Person).where({name:"Jimmy Page"});
 
-`ResultsSet`'s are records from a query that have the potential for multiple results. These sets are automatically updated whenever the store is updated. You cannot add or remove elements directly from the result set. These operations must happen through the store.
+`ResultsList`'s are queries that have multiple results. These sets are automatically updated whenever the store is updated. You cannot add or remove elements directly from the result list. These operations must happen through the store.
 
 	// Query for everyone
 	var people:ResultsList = store.query(Person).findAll();
