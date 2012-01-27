@@ -6,7 +6,6 @@ package mesh.model.store
 	import mesh.mesh_internal;
 	import mesh.model.Record;
 	import mesh.model.source.DataSource;
-	import mesh.operations.Operation;
 	
 	use namespace mesh_internal;
 	
@@ -58,7 +57,7 @@ package mesh.model.store
 		 */
 		public function insert(record:Record):void
 		{
-			record.index = this;
+			record.store = _store;
 			index(record.reflect.clazz).insert(record.id, record);
 		}
 		
@@ -81,11 +80,6 @@ package mesh.model.store
 			
 			record.data = data;
 			return record;
-		}
-		
-		public function load(record:Record):Operation
-		{
-			return _dataSource.retrieve(record.reflect.clazz, record.id);
 		}
 	}
 }

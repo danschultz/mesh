@@ -45,6 +45,15 @@ package mesh.model.associations
 			}
 		}
 		
+		/**
+		 * @inheritDoc
+		 */
+		override public function initialize():void
+		{
+			super.initialize();
+			owner[property] = store.query(recordType).find(owner[foreignKey]);
+		}
+		
 		private function populateForeignKey():void
 		{
 			// If the foreign key is undefined, try to automagically set it.

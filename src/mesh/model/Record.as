@@ -7,10 +7,12 @@ package mesh.model
 	import mesh.core.object.copy;
 	import mesh.core.reflection.Type;
 	import mesh.mesh_internal;
+	import mesh.model.associations.Association;
 	import mesh.model.associations.HasManyAssociation;
 	import mesh.model.associations.HasOneAssociation;
 	import mesh.model.store.Data;
 	import mesh.model.store.Records;
+	import mesh.model.store.Store;
 	import mesh.model.validators.Errors;
 	import mesh.model.validators.Validator;
 	import mesh.operations.Operation;
@@ -108,6 +110,18 @@ package mesh.model
 		public function hashCode():Object
 		{
 			return id;
+		}
+		
+		private function indexed():void
+		{
+			initializeAssociations();
+		}
+		
+		private function initializeAssociations():void
+		{
+			for each (var association:Association in associations) {
+				association.initialize();
+			}
 		}
 		
 		/**
@@ -286,22 +300,6 @@ package mesh.model
 			_id = value;
 		}
 		
-		private var _index:Records;
-		/**
-		 * The record index that this record belongs to.
-		 */
-		mesh_internal function get index():Records
-		{
-			return _index;
-		}
-		mesh_internal function set index(value:Records):void
-		{
-			if (_index != null) {
-				throw new IllegalOperationError("Cannot reset index on Record.");
-			}
-			_index = value;
-		}
-		
 		private var _isLoaded:Boolean;
 		/**
 		 * Checks if the data for this record has been loaded.
@@ -318,10 +316,10 @@ package mesh.model
 		public function get loadOperation():Operation
 		{
 			if (_loadOperation == null) {
-				_loadOperation = index.load(this);
+				_loadOperation = store.dataSource.retrieve(reflect.clazz, id);
 				_loadOperation.addEventListener(ResultOperationEvent.RESULT, function(event:ResultOperationEvent):void
 				{
-					index.materialize(event.data);
+					store.materialize(event.data);
 					_isLoaded = true;
 				});
 			}
@@ -339,6 +337,23 @@ package mesh.model
 				_reflect = Type.reflect(this);
 			}
 			return _reflect;
+		}
+		
+		private var _store:Store;
+		/**
+		 * The store that this record belongs to.
+		 */
+		mesh_internal function get store():Store
+		{
+			return _store;
+		}
+		mesh_internal function set store(value:Store):void
+		{
+			if (_store != null) {
+				throw new IllegalOperationError("Cannot reset store on Record.");
+			}
+			_store = value;
+			indexed();
 		}
 	}
 }

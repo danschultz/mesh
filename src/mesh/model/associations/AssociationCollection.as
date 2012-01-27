@@ -123,6 +123,14 @@ package mesh.model.associations
 		/**
 		 * @inheritDoc
 		 */
+		override public function initialize():void
+		{
+			super.initialize();
+		}
+		
+		/**
+		 * @inheritDoc
+		 */
 		public function itemUpdated(item:Object, property:Object = null, oldValue:Object = null, newValue:Object = null):void
 		{
 			_list.itemUpdated(item, property, oldValue, newValue);

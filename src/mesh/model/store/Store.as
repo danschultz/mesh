@@ -12,10 +12,6 @@ package mesh.model.store
 	 */
 	public class Store
 	{
-		private var _cache:DataCache;
-		private var _dataSource:DataSource;
-		private var _records:Records;
-		
 		/**
 		 * Constructor.
 		 * 
@@ -46,6 +42,33 @@ package mesh.model.store
 		public function materialize(data:Data):*
 		{
 			return _records.materialize(data);
+		}
+		
+		private var _cache:DataCache;
+		/**
+		 * @private
+		 */
+		mesh_internal function get cache():DataCache
+		{
+			return _cache;
+		}
+		
+		private var _dataSource:DataSource;
+		/**
+		 * @private
+		 */
+		mesh_internal function get dataSource():DataSource
+		{
+			return _dataSource;
+		}
+		
+		private var _records:Records;
+		/**
+		 * @private
+		 */
+		mesh_internal function get records():Records
+		{
+			return _records;
 		}
 	}
 }

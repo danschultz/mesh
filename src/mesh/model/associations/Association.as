@@ -8,9 +8,13 @@ package mesh.model.associations
 	
 	import mesh.core.inflection.humanize;
 	import mesh.core.reflection.Type;
+	import mesh.mesh_internal;
 	import mesh.model.Record;
+	import mesh.model.store.Store;
 	
 	import mx.events.PropertyChangeEvent;
+	
+	use namespace mesh_internal;
 	
 	/**
 	 * An association class is a proxy object that contains the references to the objects in
@@ -79,7 +83,7 @@ package mesh.model.associations
 		 */
 		public function initialize():void
 		{
-			object = owner[property];
+			
 		}
 		
 		/**
@@ -234,6 +238,14 @@ package mesh.model.associations
 				_reflect = Type.reflect(this);
 			}
 			return _reflect;
+		}
+		
+		/**
+		 * The store that the owner belongs to.
+		 */
+		protected function get store():Store
+		{
+			return owner.store;
 		}
 	}
 }
