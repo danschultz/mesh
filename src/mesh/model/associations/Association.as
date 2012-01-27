@@ -79,14 +79,6 @@ package mesh.model.associations
 		}
 		
 		/**
-		 * Used internally by the record to initialize the association with its data.
-		 */
-		public function initialize():void
-		{
-			
-		}
-		
-		/**
 		 * Loads the data for this association. If this is a non-lazy association, then nothing happens.
 		 */
 		public function load():void

@@ -25,6 +25,7 @@ package mesh.model.associations
 			_query = query;
 			
 			_list = new SynchronizedList();
+			_list.list = _query.apply(owner, [store]);
 			_list.addEventListener(CollectionEvent.COLLECTION_CHANGE, handleListCollectionChange);
 		}
 		
@@ -120,15 +121,6 @@ package mesh.model.associations
 		private function handleResultsComplete(event:Event):void
 		{
 			loaded();
-		}
-		
-		/**
-		 * @inheritDoc
-		 */
-		override public function initialize():void
-		{
-			super.initialize();
-			_list.list = _query.apply(owner, [store]);
 		}
 		
 		/**

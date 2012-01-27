@@ -7,7 +7,6 @@ package mesh.model
 	import mesh.core.object.copy;
 	import mesh.core.reflection.Type;
 	import mesh.mesh_internal;
-	import mesh.model.associations.Association;
 	import mesh.model.associations.HasManyAssociation;
 	import mesh.model.associations.HasOneAssociation;
 	import mesh.model.store.Data;
@@ -109,18 +108,6 @@ package mesh.model
 		public function hashCode():Object
 		{
 			return id;
-		}
-		
-		private function indexed():void
-		{
-			initializeAssociations();
-		}
-		
-		private function initializeAssociations():void
-		{
-			for each (var association:Association in associations) {
-				association.initialize();
-			}
 		}
 		
 		/**
@@ -287,6 +274,7 @@ package mesh.model
 		}
 		
 		private var _id:*;
+		[Bindable]
 		/**
 		 * An object that represents the ID for this record.
 		 */
@@ -352,7 +340,6 @@ package mesh.model
 				throw new IllegalOperationError("Cannot reset store on Record.");
 			}
 			_store = value;
-			indexed();
 		}
 	}
 }

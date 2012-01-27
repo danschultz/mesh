@@ -20,6 +20,7 @@ package mesh.model.associations
 		{
 			super(owner, property, options);
 			checkForRequiredFields();
+			owner.addEventListener(PropertyChangeEvent.PROPERTY_CHANGE, handleOwnerPropertyChange);
 		}
 		
 		/**
@@ -45,12 +46,15 @@ package mesh.model.associations
 			}
 		}
 		
-		/**
-		 * @inheritDoc
-		 */
-		override public function initialize():void
+		private function handleOwnerPropertyChange(event:PropertyChangeEvent):void
 		{
-			super.initialize();
+			if (event.property == foreignKey) {
+				populateRecord();
+			}
+		}
+		
+		private function populateRecord():void
+		{
 			owner[property] = store.query(recordType).find(owner[foreignKey]);
 		}
 		
@@ -60,7 +64,7 @@ package mesh.model.associations
 			var key:String = foreignKey;
 			
 			if (owner.hasOwnProperty(key)) {
-				owner[key] = object.id;
+				owner[key] = _record.id;
 			}
 		}
 		
@@ -106,14 +110,18 @@ package mesh.model.associations
 			return null;
 		}
 		
+		private var _record:Record;
 		/**
 		 * @inheritDoc
 		 */
 		override public function set object(value:*):void
 		{
-			if (object != null) unassociate(object);
-			super.object = value;
-			if (object != null) associate(object);
+			if (value != _record) {
+				if (_record != null) unassociate(_record);
+				_record = value;
+				super.object = _record;
+				if (_record != null) associate(_record);
+			}
 		}
 	}
 }
