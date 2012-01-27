@@ -28,5 +28,12 @@ package mesh.model
 			var customer:Customer = _store.query(Customer).find(1).load();
 			assertThat(customer.account, notNullValue());
 		}
+		
+		[Test]
+		public function testInitializeHasManyAssociation():void
+		{
+			var customer:Customer = _store.query(Customer).find(1).load();
+			assertThat(customer.orders, notNullValue());
+		}
 	}
 }

@@ -11,7 +11,6 @@ package mesh.model
 	import mesh.model.associations.HasManyAssociation;
 	import mesh.model.associations.HasOneAssociation;
 	import mesh.model.store.Data;
-	import mesh.model.store.Records;
 	import mesh.model.store.Store;
 	import mesh.model.validators.Errors;
 	import mesh.model.validators.Validator;
@@ -77,9 +76,9 @@ package mesh.model
 		 * @param options Any options to configure the association.
 		 * @return The association object.
 		 */
-		protected function hasMany(property:String, options:Object = null):void
+		protected function hasMany(property:String, query:Function, options:Object = null):void
 		{
-			var association:HasManyAssociation = new HasManyAssociation(this, property, options);
+			var association:HasManyAssociation = new HasManyAssociation(this, property, query, options);
 			this[property] = association;
 			_associations.map(property, association);
 		}

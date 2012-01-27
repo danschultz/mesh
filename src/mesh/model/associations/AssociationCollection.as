@@ -14,13 +14,15 @@ package mesh.model.associations
 	{
 		private var _list:SynchronizedList;
 		private var _snapshot:Array = [];
+		private var _query:Function;
 		
 		/**
-		 * @copy AssociationProxy#AssociationProxy()
+		 * @copy Association#Association()
 		 */
-		public function AssociationCollection(source:Record, property:String, options:Object = null)
+		public function AssociationCollection(source:Record, property:String, query:Function, options:Object = null)
 		{
 			super(source, property, options);
+			_query = query;
 			
 			_list = new SynchronizedList();
 			_list.addEventListener(CollectionEvent.COLLECTION_CHANGE, handleListCollectionChange);
@@ -126,6 +128,7 @@ package mesh.model.associations
 		override public function initialize():void
 		{
 			super.initialize();
+			_list.list = _query.apply(owner, [store]);
 		}
 		
 		/**
