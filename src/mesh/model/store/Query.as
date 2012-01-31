@@ -18,7 +18,7 @@ package mesh.model.store
 		 * @param records The records to query.
 		 * @param recordType The type of records to query.
 		 */
-		public function Query(dataSource:DataSource, records:Records, recordType:Class)
+		public function Query(dataSource:DataSource, records:RecordCache, recordType:Class)
 		{
 			_dataSource = dataSource;
 			_records = records;
@@ -51,11 +51,11 @@ package mesh.model.store
 			return _recordType;
 		}
 		
-		private var _records:Records;
+		private var _records:RecordCache;
 		/**
 		 * The records to query.
 		 */
-		protected function get records():Records
+		protected function get records():RecordCache
 		{
 			return _records;
 		}

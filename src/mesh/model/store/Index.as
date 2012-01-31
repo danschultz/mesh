@@ -2,36 +2,48 @@ package mesh.model.store
 {
 	import collections.HashMap;
 	
+	import flash.events.IEventDispatcher;
+	
 	import mesh.core.List;
 	
-	import mx.collections.IList;
+	import mx.events.CollectionEvent;
+	import mx.events.CollectionEventKind;
+	import mx.events.PropertyChangeEvent;
 
 	/**
-	 * A index of arbitrary store data.
+	 * A list belonging to the cache that contains data of the same type. This list will automatically
+	 * index its data based on an ID field.
 	 * 
 	 * @author Dan Schultz
 	 */
-	public class Index
+	public class Index extends List
 	{
 		private var _index:HashMap = new HashMap();
-		private var _items:List = new List();
+		private var _idField:String;
 		
 		/**
 		 * Constructor.
 		 */
-		public function Index()
+		public function Index(idField:String = "id")
 		{
-			
+			_idField = idField;
+			addEventListener(CollectionEvent.COLLECTION_CHANGE, handleListChange);
 		}
 		
 		/**
-		 * Returns all elements in the index.
-		 * 
-		 * @return The index's elements.
+		 * @inheritDoc
 		 */
-		public function all():IList
+		override public function addItemAt(item:Object, index:int):void
 		{
-			return _items;
+			if (contains(item)) {
+				remove(item);
+			}
+			
+			if (item is IEventDispatcher) {
+				(item as IEventDispatcher).addEventListener(PropertyChangeEvent.PROPERTY_CHANGE, handlePropertyChange);
+			}
+			
+			super.addItemAt(item, length);
 		}
 		
 		/**
@@ -47,30 +59,99 @@ package mesh.model.store
 		}
 		
 		/**
-		 * Checks if the index contains an object with the given ID.
-		 * 
-		 * @param id The ID to check.
-		 * @return <code>true</code> if the object was found.
+		 * @inheritDoc
 		 */
-		public function contains(id:Object):Boolean
+		override public function contains(item:Object):Boolean
 		{
-			return _index.containsKey(id);
+			return _index.containsKey(item.id);
 		}
 		
-		internal function insert(id:Object, data:Object):void
+		private function handleListChange(event:CollectionEvent):void
 		{
-			remove(id);
-			
-			var element:Element = new Element(data, _items.length);
-			_index.put(id, element);
-			_items.add(data);
+			switch (event.kind) {
+				case CollectionEventKind.ADD:
+					itemsAdded(event.items, event.location);
+					break;
+				case CollectionEventKind.REMOVE:
+					itemsRemoved(event.items);
+					break;
+			}
 		}
 		
-		internal function remove(id:Object):void
+		private function handlePropertyChange(event:PropertyChangeEvent):void
 		{
-			var element:Element = _index.remove(id);
+			if (event.property == _idField) {
+				var element:Element = _index.remove(event.oldValue);
+				index(event.source, element != null ? element.index : getItemIndex(event.source));
+			}
+		}
+		
+		private function hasID(item:Object):Boolean
+		{
+			return item != null && (item[_idField] != null || item[_idField] != 0 || item[_idField] != "");
+		}
+		
+		private function index(item:Object, i:int):void
+		{
+			if (hasID(item)) {
+				_index.put(item[_idField], new Element(item, i));
+			}
+		}
+		
+		private function itemsAdded(items:Array, location:int):void
+		{
+			for (var i:int = 0; i < items.length; i++) {
+				index(items[i], location+i);
+			}
+		}
+		
+		private function itemsRemoved(items:Array):void
+		{
+			for each (var item:Object in items) {
+				unindex(item);
+			}
+		}
+		
+		/**
+		 * @inheritDoc
+		 */
+		override public function remove(item:Object):void
+		{
+			var element:Element = _index.grab(item.id);
 			if (element != null) {
-				_items.removeItemAt(element.index);
+				removeItemAt(element.index);
+			} else {
+				super.remove(item);
+			}
+		}
+		
+		/**
+		 * @inheritDoc
+		 */
+		override public function removeItemAt(index:int):Object
+		{
+			var item:Object = super.removeItemAt(index);
+			
+			if (item is IEventDispatcher) {
+				(item as IEventDispatcher).removeEventListener(PropertyChangeEvent.PROPERTY_CHANGE, handlePropertyChange);
+			}
+			
+			return item;
+		}
+		
+		/**
+		 * @private
+		 */
+		override public function setItemAt(item:Object, index:int):Object
+		{
+			// Disabled
+			return null;
+		}
+		
+		private function unindex(item:Object):void
+		{
+			if (hasID(item)) {
+				_index.remove(item[_idField]);
 			}
 		}
 	}

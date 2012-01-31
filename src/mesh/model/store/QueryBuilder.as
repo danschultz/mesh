@@ -5,10 +5,10 @@ package mesh.model.store
 	public class QueryBuilder
 	{
 		private var _dataSource:DataSource;
-		private var _records:Records;
+		private var _records:RecordCache;
 		private var _recordType:Class;
 		
-		public function QueryBuilder(dataSource:DataSource, records:Records, recordType:Class)
+		public function QueryBuilder(dataSource:DataSource, records:RecordCache, recordType:Class)
 		{
 			_dataSource = dataSource;
 			_records = records;
@@ -54,9 +54,8 @@ import mesh.model.Record;
 import mesh.model.source.DataSource;
 import mesh.model.store.Data;
 import mesh.model.store.Query;
-import mesh.model.store.Records;
+import mesh.model.store.RecordCache;
 import mesh.model.store.ResultsList;
-import mesh.model.store.Store;
 
 import mx.collections.ListCollectionView;
 
@@ -66,7 +65,7 @@ class FindQuery extends Query
 {
 	private var _id:Object;
 	
-	public function FindQuery(dataSource:DataSource, records:Records, recordType:Class, id:Object)
+	public function FindQuery(dataSource:DataSource, records:RecordCache, recordType:Class, id:Object)
 	{
 		super(dataSource, records, recordType);
 		_id = id;
@@ -74,7 +73,7 @@ class FindQuery extends Query
 	
 	override public function execute():*
 	{
-		var record:Record = records.find(recordType).byId(_id);
+		var record:Record = records.findIndex(recordType).byId(_id);
 		
 		// The record doesn't belong to the store. We need to retrieve it from the data source.
 		if (record == null) {
@@ -89,7 +88,7 @@ class FindAllQuery extends Query
 {
 	private var _results:ResultsList;
 	
-	public function FindAllQuery(dataSource:DataSource, records:Records, recordType:Class)
+	public function FindAllQuery(dataSource:DataSource, records:RecordCache, recordType:Class)
 	{
 		super(dataSource, records, recordType);
 	}
@@ -97,7 +96,7 @@ class FindAllQuery extends Query
 	override public function execute():*
 	{
 		if (_results == null) {
-			_results = new ResultsList(records, records.find(recordType).all(), dataSource.retrieveAll(recordType));
+			_results = new ResultsList(records, records.findIndex(recordType), dataSource.retrieveAll(recordType));
 		}
 		return _results;
 	}
@@ -108,7 +107,7 @@ class WhereQuery extends Query
 	private var _results:ResultsList;
 	private var _conditions:Object;
 	
-	public function WhereQuery(dataSource:DataSource, records:Records, recordType:Class, conditions:Object)
+	public function WhereQuery(dataSource:DataSource, records:RecordCache, recordType:Class, conditions:Object)
 	{
 		super(dataSource, records, recordType);
 		_conditions = conditions;
@@ -117,7 +116,7 @@ class WhereQuery extends Query
 	override public function execute():*
 	{
 		if (_results == null) {
-			var collection:ListCollectionView = new ListCollectionView(records.find(recordType).all());
+			var collection:ListCollectionView = new ListCollectionView(records.findIndex(recordType));
 			collection.filterFunction = function(record:Record):Boolean
 			{
 				for (var property:String in _conditions) {

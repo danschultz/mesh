@@ -21,8 +21,7 @@ package mesh.model.store
 		{
 			_dataSource = dataSource;
 			_cache = new DataCache();
-			_records = new Records(this, _dataSource, _cache);
-			
+			_records = new RecordCache(this, _dataSource, _cache);
 		}
 		
 		/**
@@ -62,11 +61,11 @@ package mesh.model.store
 			return _dataSource;
 		}
 		
-		private var _records:Records;
+		private var _records:RecordCache;
 		/**
 		 * @private
 		 */
-		mesh_internal function get records():Records
+		mesh_internal function get records():RecordCache
 		{
 			return _records;
 		}

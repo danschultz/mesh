@@ -13,14 +13,14 @@ package mesh.model.store
 	{
 		private var _person:Object;
 		private var _fixtures:FixtureDataSource;
-		private var _records:Records;
+		private var _records:RecordCache;
 		
 		[Before]
 		public function setup():void
 		{
 			_person = {id:1, firstName:"Jimmy", lastName:"Page"};
 			_fixtures = new FixtureDataSource(Person);
-			_records = new Records(new Store(_fixtures), _fixtures, new DataCache());
+			_records = new RecordCache(new Store(_fixtures), _fixtures, new DataCache());
 		}
 		
 		[Test]

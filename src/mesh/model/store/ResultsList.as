@@ -11,7 +11,7 @@ package mesh.model.store
 	
 	public class ResultsList extends List
 	{
-		public function ResultsList(records:Records, results:IList, loadOperation:Operation)
+		public function ResultsList(records:RecordCache, results:IList, loadOperation:Operation)
 		{
 			super();
 			
