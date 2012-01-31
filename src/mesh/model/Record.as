@@ -7,9 +7,9 @@ package mesh.model
 	import mesh.core.object.copy;
 	import mesh.core.reflection.Type;
 	import mesh.mesh_internal;
+	import mesh.model.associations.Association;
 	import mesh.model.associations.HasManyAssociation;
 	import mesh.model.associations.HasOneAssociation;
-	import mesh.model.store.Data;
 	import mesh.model.store.Store;
 	import mesh.model.validators.Errors;
 	import mesh.model.validators.Validator;
@@ -108,6 +108,13 @@ package mesh.model
 		public function hashCode():Object
 		{
 			return id;
+		}
+		
+		private function initializeAssociations():void
+		{
+			for each (var association:Association in associations) {
+				association.initialize();
+			}
 		}
 		
 		/**
@@ -326,6 +333,7 @@ package mesh.model
 				throw new IllegalOperationError("Cannot reset store on Record.");
 			}
 			_store = value;
+			initializeAssociations();
 		}
 	}
 }
