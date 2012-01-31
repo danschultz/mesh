@@ -63,7 +63,7 @@ package mesh.model.store
 		 */
 		override public function contains(item:Object):Boolean
 		{
-			return _index.containsKey(item.id);
+			return (hasID(item) && _index.containsKey(item.id)) || super.contains(item);
 		}
 		
 		private function handleListChange(event:CollectionEvent):void
