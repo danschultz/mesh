@@ -78,7 +78,7 @@ package mesh.model.store
 				insert(record);
 			}
 			
-			record.data = data;
+			data.transferValues(record);
 			return record;
 		}
 	}

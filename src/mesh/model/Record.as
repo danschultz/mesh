@@ -244,20 +244,6 @@ package mesh.model
 			return _changes;
 		}
 		
-		private var _data:Data;
-		/**
-		 * The data for this record.
-		 */
-		mesh_internal function get data():Data
-		{
-			return _data;
-		}
-		mesh_internal function set data(value:Data):void
-		{
-			_data = value;
-			_data.transferValues(this);
-		}
-		
 		private var _errors:Errors;
 		/**
 		 * A set of <code>ValidationResult</code>s that failed during the last call to 
