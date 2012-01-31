@@ -52,16 +52,6 @@ Sometimes you'll need to find data based on some condition.
 ### Data Source
 A data source is used to retrieve and persist data for the store. The data source class defines a template that sub-classes must override in order to fully function. These methods are used to create, retrieve, delete, and update data on the server.
 
-### Saving Records
-The store is responsible for persisting your model. To prevent possible race conditions, only a single save can happen at a time. Multiple save calls will be queued.
-
-**Example:** Executing a save.
-	// Saving all records.
-	var request:Request = records.save();
-
-	// Saving a subset of records.
-	request = records.save(person1, person2);
-
 ## Records
 Model classes in Mesh are defined as `Record`s. Records track how your application modifies the model. They detect when their properties change, when the application destroys them, and when they're data is persisted to the backend. This information is used to determine when and how to persist your data.
 
@@ -75,29 +65,35 @@ Model classes in Mesh are defined as `Record`s. Records track how your applicati
 		}
 	}
 
+### Creating Records
+The store is responsbile for creating new records in your application. These records will be persisted to the backend on the store's next save.
+
+	var customer:Customer = store.create(Customer);
+
 ### Record Associations
 Records may define has-one or has-many associations with other records. These definitions are used for lazy-loading data that is associated with a record.
 
 **Example:** Definining Associations
 	package myapp
 	{
-		public class Person extends Record
+		[Bindable]
+		public class Customer extends Record
 		{
-			[Bindable] public var name:String;
-			[Bindable] public var age:int;
-			[Bindable] public var bestFriendId:int;
+			public var name:String;
+			public var age:int;
 
-			[Bindable] public var bestFriend:Person;
-			[Bindable] public var friends:HasManyAssociation;
+			public var accountId:int;
+			public var account:Person;
+			public var orders:HasManyAssociation;
 
 			public function Person()
 			{
 				super();
 
-				hasOne("bestFriend", {foreignKey:"bestFriendId"}); // Defining the foreign key isn't required here. Defaults to association name + "Id".
-				hasMany("friends", function(store:Store):ResultList
+				hasOne("account", {foreignKey:"accountId"}); // Defining the foreign key isn't required here. Defaults to association name + "Id".
+				hasMany("orders", function(store:Store):ResultList
 				{
-					return store.find(Person).where({friend:this});
+					return store.find(Order).where({customerId:id});
 				});
 			}
 		}
@@ -105,4 +101,27 @@ Records may define has-one or has-many associations with other records. These de
 
 Has-one associations are populated when the foreign keys change, and the record belongs to the store. If the record has not been retrieved from the adaptor, an empty record is created. The empty record will have its ID populated from the foreign key. The has-one association can then be loaded like so: `person.bestFriend.load();`.
 
-Has-many associations are populated through a call to load, like so: `person.friends.load();`.
+Has-many associations are populated through a call to load, like so: `customer.orders.load();`.
+
+#### Associating Records
+Records are associated with each other by assigning them to associations. When a record is associated, the necessary foreign keys are automatically populated, and the record is inserted into the store that contains the association.
+
+	var customer:Customer = store.query(Custmoer).find(1);
+	var account:Account = store.query(Account).find(2);
+	customer.account = account;
+	trace(account.customerId); // 1
+	trace(customer.accountId); // 2
+
+	var order:Order = store.query(Order).find(3);
+	customer.orders.add(order);
+	trace(order.customerId); // 1
+
+## Saving Records
+The store is responsible for persisting your model. To prevent possible race conditions, only a single save can happen at a time. Multiple save calls will be queued.
+
+**Example:** Executing a save.
+	// Saving all records.
+	var request:Request = records.save();
+
+	// Saving a subset of records.
+	request = records.save(person1, person2);
