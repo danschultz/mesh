@@ -1,7 +1,9 @@
 package mesh.model
 {
 	import mesh.Customer;
+	import mesh.Order;
 	import mesh.model.source.FixtureDataSource;
+	import mesh.model.source.MultiDataSource;
 	import mesh.model.store.Store;
 	
 	import org.flexunit.assertThat;
@@ -9,17 +11,19 @@ package mesh.model
 
 	public class InitializeAssociatedRecordsTests
 	{
-		private var _data:Object;
-		private var _fixtures:FixtureDataSource;
 		private var _store:Store;
 		
 		[Before]
 		public function setup():void
 		{
-			_data = {id:1, firstName:"Jimmy", lastName:"Page", accountId:1};
-			_fixtures = new FixtureDataSource(Customer);
-			_fixtures.add(_data);
-			_store = new Store(_fixtures);
+			var customers:FixtureDataSource = new FixtureDataSource(Customer);
+			customers.add({id:1, firstName:"Jimmy", lastName:"Page", accountId:1});
+			
+			var dataSource:MultiDataSource = new MultiDataSource();
+			dataSource.map(Customer, customers);
+			dataSource.map(Order, new FixtureDataSource(Order));
+			
+			_store = new Store(dataSource);
 		}
 		
 		[Test]
