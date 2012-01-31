@@ -3,6 +3,7 @@ package mesh.model.associations
 	import mesh.Account;
 	import mesh.Customer;
 	import mesh.Order;
+	import mesh.mesh_internal;
 	import mesh.model.source.FixtureDataSource;
 	import mesh.model.source.MultiDataSource;
 	import mesh.model.store.Data;
@@ -10,6 +11,9 @@ package mesh.model.associations
 	
 	import org.flexunit.assertThat;
 	import org.hamcrest.object.equalTo;
+	import org.hamcrest.object.notNullValue;
+	
+	use namespace mesh_internal;
 
 	public class HasOneAssociationTests
 	{
@@ -66,6 +70,15 @@ package mesh.model.associations
 			var account:Account = _store.materialize( new Data({id:2}, Account) );
 			customer.account = account;
 			assertThat(customer.accountId, equalTo(customer.account.id));
+		}
+		
+		[Test]
+		public function testAssociatedRecordsAreInsertedIntoTheStore():void
+		{
+			var customer:Customer = _store.query(Customer).find(1).load();
+			var account:Account = new Account();
+			customer.account = account;
+			assertThat(account.store, notNullValue());
 		}
 	}
 }
