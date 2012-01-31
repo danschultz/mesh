@@ -1,5 +1,7 @@
 package mesh.model.associations
 {
+	import flash.utils.flash_proxy;
+	
 	import mesh.mesh_internal;
 	import mesh.model.Record;
 	import mesh.model.store.ResultsList;
@@ -215,6 +217,38 @@ package mesh.model.associations
 		public function get loadOperation():Operation
 		{
 			return _results != null ? _results.loadOperation : null;
+		}
+		
+		// Proxy methods to support for each..in loops.
+		
+		/**
+		 * @private
+		 */
+		override flash_proxy function nextName(index:int):String
+		{
+			return (index-1).toString();
+		}
+		
+		private var _iteratingItems:Array;
+		private var _len:int;
+		/**
+		 * @private
+		 */
+		override flash_proxy function nextNameIndex(index:int):int
+		{
+			if (index == 0) {
+				_iteratingItems = toArray();
+				_len = _iteratingItems.length;
+			}
+			return index < _len ? index+1 : 0;
+		}
+		
+		/**
+		 * @private
+		 */
+		override flash_proxy function nextValue(index:int):*
+		{
+			return _iteratingItems[index-1];
 		}
 	}
 }
