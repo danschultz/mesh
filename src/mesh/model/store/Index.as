@@ -35,15 +35,13 @@ package mesh.model.store
 		 */
 		override public function addItemAt(item:Object, index:int):void
 		{
-			if (contains(item)) {
-				remove(item);
+			if (!contains(item)) {
+				if (item is IEventDispatcher) {
+					(item as IEventDispatcher).addEventListener(PropertyChangeEvent.PROPERTY_CHANGE, handlePropertyChange);
+				}
+				
+				super.addItemAt(item, length);
 			}
-			
-			if (item is IEventDispatcher) {
-				(item as IEventDispatcher).addEventListener(PropertyChangeEvent.PROPERTY_CHANGE, handlePropertyChange);
-			}
-			
-			super.addItemAt(item, length);
 		}
 		
 		/**
