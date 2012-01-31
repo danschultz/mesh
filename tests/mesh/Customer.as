@@ -3,7 +3,6 @@ package mesh
 	import mesh.model.associations.HasManyAssociation;
 	import mesh.model.store.Store;
 	
-	import mx.collections.ArrayList;
 	import mx.collections.IList;
 
 	public class Customer extends Person
@@ -19,7 +18,7 @@ package mesh
 			hasOne("account");
 			hasMany("orders", function(store:Store):IList
 			{
-				return new ArrayList();
+				return store.query(Order).where({customerId:id});
 			});
 		}
 	}

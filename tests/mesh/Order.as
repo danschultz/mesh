@@ -10,6 +10,7 @@ package mesh
 		public function Order(values:Object=null)
 		{
 			super(values);
+			hasOne("customer");
 		}
 	}
 }
