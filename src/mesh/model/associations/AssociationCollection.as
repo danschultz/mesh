@@ -1,8 +1,9 @@
 package mesh.model.associations
 {
-	import flash.events.Event;
-	
+	import mesh.mesh_internal;
 	import mesh.model.Record;
+	import mesh.model.store.ResultsList;
+	import mesh.operations.Operation;
 	
 	import mx.collections.ArrayList;
 	import mx.collections.IList;
@@ -10,11 +11,15 @@ package mesh.model.associations
 	import mx.events.CollectionEventKind;
 	import mx.events.PropertyChangeEvent;
 	
+	use namespace mesh_internal;
+	
 	public class AssociationCollection extends Association implements IList
 	{
 		private var _list:SynchronizedList;
 		private var _snapshot:Array = [];
+		
 		private var _query:Function;
+		private var _results:ResultsList;
 		
 		/**
 		 * @copy Association#Association()
@@ -25,7 +30,6 @@ package mesh.model.associations
 			_query = query;
 			
 			_list = new SynchronizedList();
-			_list.list = _query.apply(owner, [store]);
 			_list.addEventListener(CollectionEvent.COLLECTION_CHANGE, handleListCollectionChange);
 		}
 		
@@ -118,9 +122,13 @@ package mesh.model.associations
 			}
 		}
 		
-		private function handleResultsComplete(event:Event):void
+		/**
+		 * @inheritDoc
+		 */
+		override mesh_internal function initialize():void
 		{
-			loaded();
+			super.initialize();
+			_list.list = _results = _query(store);
 		}
 		
 		/**
@@ -132,11 +140,25 @@ package mesh.model.associations
 		}
 		
 		/**
-		 * @inheritDoc
+		 * @copy mesh.model.store.ResultsList#load()
 		 */
-		override protected function performLoad():void
+		public function load():*
 		{
-			
+			if (_results != null) {
+				_results.load();
+			}
+			return this;
+		}
+		
+		/**
+		 * @copy mesh.model.store.ResultsList#refresh()
+		 */
+		public function refresh():*
+		{
+			if (_results != null) {
+				_results.refresh();
+			}
+			return this;
 		}
 		
 		/**
@@ -172,11 +194,27 @@ package mesh.model.associations
 		}
 		
 		/**
+		 * @copy mesh.model.store.ResultsList#isLoaded
+		 */
+		public function get isLoaded():Boolean
+		{
+			return _results != null ? _results.isLoaded : false;
+		}
+		
+		/**
 		 * @inheritDoc
 		 */
 		public function get length():int
 		{
 			return _list.length;
+		}
+		
+		/**
+		 * @copy mesh.model.store.ResultsList#loadOperation
+		 */
+		public function get loadOperation():Operation
+		{
+			return _results != null ? _results.loadOperation : null;
 		}
 	}
 }

@@ -3,7 +3,6 @@ package mesh.model.associations
 	import collections.HashSet;
 	
 	import flash.errors.IllegalOperationError;
-	import flash.events.Event;
 	import flash.events.EventDispatcher;
 	
 	import mesh.core.inflection.humanize;
@@ -25,12 +24,6 @@ package mesh.model.associations
 	 */
 	public class Association extends EventDispatcher
 	{
-		private static const UNINITIALIZED:int = 0;
-		private static const LOADING:int = 1;
-		private static const LOADED:int = 2;
-		
-		private var _state:int = UNINITIALIZED;
-		
 		/**
 		 * Constructor.
 		 * 
@@ -64,14 +57,6 @@ package mesh.model.associations
 			populateInverseRelationship(record);
 		}
 		
-		private function changeState(state:int):void
-		{
-			if (_state != state) {
-				_state = state;
-				dispatchEvent(new Event("stateChange"));
-			}
-		}
-		
 		private function handleOwnerPropertyChange(event:PropertyChangeEvent):void
 		{
 			if (event.property is String && event.property.toString() == property) {
@@ -80,27 +65,10 @@ package mesh.model.associations
 		}
 		
 		/**
-		 * Loads the data for this association. If this is a non-lazy association, then nothing happens.
+		 * Called when the owner has been inserted into the store, and the association can be
+		 * initialized.
 		 */
-		public function load():void
-		{
-			changeState(LOADING);
-			performLoad();
-		}
-		
-		/**
-		 * Called by sub-classes to indicate that the data for the association has been loaded
-		 * from the store.
-		 */
-		protected function loaded():void
-		{
-			changeState(LOADED);
-		}
-		
-		/**
-		 * Called by <code>load()</code> to load the data for the association.
-		 */
-		protected function performLoad():void
+		mesh_internal function initialize():void
 		{
 			
 		}
@@ -111,13 +79,6 @@ package mesh.model.associations
 				if (record.hasOwnProperty(inverse)) record[inverse] = owner;
 				else throw new IllegalOperationError("Inverse property '" + record.reflect.name + "." + inverse + "' does not exist.");
 			}
-		}
-		
-		private function setBindableReadOnlyProperty(property:String, setter:Function):void
-		{
-			var oldValue:* = this[property];
-			setter();
-			dispatchEvent(PropertyChangeEvent.createUpdateEvent(this, property, oldValue, this[property]));
 		}
 		
 		/**
@@ -153,24 +114,6 @@ package mesh.model.associations
 		public function get inverse():String
 		{
 			return options.inverse;
-		}
-		
-		[Bindable(event="stateChange")]
-		/**
-		 * Indicates if the data for this association has been loaded.
-		 */
-		public function get isLoaded():Boolean
-		{
-			return _state == LOADED;
-		}
-		
-		[Bindable(event="stateChange")]
-		/**
-		 * Indicates if the data for this association is loading.
-		 */
-		public function get isLoading():Boolean
-		{
-			return _state == LOADING;
 		}
 		
 		/**
