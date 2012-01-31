@@ -59,9 +59,7 @@ package mesh.model.associations
 		 */
 		protected function associate(record:Record):void
 		{
-			if (record.store == null) {
-				store.records.insert(record);
-			}
+			store.records.insert(record);
 			_records.add(record);
 			populateInverseRelationship(record);
 		}
