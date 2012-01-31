@@ -95,7 +95,7 @@ package mesh.core
 		 */
 		public function addItem(item:Object):void
 		{
-			_list.addItem(item);
+			addItemAt(item, length);
 		}
 		
 		/**
