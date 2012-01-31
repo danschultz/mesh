@@ -57,6 +57,14 @@ package mesh.model.source
 		/**
 		 * @inheritDoc
 		 */
+		override public function retrieveAll(recordType:Class):Operation
+		{
+			return invoke("retrieveAll", recordType);
+		}
+		
+		/**
+		 * @inheritDoc
+		 */
 		override public function search(recordType:Class, params:Object):Operation
 		{
 			return invoke("search", recordType, params);
