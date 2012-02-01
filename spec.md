@@ -18,10 +18,10 @@ Queries are used to find data within the store. You can search for a single reco
 Sometimes the data for the query hasn't been loaded yet. Calling `load()` will load the data for the query. The `load()` method will only load the data if it hasn't been loaded yet. Call `refresh()` if you want to force a reload of the data.
 
 	// Load a query from the data source
-	var males:ResultsList = store.query(Person).where({sex:"m"}).load();
+	var guys:ResultsList = store.query(Person).where({sex:"m"}).load();
 
 	// Reload the query
-	males.refresh();
+	guys.refresh();
 
 The load operation for each query can be used to lnow when the data has finished loading. Add the event listener before calling `load()`. This ensures the listener exists for synchronous data calls.
 
@@ -36,7 +36,7 @@ The load operation for each query can be used to lnow when the data has finished
 Filtered queries can be used for returning records that match certain criteria.
 
 	// Filtered queries
-	var males:ResultsList = store.query(Person).where({sex:"male"});
+	var guys:ResultsList = store.query(Person).where({sex:"male"});
 
 Query results automatically update whenever the store is updated. For result sets, you cannot add or remove elements directly from the result list. These operations must happen through the store.
 
