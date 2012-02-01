@@ -18,16 +18,13 @@ package mesh.model.associations
 	{
 		private var _list:ListCollectionView;
 		private var _results:ResultsList;
-		private var _query:Function;
 		
 		/**
 		 * @copy Association#Association()
 		 */
-		public function AssociationCollection(source:Record, property:String, query:Function, options:Object = null)
+		public function AssociationCollection(source:Record, property:String, options:Object = null)
 		{
 			super(source, property, options);
-			
-			_query = query;
 			
 			_list = new ListCollectionView();
 			_list.addEventListener(CollectionEvent.COLLECTION_CHANGE, handleListCollectionChange);
@@ -97,7 +94,7 @@ package mesh.model.associations
 		override mesh_internal function initialize():void
 		{
 			super.initialize();
-			_list.list = _results = _query(store);
+			_list.list = _results = query(store);
 		}
 		
 		/**
@@ -201,6 +198,20 @@ package mesh.model.associations
 		public function get loadOperation():Operation
 		{
 			return _results != null ? _results.loadOperation : null;
+		}
+		
+		private var _query:Function;
+		/**
+		 * A function that is called to query the data for this association. This function expects the 
+		 * following signature: <code>function(store:Store):IList</code>.
+		 */
+		public function get query():Function
+		{
+			return _query;
+		}
+		public function set query(value:Function):void
+		{
+			_query = value;
 		}
 		
 		// Proxy methods to support for each..in loops.

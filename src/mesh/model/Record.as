@@ -64,22 +64,19 @@ package mesh.model
 		 */
 		protected function hasOne(property:String, options:Object = null):void
 		{
-			_associations.map(property, new HasOneAssociation(this, property, options));
+			associations.hasOne(property, options);
 		}
 		
 		/**
 		 * Maps up a has-many association to a property on this record.
 		 * 
 		 * @param property The property that owns the association.
-		 * @param query The query to retrieve data for the association.
 		 * @param options Any options to configure the association.
 		 * @return The association object.
 		 */
-		protected function hasMany(property:String, query:Function, options:Object = null):void
+		protected function hasMany(property:String, options:Object = null):void
 		{
-			var association:HasManyAssociation = new HasManyAssociation(this, property, query, options);
-			this[property] = association;
-			_associations.map(property, association);
+			associations.hasMany(property, options);
 		}
 		
 		/**

@@ -4,8 +4,15 @@ package mesh.model
 	import flash.utils.Proxy;
 	import flash.utils.flash_proxy;
 	
+	import mesh.core.reflection.Metadata;
+	import mesh.core.reflection.Property;
+	import mesh.mesh_internal;
 	import mesh.model.associations.Association;
-
+	import mesh.model.associations.HasManyAssociation;
+	import mesh.model.associations.HasOneAssociation;
+	
+	use namespace mesh_internal;
+	
 	/**
 	 * The <code>Associations</code> class is a hash of properties to their associations for an record.
 	 * Each <code>Record</code> contains its own associations hash, and can be accessed through the
@@ -33,6 +40,36 @@ package mesh.model
 		{
 			super();
 			_record = record;
+			initialize();
+		}
+		
+		/**
+		 * @private
+		 */
+		mesh_internal function hasOne(property:String, options:Object = null):void
+		{
+			map(property, new HasOneAssociation(_record, property, options));
+		}
+		
+		/**
+		 * @private
+		 */
+		mesh_internal function hasMany(property:String, options:Object = null):void
+		{
+			var association:HasManyAssociation = new HasManyAssociation(_record, property, options);
+			_record[property] = association;
+			map(property, association);
+		}
+		
+		private function initialize():void
+		{
+			for each (var property:Property in _record.reflect.properties) {
+				for each (var metadata:Metadata in property.metadata) {
+					if (metadata.name == "HasOne" || metadata.name == "HasMany") {
+						this["h" + metadata.name.slice(1)](property.name, metadata.arguments)
+					}
+				}
+			}
 		}
 		
 		/**
