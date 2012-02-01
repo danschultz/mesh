@@ -2,14 +2,20 @@ package mesh.model.associations
 {
 	import mesh.Customer;
 	import mesh.Order;
+	import mesh.mesh_internal;
 	import mesh.model.source.FixtureDataSource;
 	import mesh.model.source.MultiDataSource;
+	import mesh.model.store.Data;
 	import mesh.model.store.ResultsList;
 	import mesh.model.store.Store;
 	
 	import org.flexunit.assertThat;
 	import org.hamcrest.collection.arrayWithSize;
-
+	import org.hamcrest.object.equalTo;
+	import org.hamcrest.object.notNullValue;
+	
+	use namespace mesh_internal;
+	
 	public class HasManyAssociationTests
 	{
 		private var _store:Store;
@@ -48,6 +54,27 @@ package mesh.model.associations
 			var customer:Customer = _store.query(Customer).find(1).load();
 			var orders:ResultsList = _store.query(Order).findAll().load();
 			assertThat(customer.orders.toArray(), arrayWithSize(3));
+		}
+		
+		[Test]
+		/**
+		 * Test that the foreign key is updated when the association is set.
+		 */
+		public function testPopulateForeignKeyWhenAssociationSet():void
+		{
+			var customer:Customer = _store.query(Customer).find(1).load();
+			var order:Order = _store.materialize( new Data({id:2}, Order) );
+			customer.orders.addItem(order);
+			assertThat(order.customerId, equalTo(customer.id));
+		}
+		
+		[Test]
+		public function testAssociatedRecordsAreInsertedIntoTheStore():void
+		{
+			var customer:Customer = _store.query(Customer).find(1).load();
+			var order:Order = new Order();
+			customer.orders.addItem(order);
+			assertThat(order.store, notNullValue());
 		}
 	}
 }

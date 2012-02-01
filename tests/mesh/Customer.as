@@ -19,7 +19,7 @@ package mesh
 			hasMany("orders", function(store:Store):IList
 			{
 				return store.query(Order).where({customerId:id});
-			});
+			}, {inverse:"customer"});
 		}
 	}
 }
