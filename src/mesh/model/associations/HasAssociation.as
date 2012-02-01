@@ -2,6 +2,7 @@ package mesh.model.associations
 {
 	import flash.errors.IllegalOperationError;
 	
+	import mesh.model.ID;
 	import mesh.model.Record;
 	
 	import mx.events.PropertyChangeEvent;
@@ -55,7 +56,7 @@ package mesh.model.associations
 		
 		private function populateRecord():void
 		{
-			owner[property] = store.query(recordType).find(owner[foreignKey]);
+			owner[property] = ID.isPopulated(owner, foreignKey) ? store.query(recordType).find(owner[foreignKey]) : null;
 		}
 		
 		private function populateForeignKey():void
