@@ -34,11 +34,21 @@ package mesh.model.associations
 		}
 		
 		/**
+		 * Adds the given record to this association.
+		 * 
+		 * @param record The record to add.
+		 */
+		public function add(record:Record):void
+		{
+			associate(record);
+		}
+		
+		/**
 		 * @inheritDoc
 		 */
 		public function addItem(item:Object):void
 		{
-			addItemAt(item, length);
+			add(Record( item ));
 		}
 		
 		/**
@@ -46,7 +56,18 @@ package mesh.model.associations
 		 */
 		public function addItemAt(item:Object, index:int):void
 		{
-			associate(Record( item ));
+			add(Record( item ));
+		}
+		
+		/**
+		 * Checks if a record belongs to this association.
+		 * 
+		 * @param record The record to check.
+		 * @return <code>true</code> if the record was found.
+		 */
+		public function contains(record:Record):Boolean
+		{
+			return _list.contains(record);
 		}
 		
 		/**
@@ -114,7 +135,21 @@ package mesh.model.associations
 		 */
 		public function removeAll():void
 		{
-			
+			while (length > 0) {
+				removeItemAt(0);
+			}
+		}
+		
+		/**
+		 * Unassociates the record from this association.
+		 * 
+		 * @param record The record to remove.
+		 */
+		public function remove(record:Record):void
+		{
+			if (contains(record)) {
+				unassociate(record);
+			}
 		}
 		
 		/**
@@ -122,7 +157,9 @@ package mesh.model.associations
 		 */
 		public function removeItemAt(index:int):Object
 		{
-			return null;
+			var record:Record = Record( getItemAt(index) );
+			remove(record);
+			return record;
 		}
 		
 		/**
@@ -130,6 +167,7 @@ package mesh.model.associations
 		 */
 		public function setItemAt(item:Object, index:int):Object
 		{
+			// Not supported.
 			return null;
 		}
 		

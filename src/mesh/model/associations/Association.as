@@ -1,7 +1,5 @@
 package mesh.model.associations
 {
-	import collections.HashSet;
-	
 	import flash.errors.IllegalOperationError;
 	import flash.events.Event;
 	import flash.events.EventDispatcher;
@@ -59,8 +57,7 @@ package mesh.model.associations
 		protected function associate(record:Record):void
 		{
 			store.records.insert(record);
-			_records.add(record);
-			populateInverseRelationship(record);
+			populateInverseRelationship(record, owner);
 		}
 		
 		private function handleOwnerPropertyChange(event:PropertyChangeEvent):void
@@ -79,10 +76,10 @@ package mesh.model.associations
 			
 		}
 		
-		private function populateInverseRelationship(record:Record):void
+		private function populateInverseRelationship(record:Record, value:Record):void
 		{
 			if (inverse != null) {
-				if (record.hasOwnProperty(inverse)) record[inverse] = owner;
+				if (record.hasOwnProperty(inverse)) record[inverse] = value;
 				else throw new IllegalOperationError("Inverse property '" + record.reflect.name + "." + inverse + "' does not exist.");
 			}
 		}
@@ -102,16 +99,7 @@ package mesh.model.associations
 		 */
 		protected function unassociate(record:Record):void
 		{
-			_records.remove(record);
-		}
-		
-		private var _records:HashSet = new HashSet();
-		/**
-		 * The set of records belonging to this association.
-		 */
-		public function get records():Array
-		{
-			return _records.toArray();
+			populateInverseRelationship(record, null);
 		}
 		
 		/**

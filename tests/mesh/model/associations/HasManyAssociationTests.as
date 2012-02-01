@@ -13,6 +13,7 @@ package mesh.model.associations
 	import org.hamcrest.collection.arrayWithSize;
 	import org.hamcrest.object.equalTo;
 	import org.hamcrest.object.notNullValue;
+	import org.hamcrest.object.nullValue;
 	
 	use namespace mesh_internal;
 	
@@ -64,7 +65,7 @@ package mesh.model.associations
 		{
 			var customer:Customer = _store.query(Customer).find(1).load();
 			var order:Order = _store.materialize( new Data({id:2}, Order) );
-			customer.orders.addItem(order);
+			customer.orders.add(order);
 			assertThat(order.customerId, equalTo(customer.id));
 		}
 		
@@ -73,8 +74,29 @@ package mesh.model.associations
 		{
 			var customer:Customer = _store.query(Customer).find(1).load();
 			var order:Order = new Order();
-			customer.orders.addItem(order);
+			customer.orders.add(order);
 			assertThat(order.store, notNullValue());
+		}
+		
+		[Test]
+		public function testUnassociateRecord():void
+		{
+			var customer:Customer = _store.query(Customer).find(1).load();
+			customer.orders.load();
+			
+			var order:Order = customer.orders.removeItemAt(0) as Order;
+			assertThat(customer.orders.length, equalTo(2));
+			assertThat(order.customer, nullValue());
+		}
+		
+		[Test]
+		public function testUnassociateAllRecords():void
+		{
+			var customer:Customer = _store.query(Customer).find(1).load();
+			customer.orders.load();
+			
+			customer.orders.removeAll();
+			assertThat(customer.orders.length, equalTo(0));
 		}
 	}
 }
