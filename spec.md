@@ -110,22 +110,22 @@ When a record is associated, the necessary foreign keys are automatically popula
 			public var age:int;
 
 			public var accountId:int;
+
+			[HasOne]
 			public var account:Person;
+
+			[HasMany(inverse="customer")]
 			public var orders:HasManyAssociation;
 
 			public function Customer()
 			{
 				super();
 
-				// A has-one association.
-				// Defining the foreign key isn't required here. Defaults to association name + "Id".
-				hasOne("account", {foreignKey:"accountId"});
-
-				// A has-many association.
-				hasMany("orders", function(store:Store):ResultList
+				// The function to query the store for the relationship's records.
+				orders.query = function(store:Store):ResultList
 				{
 					return store.find(Order).where({customerId:id});
-				});
+				};
 			}
 		}
 	}
