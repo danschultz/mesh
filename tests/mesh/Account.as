@@ -2,15 +2,16 @@ package mesh
 {
 	import mesh.model.Record;
 	
+	[Bindable]
 	public class Account extends Record
 	{
-		[Bindable] public var customer:Customer;
-		[Bindable] public var customerId:int;
+		[HasOne]
+		public var customer:Customer;
+		public var customerId:int;
 		
 		public function Account(values:Object=null)
 		{
 			super(values);
-			hasOne("customer");
 		}
 	}
 }
