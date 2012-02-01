@@ -6,16 +6,16 @@ Mesh provides the mechanisms for defining the associations between your models, 
 Mesh follows the guidelines of [semantic versioning](http://www.semver.org).
 
 ## Store
-At the heart of Mesh, is the store. The store is where all the models of your application are kept.
+The store is what your application interacts with to load, query, and persist data changes. Any records that are retrieved from your backend are stored here for your application to use.
 
 ### Queries
-Queries are used to find data within the store. You can query for a single record, or many records.
+Queries are used to find data within the store. You can search for a single record, or many records.
 
 	// Creating queries
 	var person:Person = store.query(Person).find(1);
 	var people:ResultsList = store.query(Person).findAll();
 
-Sometimes you'll want to load the queries through the data source. Calling the query's `load()` method will tell the store's data source to load the data for that query. It's up to the data source to interpret the query and map it to the backend services that are available. Multiple calls to `load()` will ensure that the query is only loaded once. Calling `refresh()` will force an reload of the query.
+Sometimes the data for the query hasn't been loaded yet. Calling `load()` will load the data for the query. The `load()` method will only load the data if it hasn't been loaded yet. Call `refresh()` if you want to force a reload of the data.
 
 	// Load a query from the data source
 	var males:ResultsList = store.query(Person).where({sex:"m"}).load();
@@ -23,22 +23,22 @@ Sometimes you'll want to load the queries through the data source. Calling the q
 	// Reload the query
 	males.refresh();
 
-Sometimes you'll want to know to when the query's data has been loaded. The event listener will need to be added before the call to `load()`. This ensures the listener exists for synchronous data calls.
+The load operation for each query can be used to lnow when the data has finished loading. Add the event listener before calling `load()`. This ensures the listener exists for synchronous data calls.
 
 	// Listening for loaded data
 	person = store.query(Person).find(1);
 	person.loadOperation.addEventListener(FinishedOperationEvent.FINISHED, function(event:FinishedOperationEvent):void
 	{
-		
+		trace("loaded " + person)
 	});
 	person.load();
 
-Sometimes you'll need to find data based on some condition.
+Filtered queries can be used for returning records that match certain criteria.
 
-	// Search query
-	var people:ResultsList = store.query(Person).where({name:"Jimmy Page"});
+	// Filtered queries
+	var males:ResultsList = store.query(Person).where({sex:"male"});
 
-`ResultsList`'s are queries that have multiple results. These sets are automatically updated whenever the store is updated. You cannot add or remove elements directly from the result list. These operations must happen through the store.
+Query results automatically update whenever the store is updated. For result sets, you cannot add or remove elements directly from the result list. These operations must happen through the store.
 
 	// Query for everyone
 	var people:ResultsList = store.query(Person).findAll();
@@ -50,12 +50,41 @@ Sometimes you'll need to find data based on some condition.
 	trace(people.length); // 4
 
 ### Data Source
-A data source is used to retrieve and persist data for the store. The data source class defines a template that sub-classes must override in order to fully function. These methods are used to create, retrieve, delete, and update data on the server.
+The data source is used to connect the store to your backend. It defines a set of methods that your application must implement in order to create, retrieve, delete, and update data on the server.
+
+**Example:** A sample data source.
+
+	package myapp
+	{
+		public class MyDataSource extends AMFDataSource
+		{
+			public function MyDataSource()
+			{
+				super();
+			}
+
+			public function retrieve(recordType:Class, id:Object):Operation
+			{
+				return createOperation("retrieve", id)
+			}
+		}
+	}
+
+It's likely that an application will have many types of model classes, each with their own service endpoints. In these scenarios, a `MultiDataSource` can be used to map a record type to its own data source.
+
+	// Map a data source to each type of record.
+	var dataSource:MultiDataSource = new MultiDataSource();
+	dataSource.map(Customer, new CustomerDataSource());
+	dataSource.map(Account, new AccountDataSource());
+	dataSource.map(Order, new OrderDataSource()); 
+
+	var store:Store = new Store(dataSource);
 
 ## Records
-Model classes in Mesh are defined as `Record`s. Records track how your application modifies the model. They detect when their properties change, when the application destroys them, and when they're data is persisted to the backend. This information is used to determine when and how to persist your data.
+Model classes in Mesh are sub-classes of `Record`. They define the relationships with other records, and watch how you application modifies them. They detect when their properties change, when their destroyed, and when their data is persisted to the backend. All records that are created and retrieved from your backend are kept in the store.
 
 **Example:** A simple model.
+
 	package myapp
 	{
 		public class Person extends Record
@@ -65,15 +94,13 @@ Model classes in Mesh are defined as `Record`s. Records track how your applicati
 		}
 	}
 
-### Creating Records
-The store is responsbile for creating new records in your application. These records will be persisted to the backend on the store's next save.
+### Associations
+Records can have has-one and has-many relationships with other records. These relationships automatically update when the store changes.
 
-	var customer:Customer = store.create(Customer);
-
-### Record Associations
-Records may define has-one or has-many associations with other records. These definitions are used for lazy-loading data that is associated with a record.
+When a record is associated, the necessary foreign keys are automatically populated, and the record is inserted into the store that contains the association.
 
 **Example:** Definining Associations
+
 	package myapp
 	{
 		[Bindable]
@@ -86,11 +113,15 @@ Records may define has-one or has-many associations with other records. These de
 			public var account:Person;
 			public var orders:HasManyAssociation;
 
-			public function Person()
+			public function Customer()
 			{
 				super();
 
-				hasOne("account", {foreignKey:"accountId"}); // Defining the foreign key isn't required here. Defaults to association name + "Id".
+				// A has-one association.
+				// Defining the foreign key isn't required here. Defaults to association name + "Id".
+				hasOne("account", {foreignKey:"accountId"});
+
+				// A has-many association.
 				hasMany("orders", function(store:Store):ResultList
 				{
 					return store.find(Order).where({customerId:id});
@@ -99,12 +130,10 @@ Records may define has-one or has-many associations with other records. These de
 		}
 	}
 
-Has-one associations are populated when the foreign keys change, and the record belongs to the store. If the record has not been retrieved from the adaptor, an empty record is created. The empty record will have its ID populated from the foreign key. The has-one association can then be loaded like so: `person.bestFriend.load();`.
+#### Has-one Associations
+Has-one relationships are populated when the record's foreign keys change. If the associated record has not been loaded, an empty record will be created with its ID populated with the foreign key. The has-one association can then be loaded like so: `customer.account.load();`.
 
-Has-many associations are populated through a call to load, like so: `customer.orders.load();`.
-
-#### Associating Records
-Records are associated with each other by assigning them to associations. When a record is associated, the necessary foreign keys are automatically populated, and the record is inserted into the store that contains the association.
+**Example:** Associating has-one relationships
 
 	var customer:Customer = store.query(Custmoer).find(1);
 	var account:Account = store.query(Account).find(2);
@@ -112,14 +141,25 @@ Records are associated with each other by assigning them to associations. When a
 	trace(account.customerId); // 1
 	trace(customer.accountId); // 2
 
+#### Has-many Associations
+Has-many associations are populated through a call to load, like so: `customer.orders.load();`.
+
+**Example:** Associating has-many relationships
+
 	var order:Order = store.query(Order).find(3);
 	customer.orders.add(order);
 	trace(order.customerId); // 1
+
+### Creating Records
+The store is responsbile for creating new records in your application. These records will be persisted to the backend on the store's next save.
+
+	var customer:Customer = store.create(Customer);
 
 ## Saving Records
 The store is responsible for persisting your model. To prevent possible race conditions, only a single save can happen at a time. Multiple save calls will be queued.
 
 **Example:** Executing a save.
+
 	// Saving all records.
 	var request:Request = records.save();
 
