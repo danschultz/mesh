@@ -7,21 +7,18 @@ package mesh.model.associations
 	import mesh.model.store.ResultsList;
 	import mesh.operations.Operation;
 	
-	import mx.collections.ArrayList;
 	import mx.collections.IList;
+	import mx.collections.ListCollectionView;
 	import mx.events.CollectionEvent;
-	import mx.events.CollectionEventKind;
-	import mx.events.PropertyChangeEvent;
 	
 	use namespace mesh_internal;
+	use namespace flash_proxy;
 	
 	public class AssociationCollection extends Association implements IList
 	{
-		private var _list:SynchronizedList;
-		private var _snapshot:Array = [];
-		
-		private var _query:Function;
+		private var _list:ListCollectionView;
 		private var _results:ResultsList;
+		private var _query:Function;
 		
 		/**
 		 * @copy Association#Association()
@@ -29,9 +26,10 @@ package mesh.model.associations
 		public function AssociationCollection(source:Record, property:String, query:Function, options:Object = null)
 		{
 			super(source, property, options);
+			
 			_query = query;
 			
-			_list = new SynchronizedList();
+			_list = new ListCollectionView();
 			_list.addEventListener(CollectionEvent.COLLECTION_CHANGE, handleListCollectionChange);
 		}
 		
@@ -40,7 +38,7 @@ package mesh.model.associations
 		 */
 		public function addItem(item:Object):void
 		{
-			_list.addItem(item);
+			addItemAt(item, length);
 		}
 		
 		/**
@@ -48,7 +46,7 @@ package mesh.model.associations
 		 */
 		public function addItemAt(item:Object, index:int):void
 		{
-			_list.addItemAt(item, index);
+			associate(Record( item ));
 		}
 		
 		/**
@@ -69,59 +67,7 @@ package mesh.model.associations
 		
 		private function handleListCollectionChange(event:CollectionEvent):void
 		{
-			switch (event.kind) {
-				case CollectionEventKind.ADD:
-					handleRecordsAdded(event.items);
-					break;
-				case CollectionEventKind.REMOVE:
-					handleRecordsRemoved(event.items);
-					break;
-				case CollectionEventKind.REPLACE:
-					handleRecordsReplaced(event.items);
-					break;
-				case CollectionEventKind.RESET:
-					handleRecordsReset();
-					break;
-			}
-			
-			if (event.kind != CollectionEventKind.UPDATE) {
-				_snapshot = _list.toArray();
-			}
-			
 			dispatchEvent(event);
-		}
-		
-		private function handleRecordsAdded(items:Array):void
-		{
-			for each (var record:Record in items) {
-				associate(record);
-			}
-		}
-		
-		private function handleRecordsRemoved(items:Array):void
-		{
-			for each (var record:Record in items) {
-				unassociate(record);
-			}
-		}
-		
-		private function handleRecordsReplaced(items:Array):void
-		{
-			for each (var change:PropertyChangeEvent in items) {
-				handleRecordsRemoved([change.oldValue]);
-				handleRecordsAdded([change.newValue]);
-			}
-		}
-		
-		private function handleRecordsReset():void
-		{
-			for each (var oldRecord:Record in _snapshot) {
-				handleRecordsRemoved([oldRecord]);
-			}
-			
-			for each (var newRecord:Record in _list.toArray()) {
-				handleRecordsAdded([newRecord]);
-			}
 		}
 		
 		/**
@@ -168,7 +114,7 @@ package mesh.model.associations
 		 */
 		public function removeAll():void
 		{
-			_list.removeAll();
+			
 		}
 		
 		/**
@@ -176,7 +122,7 @@ package mesh.model.associations
 		 */
 		public function removeItemAt(index:int):Object
 		{
-			return _list.removeItemAt(index);
+			return null;
 		}
 		
 		/**
@@ -184,7 +130,7 @@ package mesh.model.associations
 		 */
 		public function setItemAt(item:Object, index:int):Object
 		{
-			return _list.setItemAt(item, index);
+			return null;
 		}
 		
 		/**
@@ -249,90 +195,6 @@ package mesh.model.associations
 		override flash_proxy function nextValue(index:int):*
 		{
 			return _iteratingItems[index-1];
-		}
-	}
-}
-
-import mesh.model.Record;
-
-import mx.collections.ArrayList;
-import mx.collections.IList;
-import mx.events.CollectionEvent;
-import mx.events.CollectionEventKind;
-import mx.events.PropertyChangeEvent;
-
-class SynchronizedList extends ArrayList
-{
-	private var _copy:Array;
-	
-	public function SynchronizedList()
-	{
-		super();
-	}
-	
-	private function handleListCollectionChange(event:CollectionEvent):void
-	{
-		switch (event.kind) {
-			case CollectionEventKind.ADD:
-				handleListItemsAdded(event.items);
-				break;
-			case CollectionEventKind.REMOVE:
-				handleListItemsRemoved(event.items);
-				break;
-			case CollectionEventKind.REPLACE:
-				handleListItemsReplaced(event.items);
-				break;
-			case CollectionEventKind.RESET:
-				handleListReset();
-				break;
-				
-		}
-		
-		if (event.kind != CollectionEventKind.UPDATE) {
-			_copy = list.toArray();
-		}
-	}
-	
-	private function handleListItemsAdded(items:Array):void
-	{
-		for each (var result:Record in items) {
-			addItem(result);
-		}
-	}
-	
-	private function handleListItemsRemoved(items:Array):void
-	{
-		for each (var result:Record in items) {
-			removeItem(result);
-		}
-	}
-	
-	private function handleListItemsReplaced(items:Array):void
-	{
-		for each (var change:PropertyChangeEvent in items) {
-			handleListItemsRemoved([change.oldValue]);
-			handleListItemsAdded([change.newValue]);
-		}
-	}
-	
-	private function handleListReset():void
-	{
-		handleListItemsRemoved(_copy);
-		handleListItemsAdded(list.toArray());
-	}
-	
-	private var _list:IList;
-	public function get list():IList
-	{
-		return _list;
-	}
-	public function set list(value:IList):void
-	{
-		if (_list != value) {
-			if (_list != null) _list.removeEventListener(CollectionEvent.COLLECTION_CHANGE, handleListCollectionChange);
-			_list = value;
-			if (_list != null) _list.addEventListener(CollectionEvent.COLLECTION_CHANGE, handleListCollectionChange);
-			handleListReset();
 		}
 	}
 }
