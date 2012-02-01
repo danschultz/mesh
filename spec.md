@@ -87,10 +87,11 @@ Model classes in Mesh are sub-classes of `Record`. They define the relationships
 
 	package myapp
 	{
+		[Bindable]
 		public class Person extends Record
 		{
-			[Bindable] public var name:String;
-			[Bindable] public var age:int;
+			public var name:String;
+			public var age:int;
 		}
 	}
 
@@ -112,7 +113,7 @@ When a record is associated, the necessary foreign keys are automatically popula
 			public var accountId:int;
 
 			[HasOne]
-			public var account:Person;
+			public var account:Account;
 
 			[HasMany(inverse="customer")]
 			public var orders:HasManyAssociation;
