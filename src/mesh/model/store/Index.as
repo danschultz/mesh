@@ -5,6 +5,7 @@ package mesh.model.store
 	import flash.events.IEventDispatcher;
 	
 	import mesh.core.List;
+	import mesh.model.ID;
 	
 	import mx.events.CollectionEvent;
 	import mx.events.CollectionEventKind;
@@ -86,7 +87,7 @@ package mesh.model.store
 		
 		private function hasID(item:Object):Boolean
 		{
-			return item != null && (item[_idField] != null || item[_idField] != 0 || item[_idField] != "");
+			return ID.isPopulated(item);
 		}
 		
 		private function index(item:Object, i:int):void
