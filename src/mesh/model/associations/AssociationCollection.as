@@ -1,10 +1,12 @@
 package mesh.model.associations
 {
 	import flash.utils.flash_proxy;
+	import flash.utils.getDefinitionByName;
 	
 	import mesh.mesh_internal;
 	import mesh.model.Record;
 	import mesh.model.store.ResultsList;
+	import mesh.model.store.Store;
 	import mesh.operations.Operation;
 	
 	import mx.collections.IList;
@@ -207,11 +209,24 @@ package mesh.model.associations
 		 */
 		public function get query():Function
 		{
+			if (_query == null) {
+				return function(store:Store):IList
+				{
+					var options:Object = {};
+					options[inverse + "Id"] = owner.id;
+					return store.query(recordType).where(options);
+				};
+			}
 			return _query;
 		}
 		public function set query(value:Function):void
 		{
 			_query = value;
+		}
+		
+		private function get recordType():Class
+		{
+			return Class( getDefinitionByName(options.recordType) );
 		}
 		
 		// Proxy methods to support for each..in loops.

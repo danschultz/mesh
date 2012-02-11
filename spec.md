@@ -115,18 +115,12 @@ When a record is associated, the necessary foreign keys are automatically popula
 			[HasOne]
 			public var account:Account;
 
-			[HasMany(inverse="customer")]
+			[HasMany(inverse="customer", recordType="myapp.Order")]
 			public var orders:HasManyAssociation;
 
 			public function Customer()
 			{
 				super();
-
-				// The function to query the store for the relationship's records.
-				orders.query = function(store:Store):ResultList
-				{
-					return store.find(Order).where({customerId:id});
-				};
 			}
 		}
 	}
@@ -136,7 +130,7 @@ Has-one relationships are populated when the record's foreign keys change. If th
 
 **Example:** Associating has-one relationships
 
-	var customer:Customer = store.query(Custmoer).find(1);
+	var customer:Customer = store.query(Customer).find(1);
 	var account:Account = store.query(Account).find(2);
 	customer.account = account;
 	trace(account.customerId); // 1
