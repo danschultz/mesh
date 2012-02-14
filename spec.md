@@ -150,13 +150,53 @@ The store is responsbile for creating new records in your application. These rec
 
 	var customer:Customer = store.create(Customer);
 
-## Saving Records
-The store is responsible for persisting your model. To prevent possible race conditions, only a single save can happen at a time. Multiple save calls will be queued.
+## Persisting Changes
+The store's `commit()` method is responsible for saving changes to the backend. When `commit()` is called, a serialized commit is created that contains all the records that need to be created, updated, and destroyed on the backend. Each commit is then pushed into a queue to be persisted to the data source.
 
-**Example:** Executing a save.
+**Example:** Committing changes.
 
-	// Saving all records.
-	var request:Request = records.save();
+	// Save all changes.
+	var commit:Commit = records.commit();
 
-	// Saving a subset of records.
-	request = records.save(person1, person2);
+	// Save a subset of changes.
+	commit = records.commit(person1, person2);
+
+	trace(records.commits.length); // 2
+
+### Commit Events
+Your application can listen to the progress of the commit queue.
+
+	// A commit is in the process of being persisted.
+	store.commits.addEventListener(CommitQueueEvent.BUSY, function(event:CommitQueueEvent):void
+	{
+		trace("a commit started");
+	});
+	
+	// All commits finished.
+	store.commits.addEventListener(CommitQueueEvent.FINISH, function(event:CommitQueueEvent):void
+	{
+		trace("the commit queue is empty");
+	});
+
+	// A commit failed.
+	store.commits.addEventListener(CommitFailedEvent.FAILED, function(event:CommitFailedEvent):void
+	{
+		trace("a commit failed");
+	});
+
+### Reverting a Failed Commit
+If a commit fails to persist, you can choose to revert the store to a state before the commit failed.
+
+	var customer:Customer = store.query(Customer).find(1);
+	trace(customer.name); // John Doe
+	customer.name = null; // Assume that the DB enforces that customers have a name.
+
+	// A commit failed.
+	store.commits.addEventListener(CommitFailedEvent.FAILED, function(event:CommitFailedEvent):void
+	{
+		trace("reverting commit");
+		event.commit.revert();
+		trace(customer.name); // John Doe
+	});
+
+	store.commit();
