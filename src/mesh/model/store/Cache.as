@@ -13,7 +13,6 @@ package mesh.model.store
 	public class Cache
 	{
 		private var _indexes:Dictionary = new Dictionary();
-		private var _index:Index = new Index();
 		
 		public function Cache()
 		{
