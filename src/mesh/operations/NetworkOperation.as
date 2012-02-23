@@ -148,6 +148,15 @@ package mesh.operations
 		}
 		
 		/**
+		 * @inheritDoc
+		 */
+		override public function queue():void
+		{
+			super.queue();
+			_attemptsCount = 0;
+		}
+		
+		/**
 		 * The method to be overridden by sub-classes to perform the network call.
 		 */
 		protected function request():void
