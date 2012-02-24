@@ -153,6 +153,11 @@ package mesh.operations
 		override public function queue():void
 		{
 			super.queue();
+			resetAttemptsCount();
+		}
+		
+		public function resetAttemptsCount():void
+		{
 			_attemptsCount = 0;
 		}
 		

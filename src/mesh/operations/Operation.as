@@ -283,7 +283,7 @@ package mesh.operations
 		 * canceled. If the operation has finished its errors, result data, and progress will
 		 * be reset.
 		 */
-		final public function queue():void
+		public function queue():void
 		{
 			if (isExecuting) {
 				cancelRequest();
