@@ -107,6 +107,17 @@ package mesh.core
 		}
 		
 		/**
+		 * Gets an item at the given index.
+		 * 
+		 * @param index The index of the item to get.
+		 * @return The item at that index.
+		 */
+		public function at(index:int):*
+		{
+			return getItemAt(index);
+		}
+		
+		/**
 		 * Checks if the item belongs to this list.
 		 * 
 		 * @param item The item to check.

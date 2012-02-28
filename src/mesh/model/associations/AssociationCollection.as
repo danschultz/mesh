@@ -59,6 +59,14 @@ package mesh.model.associations
 		}
 		
 		/**
+		 * @copy mesh.core.List#at()
+		 */
+		public function at(index:int):*
+		{
+			return getItemAt(index);
+		}
+		
+		/**
 		 * Checks if a record belongs to this association.
 		 * 
 		 * @param record The record to check.
