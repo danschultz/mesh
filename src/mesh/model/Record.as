@@ -183,6 +183,7 @@ package mesh.model
 			if (!associations.isAssociation(property)) {
 				changes.changed(property, oldValue, newValue);
 				_aggregates.changed(property);
+				changeState(state.dirty());
 			}
 		}
 		
