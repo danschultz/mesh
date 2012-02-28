@@ -143,7 +143,7 @@ package mesh.model
 		 */
 		public function get hasChanges():Boolean
 		{
-			for (var property:String in _properties) {
+			for each (var property:String in _properties) {
 				if (hasChanged(property)) {
 					return true;
 				}
