@@ -80,6 +80,19 @@ package mesh.model
 		}
 		
 		/**
+		 * Updates the current state of this record in relation to its data source.
+		 * 
+		 * @param value The new state.
+		 */
+		mesh_internal function changeState(newState:RecordState):void
+		{
+			if (!state.equals(newState)) {
+				_state = newState;
+				dispatchEvent( new Event("stateChange") );
+			}
+		}
+		
+		/**
 		 * Checks if two records are equal.  By default, two records are equal
 		 * when they are of the same type, and their ID's are the same.
 		 * 
@@ -296,7 +309,7 @@ package mesh.model
 				_loadOperation = store.dataSource.retrieve(reflect.clazz, id);
 				_loadOperation.addEventListener(ResultOperationEvent.RESULT, function(event:ResultOperationEvent):void
 				{
-					store.materialize(event.data);
+					store.materialize(event.data, RecordState.loaded());
 					_isLoaded = true;
 				});
 			}
@@ -314,6 +327,13 @@ package mesh.model
 				_reflect = Type.reflect(this);
 			}
 			return _reflect;
+		}
+		
+		private var _state:RecordState = RecordState.init();
+		[Bindable(event="stateChange")]
+		public function get state():RecordState
+		{
+			return _state;
 		}
 		
 		private var _store:Store;

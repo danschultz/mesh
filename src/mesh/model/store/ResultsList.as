@@ -2,6 +2,7 @@ package mesh.model.store
 {
 	import mesh.core.List;
 	import mesh.mesh_internal;
+	import mesh.model.RecordState;
 	import mesh.operations.Operation;
 	import mesh.operations.ResultOperationEvent;
 	
@@ -21,7 +22,7 @@ package mesh.model.store
 			_loadOperation.addEventListener(ResultOperationEvent.RESULT, function(event:ResultOperationEvent):void
 			{
 				for each (var data:Data in event.data) {
-					records.materialize(data);
+					records.materialize(data, RecordState.loaded());
 				}
 				_isLoaded = true;
 			});

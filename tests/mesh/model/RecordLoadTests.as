@@ -36,6 +36,7 @@ package mesh.model
 			
 			assertThat(person, hasProperties(_data));
 			assertThat(person.isLoaded, equalTo(true));
+			assertThat(person.state.isRemote, equalTo(true));
 		}
 		
 		[Test]

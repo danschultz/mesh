@@ -21,6 +21,7 @@ package mesh.model.store
 			var store:Store = new Store(fixtures);
 			var person:Person = store.query(Person).find(1).load();
 			assertThat(person, hasProperties(data));
+			assertThat(person.state.isRemote, equalTo(true));
 		}
 		
 		[Test]
@@ -49,6 +50,9 @@ package mesh.model.store
 			var store:Store = new Store(fixtures);
 			var people:ResultsList = store.query(Person).findAll().load();
 			assertThat(people.toArray(), allOf(arrayWithSize(2), hasItems(hasProperties(person1), hasProperties(person2))));
+			for each (var person:Person in people) {
+				assertThat(person.state.isRemote, equalTo(true));
+			}
 		}
 		
 		[Test]

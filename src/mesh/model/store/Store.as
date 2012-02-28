@@ -1,6 +1,7 @@
 package mesh.model.store
 {
 	import mesh.mesh_internal;
+	import mesh.model.RecordState;
 	import mesh.model.source.DataSource;
 	
 	use namespace mesh_internal;
@@ -38,9 +39,9 @@ package mesh.model.store
 		/**
 		 * @copy Records#materialize()
 		 */
-		public function materialize(data:Data):*
+		public function materialize(data:Data, state:RecordState = null):*
 		{
-			return _records.materialize(data);
+			return _records.materialize(data, state);
 		}
 		
 		private var _cache:DataCache;

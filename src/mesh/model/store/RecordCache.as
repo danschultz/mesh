@@ -5,6 +5,7 @@ package mesh.model.store
 	import mesh.core.reflection.newInstance;
 	import mesh.mesh_internal;
 	import mesh.model.Record;
+	import mesh.model.RecordState;
 	import mesh.model.source.DataSource;
 	
 	use namespace mesh_internal;
@@ -52,9 +53,10 @@ package mesh.model.store
 		 * Either creates, or returns an existing record from the store with the given data.
 		 * 
 		 * @param data The data to assign on the record.
+		 * @param state The state of the record.
 		 * @return A record.
 		 */
-		public function materialize(data:Data):*
+		public function materialize(data:Data, state:RecordState = null):*
 		{
 			_cache.insert(data);
 			
@@ -66,6 +68,11 @@ package mesh.model.store
 			}
 			
 			data.transferValues(record);
+			
+			if (state != null) {
+				record.changeState(state);
+			}
+			
 			return record;
 		}
 	}
