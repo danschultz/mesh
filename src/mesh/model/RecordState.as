@@ -55,12 +55,27 @@ package mesh.model
 		
 		public function get isRemote():Boolean
 		{
-			return (value & REMOTE) != 0;
+			return (value & REMOTE) != 0 || willBeDestroyed;
 		}
 		
 		public function get isSynced():Boolean
 		{
 			return (value & DIRTY) == 0;
+		}
+		
+		public function get willBeCreated():Boolean
+		{
+			return (value & INIT) != 0 && !isSynced;
+		}
+		
+		public function get willBeUpdated():Boolean
+		{
+			return (value & REMOTE) != 0 && !isSynced;
+		}
+		
+		public function get willBeDestroyed():Boolean
+		{
+			return (value & DESTROY) != 0 && !isSynced;
 		}
 		
 		private var _value:int;

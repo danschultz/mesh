@@ -5,6 +5,7 @@ package mesh.model.associations
 	
 	import mesh.mesh_internal;
 	import mesh.model.Record;
+	import mesh.model.store.Commit;
 	import mesh.model.store.ResultsList;
 	import mesh.model.store.Store;
 	import mesh.operations.Operation;
@@ -12,6 +13,7 @@ package mesh.model.associations
 	import mx.collections.IList;
 	import mx.collections.ListCollectionView;
 	import mx.events.CollectionEvent;
+	import mx.rpc.IResponder;
 	
 	use namespace mesh_internal;
 	use namespace flash_proxy;
@@ -123,6 +125,16 @@ package mesh.model.associations
 			if (_results != null) {
 				_results.load();
 			}
+			return this;
+		}
+		
+		public function persist(responder:IResponder = null):AssociationCollection
+		{
+			var commit:Commit = new Commit(store.dataSource, recordType, toArray())
+			if (responder != null) {
+				commit.addResponder(responder);
+			}
+			commit.persist();
 			return this;
 		}
 		

@@ -1,6 +1,7 @@
 package mesh.model
 {
 	import flash.errors.IllegalOperationError;
+	import flash.events.Event;
 	import flash.events.EventDispatcher;
 	
 	import mesh.core.inflection.humanize;
@@ -8,8 +9,8 @@ package mesh.model
 	import mesh.core.reflection.Type;
 	import mesh.mesh_internal;
 	import mesh.model.associations.Association;
-	import mesh.model.associations.HasManyAssociation;
-	import mesh.model.associations.HasOneAssociation;
+	import mesh.model.serialization.Serializer;
+	import mesh.model.store.Commit;
 	import mesh.model.store.Store;
 	import mesh.model.validators.Errors;
 	import mesh.model.validators.Validator;
@@ -17,6 +18,7 @@ package mesh.model
 	import mesh.operations.ResultOperationEvent;
 	
 	import mx.events.PropertyChangeEvent;
+	import mx.rpc.IResponder;
 	
 	use namespace mesh_internal;
 	
@@ -90,6 +92,17 @@ package mesh.model
 				_state = newState;
 				dispatchEvent( new Event("stateChange") );
 			}
+		}
+		
+		/**
+		 * Marks the record for destruction.
+		 * 
+		 * @return This instance.
+		 */
+		public function destroy():Record
+		{
+			changeState(RecordState.destroy());
+			return this;
 		}
 		
 		/**
@@ -171,6 +184,22 @@ package mesh.model
 		}
 		
 		/**
+		 * Persists the changes made to this record.
+		 * 
+		 * @param responder An optional responder to handle persistence callbacks.
+		 * @return This instance.
+		 */
+		public function persist(responder:IResponder = null):Record
+		{
+			var commit:Commit = new Commit(store.dataSource, reflect.clazz, [this]);
+			if (responder != null) {
+				commit.addResponder(responder);
+			}
+			commit.persist();
+			return this;
+		}
+		
+		/**
 		 * Marks a property on the record as being dirty. This method allows sub-classes to manually 
 		 * manage when a property changes.
 		 * 
@@ -199,6 +228,28 @@ package mesh.model
 			loadOperation.queue();
 			loadOperation.execute();
 			return this;
+		}
+		
+		/**
+		 * Serializes the properties of this record into an object.
+		 * 
+		 * @param options An options hash to configure the serialization.
+		 * @return A serialized object.
+		 */
+		public function serialize(options:Object = null):Object
+		{
+			return new Serializer(this, options).serialize();
+		}
+		
+		/**
+		 * Creates a new snapshot of this record.
+		 * 
+		 * @return A new snapshot.
+		 * @see mesh.model.Snapshot
+		 */
+		public function snap():Snapshot
+		{
+			return new Snapshot(this);
 		}
 		
 		/**
@@ -275,6 +326,14 @@ package mesh.model
 				_errors = new Errors(this);
 			}
 			return _errors;
+		}
+		
+		/**
+		 * <code>true</code> if the ID has been populated.
+		 */
+		mesh_internal function get hasID():Boolean
+		{
+			return ID.isPopulated(this);
 		}
 		
 		private var _id:*;
