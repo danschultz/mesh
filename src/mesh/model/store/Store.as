@@ -1,6 +1,8 @@
 package mesh.model.store
 {
+	import mesh.core.reflection.newInstance;
 	import mesh.mesh_internal;
+	import mesh.model.Record;
 	import mesh.model.RecordState;
 	import mesh.model.source.DataSource;
 	
@@ -23,6 +25,19 @@ package mesh.model.store
 			_dataSource = dataSource;
 			_cache = new DataCache();
 			_records = new RecordCache(this, _dataSource, _cache);
+		}
+		
+		/**
+		 * Creates a new unpersisted record in the store.
+		 * 
+		 * @param recordType The type of record to create.
+		 * @return A new record.
+		 */
+		public function create(recordType:Class):*
+		{
+			var record:Record = newInstance(recordType);
+			records.insert(record);
+			return record;
 		}
 		
 		/**
