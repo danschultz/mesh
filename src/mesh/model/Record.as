@@ -247,9 +247,9 @@ package mesh.model
 		 * @return A new snapshot.
 		 * @see mesh.model.Snapshot
 		 */
-		public function snap():Snapshot
+		public function snap():RecordSnapshot
 		{
-			return new Snapshot(this);
+			return new RecordSnapshot(this);
 		}
 		
 		/**
