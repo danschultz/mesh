@@ -252,6 +252,12 @@ package mesh.model
 			return new RecordSnapshot(this);
 		}
 		
+		public function sycned(id:Object = null):Record
+		{
+			changeState(state.synced());
+			return this;
+		}
+		
 		/**
 		 * @private
 		 */

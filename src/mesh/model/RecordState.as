@@ -1,5 +1,6 @@
 package mesh.model
 {
+	import flash.errors.IllegalOperationError;
 	import flash.utils.Dictionary;
 
 	public class RecordState
@@ -51,6 +52,23 @@ package mesh.model
 		public function equals(obj:Object):Boolean
 		{
 			return obj == this || (obj is RecordState && value == obj.value);
+		}
+		
+		public function synced():RecordState
+		{
+			if (willBeCreated) {
+				return loaded();
+			}
+			
+			if (willBeUpdated) {
+				return loaded();
+			}
+			
+			if (willBeDestroyed) {
+				return cache(DESTROY);
+			}
+			
+			throw new IllegalOperationError("Record state change not defined.");
 		}
 		
 		public function get isRemote():Boolean
