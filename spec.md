@@ -150,53 +150,32 @@ The store is responsbile for creating new records in your application. These rec
 
 	var customer:Customer = store.create(Customer);
 
-## Persisting Changes
-The store's `commit()` method is responsible for saving changes to the backend. When `commit()` is called, a serialized commit is created that contains all the records that need to be created, updated, and destroyed on the backend. Each commit is then pushed into a queue to be persisted to the data source.
+### Destroying Records
+You can destroy records in the store by calling `Record.destroy()`. This method will remove the record from any associations, or any result lists that it belongs to. The record is also marked for removal from the backend.
 
-**Example:** Committing changes.
+**Example:** Destroying records
 
-	// Save all changes.
-	var commit:Commit = records.commit();
+	var order:Order = customer.orders.at(0);
+	order.destroy();
+	trace(customer.orders.contains(order)); // false
+	trace(order.state.willBeDestroyed); // true
 
-	// Save a subset of changes.
-	commit = records.commit(person1, person2);
+### Persisting Records
+Records are persistable by calling the record's `persist()` method. Depending on the current state of the record, it will either be created, updated or destroyed on the backend.
 
-	trace(records.commits.length); // 2
+**Example:** Persisting individual records
 
-### Commit Events
-Your application can listen to the progress of the commit queue.
+	person.name = "Jimmy Page";
+	person.persist();
 
-	// A commit is in the process of being persisted.
-	store.commits.addEventListener(CommitQueueEvent.BUSY, function(event:CommitQueueEvent):void
-	{
-		trace("a commit started");
-	});
-	
-	// All commits finished.
-	store.commits.addEventListener(CommitQueueEvent.FINISH, function(event:CommitQueueEvent):void
-	{
-		trace("the commit queue is empty");
-	});
+**Example:** Persisting has-many associations
 
-	// A commit failed.
-	store.commits.addEventListener(CommitFailedEvent.FAILED, function(event:CommitFailedEvent):void
-	{
-		trace("a commit failed");
-	});
+	var order1:Order = new Order();
+	order1.total = 9.99;
+	customer.orders.add(order1);
 
-### Reverting a Failed Commit
-If a commit fails to persist, you can choose to revert the store to a state before the commit failed.
+	var order2:Order = new Order();
+	order2.total = 4.99;
+	customer.orders.add(order2);
 
-	var customer:Customer = store.query(Customer).find(1);
-	trace(customer.name); // John Doe
-	customer.name = null; // Assume that the DB enforces that customers have a name.
-
-	// A commit failed.
-	store.commits.addEventListener(CommitFailedEvent.FAILED, function(event:CommitFailedEvent):void
-	{
-		trace("reverting commit");
-		event.commit.revert();
-		trace(customer.name); // John Doe
-	});
-
-	store.commit();
+	customer.orders.persist();
