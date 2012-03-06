@@ -49,6 +49,38 @@ package mesh.model.source
 		/**
 		 * @inheritDoc
 		 */
+		override public function create(recordType:Class, record:Object):Operation
+		{
+			return invoke("create", recordType, record);
+		}
+		
+		/**
+		 * @inheritDoc
+		 */
+		override public function createEach(recordType:Class, records:Array):Operation
+		{
+			return invoke("createEach", recordType, records);
+		}
+		
+		/**
+		 * @inheritDoc
+		 */
+		override public function destroy(recordType:Class, record:Object):Operation
+		{
+			return invoke("destroy", recordType, record);
+		}
+		
+		/**
+		 * @inheritDoc
+		 */
+		override public function destroyEach(recordType:Class, records:Array):Operation
+		{
+			return invoke("destroyEach", recordType, records);
+		}
+		
+		/**
+		 * @inheritDoc
+		 */
 		override public function retrieve(recordType:Class, id:Object):Operation
 		{
 			return invoke("retrieve", recordType, id);
@@ -68,6 +100,22 @@ package mesh.model.source
 		override public function search(recordType:Class, params:Object):Operation
 		{
 			return invoke("search", recordType, params);
+		}
+		
+		/**
+		 * @inheritDoc
+		 */
+		override public function update(recordType:Class, record:Object):Operation
+		{
+			return invoke("update", recordType, record);
+		}
+		
+		/**
+		 * @inheritDoc
+		 */
+		override public function updateEach(recordType:Class, records:Array):Operation
+		{
+			return invoke("updateEach", recordType, records);
 		}
 		
 		/**
