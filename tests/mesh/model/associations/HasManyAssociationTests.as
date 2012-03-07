@@ -101,5 +101,26 @@ package mesh.model.associations
 			customer.orders.removeAll();
 			assertThat(customer.orders.length, equalTo(0));
 		}
+		
+		[Test]
+		public function testSaveDirtyRecords():void
+		{
+			var customer:Customer = _store.query(Customer).find(1).load();
+			customer.orders.load();
+			
+			var order1:Order = customer.orders.at(0);
+			order1.total = 10;
+			
+			var order2:Order = customer.orders.at(1);
+			order2.destroy();
+			
+			customer.orders.persist();
+			
+			assertThat(customer.orders.toArray(), arrayWithSize(2));
+			assertThat(order1.state.isSynced, equalTo(true));
+			
+			assertThat(order2.state.isRemote, equalTo(false));
+			assertThat(order2.state.isSynced, equalTo(true));
+		}
 	}
 }

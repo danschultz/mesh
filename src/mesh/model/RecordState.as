@@ -71,6 +71,11 @@ package mesh.model
 			throw new IllegalOperationError("Record state change not defined.");
 		}
 		
+		public function get isDestroyed():Boolean
+		{
+			return (value & DESTROY) != 0;
+		}
+		
 		public function get isRemote():Boolean
 		{
 			return (value & REMOTE) != 0 || willBeDestroyed;

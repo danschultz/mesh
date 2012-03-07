@@ -68,6 +68,17 @@ package mesh.model.associations
 			return getItemAt(index);
 		}
 		
+		private function collectDirtyRecords():Array
+		{
+			var records:Array = [];
+			for each (var record:Record in toArray()) {
+				if (!record.state.isSynced) {
+					records.push(record);
+				}
+			}
+			return records;
+		}
+		
 		/**
 		 * Checks if a record belongs to this association.
 		 * 
@@ -130,7 +141,7 @@ package mesh.model.associations
 		
 		public function persist(responder:IResponder = null):AssociationCollection
 		{
-			new Commit(store.dataSource, toArray()).persist();
+			new Commit(store.dataSource, collectDirtyRecords()).persist();
 			return this;
 		}
 		

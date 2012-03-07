@@ -41,7 +41,7 @@ package mesh.model.store
 		
 		private function filterRecord(record:Record):Boolean
 		{
-			return !record.state.willBeDestroyed;
+			return !(record.state.isDestroyed && record.state.isSynced);
 		}
 		
 		/**

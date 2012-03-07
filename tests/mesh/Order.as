@@ -9,6 +9,8 @@ package mesh
 		public var customer:Customer;
 		public var customerId:int;
 		
+		public var total:Number;
+		
 		public function Order(values:Object=null)
 		{
 			super(values);
