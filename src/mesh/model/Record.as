@@ -196,6 +196,7 @@ package mesh.model
 			return this;
 		}
 		
+		private static const IGNORED_PROPERTIES:Object = {state:true};
 		/**
 		 * Marks a property on the record as being dirty. This method allows sub-classes to manually 
 		 * manage when a property changes.
@@ -206,7 +207,7 @@ package mesh.model
 		 */
 		protected function propertyChanged(property:String, oldValue:Object, newValue:Object):void
 		{
-			if (!associations.isAssociation(property)) {
+			if (!associations.isAssociation(property) && !IGNORED_PROPERTIES.hasOwnProperty(property)) {
 				changes.changed(property, oldValue, newValue);
 				_aggregates.changed(property);
 				changeState(state.dirty());

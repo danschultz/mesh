@@ -11,7 +11,10 @@ package mesh.model.associations
 	
 	import org.flexunit.assertThat;
 	import org.hamcrest.collection.arrayWithSize;
+	import org.hamcrest.collection.everyItem;
+	import org.hamcrest.core.allOf;
 	import org.hamcrest.object.equalTo;
+	import org.hamcrest.object.hasPropertyChain;
 	import org.hamcrest.object.notNullValue;
 	import org.hamcrest.object.nullValue;
 	
@@ -46,7 +49,7 @@ package mesh.model.associations
 		{
 			var customer:Customer = _store.query(Customer).find(1).load();
 			customer.orders.load();
-			assertThat(customer.orders.toArray(), arrayWithSize(3));
+			assertThat(customer.orders.toArray(), allOf(arrayWithSize(3), everyItem(hasPropertyChain("state.isSynced", equalTo(true)))));
 		}
 		
 		[Test]
