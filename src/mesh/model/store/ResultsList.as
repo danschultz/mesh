@@ -2,30 +2,28 @@ package mesh.model.store
 {
 	import mesh.core.List;
 	import mesh.mesh_internal;
-	import mesh.model.RecordState;
+	import mesh.model.Record;
 	import mesh.operations.Operation;
-	import mesh.operations.ResultOperationEvent;
 	
 	import mx.collections.IList;
+	import mx.collections.ListCollectionView;
 	
 	use namespace mesh_internal;
 	
 	public class ResultsList extends List
 	{
+		private var _resultsWrapper:ListCollectionView;
+		
 		public function ResultsList(records:RecordCache, results:IList, loadOperation:Operation)
 		{
 			super();
 			
-			list = results;
-			
 			_loadOperation = loadOperation;
-			_loadOperation.addEventListener(ResultOperationEvent.RESULT, function(event:ResultOperationEvent):void
-			{
-				for each (var data:Data in event.data) {
-					records.materialize(data, RecordState.loaded());
-				}
-				_isLoaded = true;
-			});
+			
+			_resultsWrapper = new ListCollectionView(results);
+			_resultsWrapper.filterFunction = filterRecord;
+			_resultsWrapper.refresh();
+			list = _resultsWrapper;
 		}
 		
 		/**
@@ -34,6 +32,11 @@ package mesh.model.store
 		override public function addItemAt(item:Object, index:int):void
 		{
 			// Disabled so clients can't add records directly to the result.
+		}
+		
+		private function filterRecord(record:Record):Boolean
+		{
+			return !record.state.willBeDestroyed;
 		}
 		
 		/**

@@ -1,7 +1,6 @@
 package mesh.model
 {
 	import flash.errors.IllegalOperationError;
-	import flash.events.Event;
 	import flash.events.EventDispatcher;
 	
 	import mesh.core.inflection.humanize;
@@ -90,8 +89,9 @@ package mesh.model
 		mesh_internal function changeState(newState:RecordState):void
 		{
 			if (!state.equals(newState)) {
+				var oldState:RecordState = state;
 				_state = newState;
-				dispatchEvent( new Event("stateChange") );
+				dispatchEvent(PropertyChangeEvent.createUpdateEvent(this, "state", oldState, newState));
 			}
 		}
 		
@@ -384,7 +384,7 @@ package mesh.model
 		}
 		
 		private var _state:RecordState = RecordState.init();
-		[Bindable(event="stateChange")]
+		[Bindable(event="propertyChange")]
 		public function get state():RecordState
 		{
 			return _state;
