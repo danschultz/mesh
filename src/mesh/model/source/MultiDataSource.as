@@ -48,7 +48,7 @@ package mesh.model.source
 		/**
 		 * @inheritDoc
 		 */
-		override public function create(responder:IPersistenceResponder, snapshot:RecordSnapshot):void
+		override public function create(responder:IPersistenceResponder, snapshot:Snapshot):void
 		{
 			invoke("create", responder, snapshot);
 		}
@@ -64,7 +64,7 @@ package mesh.model.source
 		/**
 		 * @inheritDoc
 		 */
-		override public function destroy(responder:IPersistenceResponder, snapshot:RecordSnapshot):void
+		override public function destroy(responder:IPersistenceResponder, snapshot:Snapshot):void
 		{
 			invoke("destroy", responder, snapshot);
 		}
@@ -104,7 +104,7 @@ package mesh.model.source
 		/**
 		 * @inheritDoc
 		 */
-		override public function update(responder:IPersistenceResponder, snapshot:RecordSnapshot):void
+		override public function update(responder:IPersistenceResponder, snapshot:Snapshot):void
 		{
 			invoke("update", responder, snapshot);
 		}

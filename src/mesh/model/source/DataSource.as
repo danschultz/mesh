@@ -11,26 +11,26 @@ package mesh.model.source
 			
 		}
 		
-		public function create(responder:IPersistenceResponder, snapshot:RecordSnapshot):void
+		public function create(responder:IPersistenceResponder, snapshot:Snapshot):void
 		{
 			throw new IllegalOperationError();
 		}
 		
 		public function createEach(responder:IPersistenceResponder, snapshots:Array):void
 		{
-			for each (var snapshot:RecordSnapshot in snapshots) {
+			for each (var snapshot:Snapshot in snapshots) {
 				create(responder, snapshot);
 			}
 		}
 		
-		public function destroy(responder:IPersistenceResponder, snapshot:RecordSnapshot):void
+		public function destroy(responder:IPersistenceResponder, snapshot:Snapshot):void
 		{
 			throw new IllegalOperationError();
 		}
 		
 		public function destroyEach(responder:IPersistenceResponder, snapshots:Array):void
 		{
-			for each (var snapshot:RecordSnapshot in snapshots) {
+			for each (var snapshot:Snapshot in snapshots) {
 				destroy(responder, snapshot);
 			}
 		}
@@ -50,14 +50,14 @@ package mesh.model.source
 			throw new IllegalOperationError();
 		}
 		
-		public function update(responder:IPersistenceResponder, snapshot:RecordSnapshot):void
+		public function update(responder:IPersistenceResponder, snapshot:Snapshot):void
 		{
 			throw new IllegalOperationError();
 		}
 		
 		public function updateEach(responder:IPersistenceResponder, snapshots:Array):void
 		{
-			for each (var snapshot:RecordSnapshot in snapshots) {
+			for each (var snapshot:Snapshot in snapshots) {
 				update(responder, snapshot);
 			}
 		}

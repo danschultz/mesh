@@ -1,21 +1,23 @@
 package mesh.model.source
 {
-	import mx.utils.ObjectUtil;
 	import mesh.model.Record;
+	import mesh.model.RecordState;
+	
+	import mx.utils.ObjectUtil;
 
 	/**
 	 * The <code>RecordSnapshot</code> class represents a record at a specific time.
 	 * 
 	 * @author Dan Schultz
 	 */
-	public class RecordSnapshot
+	public class Snapshot
 	{
 		/**
 		 * Creates a new snapshot from an object.
 		 * 
 		 * @param record The record to create the snapshot of.
 		 */
-		public function RecordSnapshot(record:Record)
+		public function Snapshot(record:Record)
 		{
 			_record = record;
 			snap();
@@ -24,6 +26,7 @@ package mesh.model.source
 		private function snap():void
 		{
 			_data = ObjectUtil.copy(record);
+			_state = record.state;
 		}
 		
 		private var _data:Object;
@@ -42,6 +45,15 @@ package mesh.model.source
 		public function get record():Record
 		{
 			return _record;
+		}
+		
+		private var _state:RecordState;
+		/**
+		 * The state of the record when the snapshot was created.
+		 */
+		public function get state():RecordState
+		{
+			return _state;
 		}
 	}
 }

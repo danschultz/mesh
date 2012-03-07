@@ -56,7 +56,7 @@ package mesh.model.source
 		/**
 		 * @inheritDoc
 		 */
-		override public function create(responder:IPersistenceResponder, snapshot:RecordSnapshot):void
+		override public function create(responder:IPersistenceResponder, snapshot:Snapshot):void
 		{
 			if (snapshot.record.reflect.clazz != _type) {
 				throw new ArgumentError("Invalid record type.");
@@ -77,7 +77,7 @@ package mesh.model.source
 		/**
 		 * @inheritDoc
 		 */
-		override public function destroy(responder:IPersistenceResponder, snapshot:RecordSnapshot):void
+		override public function destroy(responder:IPersistenceResponder, snapshot:Snapshot):void
 		{
 			if (snapshot.record.reflect.clazz != _type) {
 				throw new ArgumentError("Invalid record type.");
@@ -133,7 +133,7 @@ package mesh.model.source
 		/**
 		 * @inheritDoc
 		 */
-		override public function update(responder:IPersistenceResponder, snapshot:RecordSnapshot):void
+		override public function update(responder:IPersistenceResponder, snapshot:Snapshot):void
 		{
 			if (snapshot.record.reflect.clazz != _type) {
 				throw new ArgumentError("Invalid record type.");

@@ -11,8 +11,6 @@ package mesh.model
 	import mesh.model.associations.Association;
 	import mesh.model.serialization.Serializer;
 	import mesh.model.source.DataSourceRetrievalOperation;
-	import mesh.model.source.RecordSnapshot;
-	import mesh.model.source.Commit;
 	import mesh.model.store.Store;
 	import mesh.model.validators.Errors;
 	import mesh.model.validators.Validator;
@@ -193,11 +191,6 @@ package mesh.model
 		 */
 		public function persist(responder:IResponder = null):Record
 		{
-			var commit:Commit = new Commit(store.dataSource, reflect.clazz, [this]);
-			if (responder != null) {
-				commit.addResponder(responder);
-			}
-			commit.persist();
 			return this;
 		}
 		
@@ -241,17 +234,6 @@ package mesh.model
 		public function serialize(options:Object = null):Object
 		{
 			return new Serializer(this, options).serialize();
-		}
-		
-		/**
-		 * Creates a new snapshot of this record.
-		 * 
-		 * @return A new snapshot.
-		 * @see mesh.model.Snapshot
-		 */
-		public function snap():RecordSnapshot
-		{
-			return new RecordSnapshot(this);
 		}
 		
 		public function sycned(id:Object = null):Record
