@@ -6,7 +6,6 @@ package mesh.model.source
 	import mesh.core.reflection.Type;
 	import mesh.core.reflection.reflect;
 	import mesh.model.Record;
-	import mesh.model.RecordSnapshot;
 	
 	/**
 	 * A data source that maps a type of record to its source.

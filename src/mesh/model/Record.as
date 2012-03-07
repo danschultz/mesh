@@ -11,6 +11,7 @@ package mesh.model
 	import mesh.model.associations.Association;
 	import mesh.model.serialization.Serializer;
 	import mesh.model.source.DataSourceRetrievalOperation;
+	import mesh.model.source.RecordSnapshot;
 	import mesh.model.store.Commit;
 	import mesh.model.store.Store;
 	import mesh.model.validators.Errors;

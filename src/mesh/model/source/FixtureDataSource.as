@@ -7,7 +7,6 @@ package mesh.model.source
 	import mesh.core.object.merge;
 	import mesh.model.ID;
 	import mesh.model.Record;
-	import mesh.model.RecordSnapshot;
 	
 	import mx.utils.ObjectUtil;
 

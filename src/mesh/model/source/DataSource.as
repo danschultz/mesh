@@ -3,7 +3,6 @@ package mesh.model.source
 	import flash.errors.IllegalOperationError;
 	
 	import mesh.model.Record;
-	import mesh.model.RecordSnapshot;
 
 	public class DataSource
 	{

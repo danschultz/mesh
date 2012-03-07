@@ -1,6 +1,7 @@
-package mesh.model
+package mesh.model.source
 {
 	import mx.utils.ObjectUtil;
+	import mesh.model.Record;
 
 	/**
 	 * The <code>RecordSnapshot</code> class represents a record at a specific time.

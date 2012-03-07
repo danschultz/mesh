@@ -2,8 +2,6 @@ package mesh.model.store
 {
 	import flash.events.EventDispatcher;
 	
-	import mesh.model.Record;
-	import mesh.model.RecordSnapshot;
 	import mesh.model.source.DataSource;
 	import mesh.operations.FaultOperationEvent;
 	import mesh.operations.FinishedOperationEvent;
