@@ -1,17 +1,31 @@
 package mesh.model.store
 {
-	import flash.events.EventDispatcher;
-	
 	import mesh.model.source.DataSource;
 	import mesh.model.source.IPersistenceResponder;
 	import mesh.model.source.Snapshots;
+	import mesh.operations.FaultOperationEvent;
+	import mesh.operations.FinishedOperationEvent;
 	import mesh.operations.Operation;
 	
-	public class Commit extends EventDispatcher
+	/**
+	 * The <code>Commit</code> class is responsible for persisting records from the store to
+	 * the data source.
+	 * 
+	 * @author Dan Schultz
+	 */
+	public class Commit
 	{
 		private var _dataSource:DataSource;
 		private var _snapshots:Snapshots;
 		
+		private var _responders:Array = [];
+		
+		/**
+		 * Constructor.
+		 * 
+		 * @param dataSource The data source to persist to.
+		 * @param records The records to persist.
+		 */
 		public function Commit(dataSource:DataSource, records:Array)
 		{
 			super();
@@ -19,6 +33,35 @@ package mesh.model.store
 			_snapshots = Snapshots.create(records);
 		}
 		
+		/**
+		 * Adds a callback responder to the commit to handle failures and successful commits.
+		 * 
+		 * @param responder The responder.
+		 */
+		public function addResponder(responder:ICommitResponder):void
+		{
+			_responders.push(responder);
+		}
+		
+		private function handleOperationFault(event:FaultOperationEvent):void
+		{
+			for each (var responder:ICommitResponder in _responders) {
+				responder.failed(event.summary, event.detail, event.code);
+			}
+		}
+		
+		private function handleOperationFinished(event:FinishedOperationEvent):void
+		{
+			if (event.successful) {
+				for each (var responder:ICommitResponder in _responders) {
+					responder.success();
+				}
+			}
+		}
+		
+		/**
+		 * Executes the persistence to the data source.
+		 */
 		public function persist():void
 		{
 			if (!operation.isExecuting) {
@@ -28,10 +71,15 @@ package mesh.model.store
 		}
 		
 		private var _operation:Operation;
+		/**
+		 * The operation that handles the persistence to the data source.
+		 */
 		public function get operation():Operation
 		{
 			if (_operation == null) {
 				_operation = new DataSourcePersistenceOperation(_dataSource, _snapshots);
+				_operation.addEventListener(FaultOperationEvent.FAULT, handleOperationFault);
+				_operation.addEventListener(FinishedOperationEvent.FINISHED, handleOperationFinished);
 			}
 			return _operation;
 		}

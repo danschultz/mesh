@@ -149,6 +149,15 @@ Records are persistable by calling the record's `persist()` method. Depending on
 
 	customer.orders.persist();
 
+**Example:** Listening for persistence callbacks
+
+	customer.orders.persist(new PersistenceResponder(function(fault:Object):void
+	{
+		if (fault) {
+
+		}
+	}));
+
 ## Data Source
 The data source is used to connect your records to your backend. It defines a set of methods that must be implemented in order to create, retrieve, delete, and update data on the server.
 

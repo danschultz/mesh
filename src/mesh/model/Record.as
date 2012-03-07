@@ -11,6 +11,7 @@ package mesh.model
 	import mesh.model.serialization.Serializer;
 	import mesh.model.source.DataSourceRetrievalOperation;
 	import mesh.model.store.Commit;
+	import mesh.model.store.ICommitResponder;
 	import mesh.model.store.Store;
 	import mesh.model.validators.Errors;
 	import mesh.model.validators.Validator;
@@ -18,7 +19,6 @@ package mesh.model
 	import mesh.operations.Operation;
 	
 	import mx.events.PropertyChangeEvent;
-	import mx.rpc.IResponder;
 	
 	use namespace mesh_internal;
 	
@@ -190,9 +190,13 @@ package mesh.model
 		 * @param responder An optional responder to handle persistence callbacks.
 		 * @return This instance.
 		 */
-		public function persist(responder:IResponder = null):Record
+		public function persist(responder:ICommitResponder = null):Record
 		{
-			new Commit(store.dataSource, [this]).persist();
+			var commit:Commit = new Commit(store.dataSource, [this]);
+			if (responder != null) {
+				commit.addResponder(responder);
+			}
+			commit.persist();
 			return this;
 		}
 		

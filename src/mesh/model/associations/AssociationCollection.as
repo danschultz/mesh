@@ -6,6 +6,7 @@ package mesh.model.associations
 	import mesh.mesh_internal;
 	import mesh.model.Record;
 	import mesh.model.store.Commit;
+	import mesh.model.store.ICommitResponder;
 	import mesh.model.store.ResultsList;
 	import mesh.model.store.Store;
 	import mesh.operations.Operation;
@@ -139,9 +140,13 @@ package mesh.model.associations
 			return this;
 		}
 		
-		public function persist(responder:IResponder = null):AssociationCollection
+		public function persist(responder:ICommitResponder = null):AssociationCollection
 		{
-			new Commit(store.dataSource, collectDirtyRecords()).persist();
+			var commit:Commit = new Commit(store.dataSource, collectDirtyRecords());
+			if (responder != null) {
+				commit.addResponder(responder);
+			}
+			commit.persist();
 			return this;
 		}
 		
