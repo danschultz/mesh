@@ -63,9 +63,32 @@ The data source is used to connect the store to your backend. It defines a set o
 				super();
 			}
 
-			public function retrieve(recordType:Class, id:Object):Operation
+			public function retrieve(responder:IRetrieveResponder, record:Record):void
 			{
-				return createOperation("retrieve", id)
+				var operation:Operation = createOperation("retrieve", id);
+				operation.addEventListener(ResultOperationEvent.RESULT, function(event:ResultOperationEvent):void
+				{
+					responder.loaded(event.data);
+				});
+				operation.addEventListener(FaultOperationEvent.FAULT, function(event:FaultOperationEvent):void
+				{
+					responder.failed();
+				});
+				operation.execute();
+			}
+
+			public function create(responder:IPersistenceResponder, snapshot:Snapshot):void
+			{
+				var operation:Operation = createOperation("create", snapshot.data);
+				operation.addEventListener(ResultOperationEvent.RESULT, function(event:ResultOperationEvent):void
+				{
+					responder.saved(snapshot, event.data.id);
+				});
+				operation.addEventListener(FaultOperationEvent.FAULT, function(event:FaultOperationEvent):void
+				{
+					responder.failed(snapshot);
+				});
+				operation.execute();
 			}
 		}
 	}
