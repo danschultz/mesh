@@ -1,8 +1,7 @@
-package mesh.model.store
+package mesh.model.source
 {
 	import flash.events.EventDispatcher;
 	
-	import mesh.model.source.DataSource;
 	import mesh.operations.FaultOperationEvent;
 	import mesh.operations.FinishedOperationEvent;
 	import mesh.operations.Operation;

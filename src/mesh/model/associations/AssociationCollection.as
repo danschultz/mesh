@@ -5,7 +5,7 @@ package mesh.model.associations
 	
 	import mesh.mesh_internal;
 	import mesh.model.Record;
-	import mesh.model.store.Commit;
+	import mesh.model.source.Commit;
 	import mesh.model.store.ResultsList;
 	import mesh.model.store.Store;
 	import mesh.operations.Operation;
