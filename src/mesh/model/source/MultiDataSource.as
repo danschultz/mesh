@@ -22,6 +22,7 @@ package mesh.model.source
 	public class MultiDataSource extends DataSource
 	{
 		private var _mapping:Dictionary = new Dictionary();
+		private var _dataSources:Array = [];
 		
 		/**
 		 * Constructor.
@@ -42,7 +43,10 @@ package mesh.model.source
 		 */
 		public function map(record:Class, dataSource:DataSource):void
 		{
-			_mapping[record] = dataSource;
+			if (_mapping[record] == null) {
+				_mapping[record] = dataSource;
+				_dataSources.push(dataSource);
+			}
 		}
 		
 		/**
@@ -50,7 +54,7 @@ package mesh.model.source
 		 */
 		override public function create(responder:IPersistenceResponder, snapshot:Snapshot):void
 		{
-			invoke("create", responder, snapshot);
+			invokeAll("create", responder, snapshot);
 		}
 		
 		/**
@@ -58,7 +62,7 @@ package mesh.model.source
 		 */
 		override public function createEach(responder:IPersistenceResponder, snapshots:Array):void
 		{
-			invoke("createEach", responder, snapshots);
+			invokeAll("createEach", responder, snapshots);
 		}
 		
 		/**
@@ -66,7 +70,7 @@ package mesh.model.source
 		 */
 		override public function destroy(responder:IPersistenceResponder, snapshot:Snapshot):void
 		{
-			invoke("destroy", responder, snapshot);
+			invokeAll("destroy", responder, snapshot);
 		}
 		
 		/**
@@ -74,7 +78,7 @@ package mesh.model.source
 		 */
 		override public function destroyEach(responder:IPersistenceResponder, snapshots:Array):void
 		{
-			invoke("destroyEach", responder, snapshots);
+			invokeAll("destroyEach", responder, snapshots);
 		}
 		
 		/**
@@ -106,7 +110,7 @@ package mesh.model.source
 		 */
 		override public function update(responder:IPersistenceResponder, snapshot:Snapshot):void
 		{
-			invoke("update", responder, snapshot);
+			invokeAll("update", responder, snapshot);
 		}
 		
 		/**
@@ -114,7 +118,7 @@ package mesh.model.source
 		 */
 		override public function updateEach(responder:IPersistenceResponder, snapshots:Array):void
 		{
-			invoke("updateEach", responder, snapshots);
+			invokeAll("updateEach", responder, snapshots);
 		}
 		
 		/**
@@ -146,6 +150,13 @@ package mesh.model.source
 			var source:DataSource = sourceFor(args[1]);
 			throwIfSourceIsNull(source, reflect(args[1]));
 			return source[method].apply(null, args);
+		}
+		
+		private function invokeAll(method:String, ...args):*
+		{
+			for each (var dataSource:DataSource in _dataSources) {
+				dataSource[method].apply(null, args);
+			}
 		}
 		
 		private function throwIfSourceIsNull(dataSource:DataSource, recordType:Type):void

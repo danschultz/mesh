@@ -13,16 +13,10 @@ package mesh.model.source
 		/**
 		 * The data source calls this method when it has successfully persisted a record.
 		 * 
-		 * @param record The record that was persisted.
+		 * @param snapshot The snapshot that was persisted.
 		 * @param id An ID to set on the record.
 		 */
-		function saved(record:Record, id:Object = null):void;
-		
-		/**
-		 * The data source calls this method when it has finished retrieving the data for
-		 * the request.
-		 */
-		function finished():void;
+		function saved(snapshot:Snapshot, id:Object = null):void;
 		
 		/**
 		 * The data source calls this method when data retrieval has failed.

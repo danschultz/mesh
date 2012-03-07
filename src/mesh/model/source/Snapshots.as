@@ -1,6 +1,7 @@
 package mesh.model.source
 {
 	import flash.errors.IllegalOperationError;
+	import flash.utils.Dictionary;
 	
 	import mesh.model.Record;
 	import mesh.model.store.Cache;
@@ -16,6 +17,7 @@ package mesh.model.source
 	{
 		private var _cache:SnapshotCache;
 		private var _snapshots:Array;
+		private var _recordToSnapshot:Dictionary = new Dictionary();
 		
 		private var _grouped:Boolean = false;
 		
@@ -27,7 +29,6 @@ package mesh.model.source
 		public function Snapshots(snapshots:Array)
 		{
 			_snapshots = snapshots;
-			group(_snapshots);
 		}
 		
 		/**
@@ -43,6 +44,18 @@ package mesh.model.source
 				snapshots.push( new Snapshot(record) );
 			}
 			return new Snapshots(snapshots);
+		}
+		
+		/**
+		 * Checks if a record or snapshot belongs to this set.
+		 * 
+		 * @param recordOrSnapshot A <code>Record</code> or <code>Snapshot</code>.
+		 * @return <code>true</code> if the record or snapshot exists.
+		 */
+		public function contains(recordOrSnapshot:Object):Boolean
+		{
+			var record:Record = (recordOrSnapshot is Snapshot) ? (recordOrSnapshot as Snapshot).record : Record( recordOrSnapshot );
+			return _recordToSnapshot[record] != null;
 		}
 		
 		/**
@@ -76,11 +89,12 @@ package mesh.model.source
 			throw new IllegalOperationError("Cannot commit record");
 		}
 		
-		private function group(snapshots:Array):void
+		private function group():void
 		{
 			if (!_grouped) {
-				for each (var snapshot:Snapshot in snapshots) {
+				for each (var snapshot:Snapshot in _snapshots) {
 					chooseArray(snapshot).push(snapshot);
+					_recordToSnapshot[snapshot.record] = snapshot;
 				}
 				_grouped = true;
 			}
@@ -114,6 +128,14 @@ package mesh.model.source
 		{
 			group();
 			return _update.concat();
+		}
+		
+		/**
+		 * The number of snapshots in this set.
+		 */
+		public function get length():int
+		{
+			return _snapshots.length;
 		}
 	}
 }

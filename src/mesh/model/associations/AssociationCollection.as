@@ -5,7 +5,7 @@ package mesh.model.associations
 	
 	import mesh.mesh_internal;
 	import mesh.model.Record;
-	import mesh.model.source.Commit;
+	import mesh.model.store.Commit;
 	import mesh.model.store.ResultsList;
 	import mesh.model.store.Store;
 	import mesh.operations.Operation;
@@ -130,11 +130,7 @@ package mesh.model.associations
 		
 		public function persist(responder:IResponder = null):AssociationCollection
 		{
-			var commit:Commit = new Commit(store.dataSource, recordType, toArray())
-			if (responder != null) {
-				commit.addResponder(responder);
-			}
-			commit.persist();
+			new Commit(store.dataSource, toArray()).persist();
 			return this;
 		}
 		

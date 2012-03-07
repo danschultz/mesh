@@ -11,6 +11,7 @@ package mesh.model
 	import mesh.model.associations.Association;
 	import mesh.model.serialization.Serializer;
 	import mesh.model.source.DataSourceRetrievalOperation;
+	import mesh.model.store.Commit;
 	import mesh.model.store.Store;
 	import mesh.model.validators.Errors;
 	import mesh.model.validators.Validator;
@@ -191,6 +192,7 @@ package mesh.model
 		 */
 		public function persist(responder:IResponder = null):Record
 		{
+			new Commit(store.dataSource, [this]).persist();
 			return this;
 		}
 		
@@ -238,6 +240,7 @@ package mesh.model
 		
 		public function sycned(id:Object = null):Record
 		{
+			this.id = id;
 			changeState(state.synced());
 			return this;
 		}
