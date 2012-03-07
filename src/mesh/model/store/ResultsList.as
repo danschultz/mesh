@@ -3,6 +3,7 @@ package mesh.model.store
 	import mesh.core.List;
 	import mesh.mesh_internal;
 	import mesh.model.Record;
+	import mesh.operations.FinishedOperationEvent;
 	import mesh.operations.Operation;
 	
 	import mx.collections.IList;
@@ -19,6 +20,10 @@ package mesh.model.store
 			super();
 			
 			_loadOperation = loadOperation;
+			_loadOperation.addEventListener(FinishedOperationEvent.FINISHED, function(event:FinishedOperationEvent):void
+			{
+				_isLoaded = event.successful;
+			});
 			
 			_resultsWrapper = new ListCollectionView(results);
 			_resultsWrapper.filterFunction = filterRecord;
