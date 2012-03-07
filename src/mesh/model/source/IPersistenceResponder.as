@@ -19,6 +19,12 @@ package mesh.model.source
 		function saved(record:Record, id:Object = null):void;
 		
 		/**
+		 * The data source calls this method when it has finished retrieving the data for
+		 * the request.
+		 */
+		function finished():void;
+		
+		/**
 		 * The data source calls this method when data retrieval has failed.
 		 * 
 		 * @param summary The summary of the error.
