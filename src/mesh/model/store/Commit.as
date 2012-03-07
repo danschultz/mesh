@@ -90,11 +90,15 @@ class DataSourcePersistenceOperation extends Operation implements IPersistenceRe
 	{
 		super.executeRequest();
 		
-		_saveCounter = 0;
-		_persistedSnapshots = new Dictionary();
-		
-		_dataSource.createEach(this, _snapshots.create);
-		_dataSource.updateEach(this, _snapshots.update);
-		_dataSource.destroyEach(this, _snapshots.destroy);
+		if (_snapshots.length > 0) {
+			_saveCounter = 0;
+			_persistedSnapshots = new Dictionary();
+			
+			_dataSource.createEach(this, _snapshots.create);
+			_dataSource.updateEach(this, _snapshots.update);
+			_dataSource.destroyEach(this, _snapshots.destroy);
+		} else {
+			finish(true);
+		}
 	}
 }

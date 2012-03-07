@@ -93,8 +93,10 @@ package mesh.model.source
 		{
 			if (!_grouped) {
 				for each (var snapshot:Snapshot in _snapshots) {
-					chooseArray(snapshot).push(snapshot);
-					_recordToSnapshot[snapshot.record] = snapshot;
+					if (!snapshot.state.isSynced) {
+						chooseArray(snapshot).push(snapshot);
+						_recordToSnapshot[snapshot.record] = snapshot;
+					}
 				}
 				_grouped = true;
 			}
