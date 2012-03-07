@@ -49,60 +49,6 @@ Query results automatically update whenever the store is updated. For result set
 	person.remove();
 	trace(people.length); // 4
 
-### Data Source
-The data source is used to connect the store to your backend. It defines a set of methods that your application must implement in order to create, retrieve, delete, and update data on the server.
-
-**Example:** A sample data source.
-
-	package myapp
-	{
-		public class MyDataSource extends AMFDataSource
-		{
-			public function MyDataSource()
-			{
-				super();
-			}
-
-			public function retrieve(responder:IRetrieveResponder, record:Record):void
-			{
-				var operation:Operation = createOperation("retrieve", id);
-				operation.addEventListener(ResultOperationEvent.RESULT, function(event:ResultOperationEvent):void
-				{
-					responder.loaded(event.data);
-				});
-				operation.addEventListener(FaultOperationEvent.FAULT, function(event:FaultOperationEvent):void
-				{
-					responder.failed();
-				});
-				operation.execute();
-			}
-
-			public function create(responder:IPersistenceResponder, snapshot:Snapshot):void
-			{
-				var operation:Operation = createOperation("create", snapshot.data);
-				operation.addEventListener(ResultOperationEvent.RESULT, function(event:ResultOperationEvent):void
-				{
-					responder.saved(snapshot, event.data.id);
-				});
-				operation.addEventListener(FaultOperationEvent.FAULT, function(event:FaultOperationEvent):void
-				{
-					responder.failed(snapshot);
-				});
-				operation.execute();
-			}
-		}
-	}
-
-It's likely that an application will have many types of model classes, each with their own service endpoints. In these scenarios, a `MultiDataSource` can be used to map a record type to its own data source.
-
-	// Map a data source to each type of record.
-	var dataSource:MultiDataSource = new MultiDataSource();
-	dataSource.map(Customer, new CustomerDataSource());
-	dataSource.map(Account, new AccountDataSource());
-	dataSource.map(Order, new OrderDataSource()); 
-
-	var store:Store = new Store(dataSource);
-
 ## Records
 Model classes in Mesh are sub-classes of `Record`. They define the relationships with other records, and watch how you application modifies them. They detect when their properties change, when their destroyed, and when their data is persisted to the backend. All records that are created and retrieved from your backend are kept in the store.
 
@@ -202,3 +148,57 @@ Records are persistable by calling the record's `persist()` method. Depending on
 	customer.orders.add(order2);
 
 	customer.orders.persist();
+
+## Data Source
+The data source is used to connect your records to your backend. It defines a set of methods that must be implemented in order to create, retrieve, delete, and update data on the server.
+
+**Example:** A sample data source.
+
+	package myapp
+	{
+		public class MyDataSource extends AMFDataSource
+		{
+			public function MyDataSource()
+			{
+				super();
+			}
+
+			public function retrieve(responder:IRetrieveResponder, record:Record):void
+			{
+				var operation:Operation = createOperation("retrieve", id);
+				operation.addEventListener(ResultOperationEvent.RESULT, function(event:ResultOperationEvent):void
+				{
+					responder.loaded(event.data);
+				});
+				operation.addEventListener(FaultOperationEvent.FAULT, function(event:FaultOperationEvent):void
+				{
+					responder.failed();
+				});
+				operation.execute();
+			}
+
+			public function create(responder:IPersistenceResponder, snapshot:Snapshot):void
+			{
+				var operation:Operation = createOperation("create", snapshot.data);
+				operation.addEventListener(ResultOperationEvent.RESULT, function(event:ResultOperationEvent):void
+				{
+					responder.saved(snapshot, event.data.id);
+				});
+				operation.addEventListener(FaultOperationEvent.FAULT, function(event:FaultOperationEvent):void
+				{
+					responder.failed(snapshot);
+				});
+				operation.execute();
+			}
+		}
+	}
+
+It's likely that an application will have many types of model classes, each with their own service endpoints. In these scenarios, a `MultiDataSource` can be used to map a record type to its own data source.
+
+	// Map a data source to each type of record.
+	var dataSource:MultiDataSource = new MultiDataSource();
+	dataSource.map(Customer, new CustomerDataSource());
+	dataSource.map(Account, new AccountDataSource());
+	dataSource.map(Order, new OrderDataSource()); 
+
+	var store:Store = new Store(dataSource);
