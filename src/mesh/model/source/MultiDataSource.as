@@ -6,7 +6,7 @@ package mesh.model.source
 	import mesh.core.reflection.Type;
 	import mesh.core.reflection.reflect;
 	import mesh.model.Record;
-	import mesh.operations.Operation;
+	import mesh.model.RecordSnapshot;
 	
 	/**
 	 * A data source that maps a type of record to its source.
@@ -49,73 +49,73 @@ package mesh.model.source
 		/**
 		 * @inheritDoc
 		 */
-		override public function create(recordType:Class, record:Object):Operation
+		override public function create(responder:IPersistenceResponder, snapshot:RecordSnapshot):void
 		{
-			return invoke("create", recordType, record);
+			invoke("create", responder, snapshot);
 		}
 		
 		/**
 		 * @inheritDoc
 		 */
-		override public function createEach(recordType:Class, records:Array):Operation
+		override public function createEach(responder:IPersistenceResponder, snapshots:Array):void
 		{
-			return invoke("createEach", recordType, records);
+			invoke("createEach", responder, snapshots);
 		}
 		
 		/**
 		 * @inheritDoc
 		 */
-		override public function destroy(recordType:Class, record:Object):Operation
+		override public function destroy(responder:IPersistenceResponder, snapshot:RecordSnapshot):void
 		{
-			return invoke("destroy", recordType, record);
+			invoke("destroy", responder, snapshot);
 		}
 		
 		/**
 		 * @inheritDoc
 		 */
-		override public function destroyEach(recordType:Class, records:Array):Operation
+		override public function destroyEach(responder:IPersistenceResponder, snapshots:Array):void
 		{
-			return invoke("destroyEach", recordType, records);
+			invoke("destroyEach", responder, snapshots);
 		}
 		
 		/**
 		 * @inheritDoc
 		 */
-		override public function retrieve(recordType:Class, id:Object):Operation
+		override public function retrieve(responder:IRetrievalResponder, record:Record):void
 		{
-			return invoke("retrieve", recordType, id);
+			invoke("retrieve", responder, record);
 		}
 		
 		/**
 		 * @inheritDoc
 		 */
-		override public function retrieveAll(recordType:Class):Operation
+		override public function retrieveAll(responder:IRetrievalResponder, type:Class):void
 		{
-			return invoke("retrieveAll", recordType);
+			invoke("retrieveAll", responder, type);
 		}
 		
 		/**
 		 * @inheritDoc
 		 */
-		override public function search(recordType:Class, params:Object):Operation
+		override public function search(responder:IRetrievalResponder, type:Class, params:Object):void
 		{
-			return invoke("search", recordType, params);
+			invoke("search", responder, type, params);
 		}
 		
 		/**
 		 * @inheritDoc
 		 */
-		override public function update(recordType:Class, record:Object):Operation
+		override public function update(responder:IPersistenceResponder, snapshot:RecordSnapshot):void
 		{
-			return invoke("update", recordType, record);
+			invoke("update", responder, snapshot);
 		}
 		
 		/**
 		 * @inheritDoc
 		 */
-		override public function updateEach(recordType:Class, records:Array):Operation
+		override public function updateEach(responder:IPersistenceResponder, snapshots:Array):void
 		{
-			return invoke("updateEach", recordType, records);
+			invoke("updateEach", responder, snapshots);
 		}
 		
 		/**
@@ -144,8 +144,8 @@ package mesh.model.source
 		
 		private function invoke(method:String, ...args):*
 		{
-			var source:DataSource = sourceFor(args[0]);
-			throwIfSourceIsNull(source, reflect(args[0]));
+			var source:DataSource = sourceFor(args[1]);
+			throwIfSourceIsNull(source, reflect(args[1]));
 			return source[method].apply(null, args);
 		}
 		

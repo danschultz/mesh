@@ -5,8 +5,11 @@ package mesh.model.source
 	import flash.utils.setTimeout;
 	
 	import mesh.core.object.merge;
-	import mesh.model.store.Data;
-	import mesh.operations.Operation;
+	import mesh.model.ID;
+	import mesh.model.Record;
+	import mesh.model.RecordSnapshot;
+	
+	import mx.utils.ObjectUtil;
 
 	/**
 	 * A data source that is used for static or test data.
@@ -19,6 +22,8 @@ package mesh.model.source
 		
 		private var _type:Class;
 		private var _options:Object;
+		
+		private var _idCounter:int;
 		
 		/**
 		 * Constructor.
@@ -52,56 +57,95 @@ package mesh.model.source
 		/**
 		 * @inheritDoc
 		 */
-		override public function retrieve(recordType:Class, id:Object):Operation
+		override public function create(responder:IPersistenceResponder, snapshot:RecordSnapshot):void
 		{
-			if (recordType != _type) {
+			if (snapshot.record.reflect.clazz != _type) {
 				throw new ArgumentError("Invalid record type.");
 			}
 			
-			return new TimedOperation(_options.latency, function():Data
-			{
-				return new Data(_fixtures.grab(id), recordType);
-			});
+			var data:Object = ObjectUtil.copy(snapshot.data);
+			var id:* = data[_options.idField];
+			if (_fixtures.containsKey(id)) {
+				responder.failed("Fixture type '" + snapshot.record.reflect + "' with ID=" + id + " already exists.");
+				return;
+			}
+			
+			data[_options.idField] = ++_idCounter;
+			add(data);
+			responder.saved(snapshot.record, data[_options.idField]);
 		}
 		
-		override public function retrieveAll(recordType:Class):Operation
+		/**
+		 * @inheritDoc
+		 */
+		override public function destroy(responder:IPersistenceResponder, snapshot:RecordSnapshot):void
 		{
-			if (recordType != _type) {
+			if (snapshot.record.reflect.clazz != _type) {
 				throw new ArgumentError("Invalid record type.");
 			}
 			
-			return new TimedOperation(_options.latency, function():Array
-			{
-				return _fixtures.values().map(function(fixture:Object, ...args):Data
-				{
-					return new Data(fixture, recordType);
-				});
-			});
+			var id:* = snapshot.data[_options.idField];
+			if (_fixtures.remove(id) == null) {
+				responder.failed("Fixture type '" + snapshot.record.reflect + "' does not exist with ID=" + id + ".");
+				return;
+			}
+			responder.saved(snapshot.record);
 		}
 		
-		override public function search(recordType:Class, params:Object):Operation
+		/**
+		 * @inheritDoc
+		 */
+		override public function retrieve(responder:IRetrievalResponder, record:Record):void
 		{
-			if (recordType != _type) {
+			if (record.reflect.clazz != _type) {
+				throw new ArgumentError("Invalid record type.");
+			}
+			responder.loaded(record.reflect.clazz, _fixtures.grab(record.id));
+			responder.finished();
+		}
+		
+		/**
+		 * @inheritDoc
+		 */
+		override public function retrieveAll(responder:IRetrievalResponder, type:Class):void
+		{
+			if (type != _type) {
 				throw new ArgumentError("Invalid record type.");
 			}
 			
-			return new TimedOperation(_options.latency, function():Array
-			{
-				var results:Array = _fixtures.values().filter(function(fixture:Object, ...args):Boolean
-				{
-					for (var property:String in params) {
-						if (fixture[property] != params[property]) {
-							return false;
-						}
-					}
-					return true;
-				});
-				
-				return results.map(function(fixture:Object, ...args):Data
-				{
-					return new Data(fixture, recordType);
-				});
-			});
+			for each (var fixture:Object in _fixtures.values()) {
+				responder.loaded(type, fixture);
+			}
+			responder.finished();
+		}
+		
+		/**
+		 * @inheritDoc
+		 */
+		override public function search(responder:IRetrievalResponder, type:Class, params:Object):void
+		{
+			if (type != _type) {
+				throw new ArgumentError("Invalid record type.");
+			}
+			
+			retrieveAll(responder, type);
+		}
+		
+		/**
+		 * @inheritDoc
+		 */
+		override public function update(responder:IPersistenceResponder, snapshot:RecordSnapshot):void
+		{
+			if (snapshot.record.reflect.clazz != _type) {
+				throw new ArgumentError("Invalid record type.");
+			}
+			
+			if (!ID.isPopulated(snapshot.data, _options.idField)) {
+				responder.failed("Cannot update fixture type '" + snapshot.record.reflect + "' without ID.");
+				return;
+			}
+			add(ObjectUtil.copy(snapshot.data));
+			responder.saved(snapshot.record);
 		}
 	}
 }

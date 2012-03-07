@@ -3,6 +3,7 @@ package mesh.model.store
 	import flash.events.EventDispatcher;
 	
 	import mesh.model.Record;
+	import mesh.model.RecordSnapshot;
 	import mesh.model.source.DataSource;
 	import mesh.operations.FaultOperationEvent;
 	import mesh.operations.FinishedOperationEvent;
@@ -15,12 +16,12 @@ package mesh.model.store
 	{
 		private var _responders:Array = [];
 		
-		private var _snapshots:Snapshots;
+		//private var _snapshots:Snapshots;
 		
 		public function Commit(dataSource:DataSource, type:Class, records:Array)
 		{
 			super();
-			_snapshots = new Snapshots(dataSource, type, records);
+			//_snapshots = new Snapshots(dataSource, type, records);
 		}
 		
 		/**
@@ -70,21 +71,28 @@ package mesh.model.store
 		public function get operation():Operation
 		{
 			if (_operation == null) {
-				_operation = _snapshots.createOperation();
-				_operation.addEventListener(FaultOperationEvent.FAULT, handleOperationFault);
-				_operation.addEventListener(FinishedOperationEvent.FINISHED, handleOperationFinished);
+				//_operation = _snapshots.createOperation();
+				//_operation.addEventListener(FaultOperationEvent.FAULT, handleOperationFault);
+				//_operation.addEventListener(FinishedOperationEvent.FINISHED, handleOperationFinished);
 			}
 			return _operation;
 		}
 	}
 }
 
+/*
+
 import flash.errors.IllegalOperationError;
 
+import mesh.mesh_internal;
 import mesh.model.Record;
+import mesh.model.RecordSnapshot;
 import mesh.model.source.DataSource;
+import mesh.operations.FinishedOperationEvent;
 import mesh.operations.Operation;
 import mesh.operations.SequentialOperation;
+
+use namespace mesh_internal;
 
 class Snapshots
 {
@@ -106,20 +114,29 @@ class Snapshots
 	{
 		for each (var record:Record in records) {
 			if (!record.state.isSynced) {
-				chooseArray(record).push(record.snap().data);
+				chooseArray(record).push(record.snap());
 			}
 		}
 	}
 	
+	private function data(snapshots:Array):Array
+	{
+		var result:Array = [];
+		for each (var snapshot:RecordSnapshot in snapshots) {
+			result.push(snapshot.data);
+		}
+		return result;
+	}
+	
 	public function createOperation():Operation
 	{
-		return new SequentialOperation(
-			[
-				_dataSource.createEach(_type, _create),
-				_dataSource.updateEach(_type, _update),
-				_dataSource.destroyEach(_type, _destroy)
-			]
-		);
+		var create:Operation = _dataSource.createEach(_type, data(_create));
+		var update:Operation = _dataSource.updateEach(_type, data(_update));
+		var destroy:Operation = _dataSource.destroyEach(_type, data(_destroy));
+		
+		var operation:Operation = new SequentialOperation([create, update, destroy]);
+		operation.addEventListener(FinishedOperationEvent.FINISHED, handleRecordsSynced);
+		return operation;
 	}
 	
 	private function chooseArray(record:Record):Array
@@ -138,4 +155,39 @@ class Snapshots
 		
 		throw new IllegalOperationError("Cannot commit record");
 	}
+	
+	private function handleRecordsSynced(event:FinishedOperationEvent):void
+	{
+		if (event.successful) {
+			recordsCreated();
+			recordsUpdated();
+			recordsDestroyed();
+		}
+	}
+	
+	private function recordsCreated():void
+	{
+		for each (var snapshot:RecordSnapshot in _create) {
+			var record:Record = Record( snapshot.origin );
+			record.changeState(record.state.synced());
+		}
+	}
+	
+	private function recordsUpdated():void
+	{
+		for each (var snapshot:RecordSnapshot in _update) {
+			var record:Record = Record( snapshot.origin );
+			record.changeState(record.state.synced());
+		}
+	}
+	
+	private function recordsDestroyed():void
+	{
+		for each (var snapshot:RecordSnapshot in _destroy) {
+			var record:Record = Record( snapshot.origin );
+			record.changeState(record.state.synced());
+		}
+	}
 }
+
+*/

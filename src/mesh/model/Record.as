@@ -10,12 +10,13 @@ package mesh.model
 	import mesh.mesh_internal;
 	import mesh.model.associations.Association;
 	import mesh.model.serialization.Serializer;
+	import mesh.model.source.DataSourceRetrievalOperation;
 	import mesh.model.store.Commit;
 	import mesh.model.store.Store;
 	import mesh.model.validators.Errors;
 	import mesh.model.validators.Validator;
+	import mesh.operations.FinishedOperationEvent;
 	import mesh.operations.Operation;
-	import mesh.operations.ResultOperationEvent;
 	
 	import mx.events.PropertyChangeEvent;
 	import mx.rpc.IResponder;
@@ -372,11 +373,12 @@ package mesh.model
 		public function get loadOperation():Operation
 		{
 			if (_loadOperation == null) {
-				_loadOperation = store.dataSource.retrieve(reflect.clazz, id);
-				_loadOperation.addEventListener(ResultOperationEvent.RESULT, function(event:ResultOperationEvent):void
+				_loadOperation = new DataSourceRetrievalOperation(store.records, store.dataSource.retrieve, [this]);
+				_loadOperation.addEventListener(FinishedOperationEvent.FINISHED, function(event:FinishedOperationEvent):void
 				{
-					store.materialize(event.data, RecordState.loaded());
-					_isLoaded = true;
+					if (event.successful) {
+						_isLoaded = true;
+					}
 				});
 			}
 			return _loadOperation;

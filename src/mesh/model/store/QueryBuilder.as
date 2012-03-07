@@ -49,10 +49,11 @@ package mesh.model.store
 	}
 }
 
+import mesh.core.reflection.newInstance;
 import mesh.mesh_internal;
 import mesh.model.Record;
 import mesh.model.source.DataSource;
-import mesh.model.store.Data;
+import mesh.model.source.DataSourceRetrievalOperation;
 import mesh.model.store.Query;
 import mesh.model.store.RecordCache;
 import mesh.model.store.ResultsList;
@@ -77,7 +78,9 @@ class FindQuery extends Query
 		
 		// The record doesn't belong to the store. We need to retrieve it from the data source.
 		if (record == null) {
-			record = records.materialize( new Data({id:_id}, recordType) );
+			record = newInstance(recordType);
+			record.id = _id;
+			records.insert(record);
 		}
 		
 		return record;
@@ -96,7 +99,7 @@ class FindAllQuery extends Query
 	override public function execute():*
 	{
 		if (_results == null) {
-			_results = new ResultsList(records, records.findIndex(recordType), dataSource.retrieveAll(recordType));
+			_results = new ResultsList(records, records.findIndex(recordType), new DataSourceRetrievalOperation(records, dataSource.retrieveAll, [recordType]));
 		}
 		return _results;
 	}
@@ -127,7 +130,7 @@ class WhereQuery extends Query
 				return true;
 			};
 			collection.refresh();
-			_results = new ResultsList(records, collection, dataSource.search(recordType, _conditions));
+			_results = new ResultsList(records, collection, new DataSourceRetrievalOperation(records, dataSource.search, [recordType, _conditions]));
 		}
 		return _results;
 	}

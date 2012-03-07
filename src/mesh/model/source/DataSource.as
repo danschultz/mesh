@@ -2,8 +2,8 @@ package mesh.model.source
 {
 	import flash.errors.IllegalOperationError;
 	
-	import mesh.operations.Operation;
-	import mesh.operations.ParallelOperation;
+	import mesh.model.Record;
+	import mesh.model.RecordSnapshot;
 
 	public class DataSource
 	{
@@ -12,61 +12,55 @@ package mesh.model.source
 			
 		}
 		
-		public function create(recordType:Class, record:Object):Operation
+		public function create(responder:IPersistenceResponder, snapshot:RecordSnapshot):void
 		{
 			throw new IllegalOperationError();
 		}
 		
-		public function createEach(recordType:Class, records:Array):Operation
+		public function createEach(responder:IPersistenceResponder, snapshots:Array):void
 		{
-			var operations:Array = [];
-			for each (var record:Object in records) {
-				operations.push(create(recordType, record));
+			for each (var snapshot:RecordSnapshot in snapshots) {
+				create(responder, snapshot);
 			}
-			return new ParallelOperation(operations);
 		}
 		
-		public function destroy(recordType:Class, record:Object):Operation
+		public function destroy(responder:IPersistenceResponder, snapshot:RecordSnapshot):void
 		{
 			throw new IllegalOperationError();
 		}
 		
-		public function destroyEach(recordType:Class, records:Array):Operation
+		public function destroyEach(responder:IPersistenceResponder, snapshots:Array):void
 		{
-			var operations:Array = [];
-			for each (var record:Object in records) {
-				operations.push(destroy(recordType, record));
+			for each (var snapshot:RecordSnapshot in snapshots) {
+				destroy(responder, snapshot);
 			}
-			return new ParallelOperation(operations);
 		}
 		
-		public function retrieve(recordType:Class, id:Object):Operation
+		public function retrieve(responder:IRetrievalResponder, record:Record):void
 		{
 			throw new IllegalOperationError();
 		}
 		
-		public function retrieveAll(recordType:Class):Operation
+		public function retrieveAll(responder:IRetrievalResponder, type:Class):void
 		{
 			throw new IllegalOperationError();
 		}
 		
-		public function search(recordType:Class, params:Object):Operation
+		public function search(responder:IRetrievalResponder, type:Class, params:Object):void
 		{
 			throw new IllegalOperationError();
 		}
 		
-		public function update(recordType:Class, record:Object):Operation
+		public function update(responder:IPersistenceResponder, snapshot:RecordSnapshot):void
 		{
 			throw new IllegalOperationError();
 		}
 		
-		public function updateEach(recordType:Class, records:Array):Operation
+		public function updateEach(responder:IPersistenceResponder, snapshots:Array):void
 		{
-			var operations:Array = [];
-			for each (var record:Object in records) {
-				operations.push(update(recordType, record));
+			for each (var snapshot:RecordSnapshot in snapshots) {
+				update(responder, snapshot);
 			}
-			return new ParallelOperation(operations);
 		}
 	}
 }
