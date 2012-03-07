@@ -240,7 +240,9 @@ package mesh.model
 		
 		public function sycned(id:Object = null):Record
 		{
-			this.id = id;
+			if (id != null) {
+				this.id = id;
+			}
 			changeState(state.synced());
 			return this;
 		}
