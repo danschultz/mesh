@@ -99,7 +99,7 @@ class FindAllQuery extends Query
 	override public function execute():*
 	{
 		if (_results == null) {
-			_results = new ResultsList(records, records.findIndex(recordType), new DataSourceRetrievalOperation(records, dataSource.retrieveAll, [recordType]));
+			_results = new ResultsList(records.findIndex(recordType), new DataSourceRetrievalOperation(records, dataSource.retrieveAll, [recordType]));
 		}
 		return _results;
 	}
@@ -130,7 +130,7 @@ class WhereQuery extends Query
 				return true;
 			};
 			collection.refresh();
-			_results = new ResultsList(records, collection, new DataSourceRetrievalOperation(records, dataSource.search, [recordType, _conditions]));
+			_results = new ResultsList(collection, new DataSourceRetrievalOperation(records, dataSource.search, [recordType, _conditions]));
 		}
 		return _results;
 	}

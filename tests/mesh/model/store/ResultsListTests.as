@@ -25,7 +25,7 @@ package mesh.model.store
 		public function testLoad():void
 		{
 			var called:Boolean;
-			var results:ResultsList = new ResultsList(_records, new ArrayList(), new MethodOperation(function():void
+			var results:ResultsList = new ResultsList(new ArrayList(), new MethodOperation(function():void
 			{
 				called = true;
 			}));
@@ -39,7 +39,7 @@ package mesh.model.store
 		public function testLoadOnlyOnce():void
 		{
 			var called:Boolean;
-			var results:ResultsList = new ResultsList(_records, new ArrayList(), new MethodOperation(function():void
+			var results:ResultsList = new ResultsList(new ArrayList(), new MethodOperation(function():void
 			{
 				called = true;
 			}));
@@ -55,7 +55,7 @@ package mesh.model.store
 		public function testRefresh():void
 		{
 			var called:Boolean;
-			var results:ResultsList = new ResultsList(_records, new ArrayList(), new MethodOperation(function():void
+			var results:ResultsList = new ResultsList(new ArrayList(), new MethodOperation(function():void
 			{
 				called = true;
 			}));

@@ -15,7 +15,7 @@ package mesh.model.store
 	{
 		private var _resultsWrapper:ListCollectionView;
 		
-		public function ResultsList(records:RecordCache, results:IList, loadOperation:Operation)
+		public function ResultsList(results:IList, loadOperation:Operation)
 		{
 			super();
 			
