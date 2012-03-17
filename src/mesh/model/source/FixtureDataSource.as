@@ -4,9 +4,13 @@ package mesh.model.source
 	
 	import flash.utils.setTimeout;
 	
+	import mesh.core.inflection.camelize;
+	import mesh.core.inflection.pluralize;
 	import mesh.core.object.merge;
+	import mesh.core.reflection.reflect;
 	import mesh.model.ID;
 	import mesh.model.Record;
+	import mesh.model.store.Data;
 	
 	import mx.utils.ObjectUtil;
 
@@ -69,6 +73,19 @@ package mesh.model.source
 				data[_options.idField] = ++_idCounter;
 				add(data);
 				responder.saved(snapshot, data[_options.idField]);
+			}
+		}
+		
+		override public function belongingTo(responder:IRetrievalResponder, record:Record, type:Class):void
+		{
+			if (record.reflect.clazz == _type) {
+				var property:String = pluralize(camelize(reflect(type).className, false));
+				var data:Object = _fixtures.grab(record.id);
+				
+				for each (var obj:Object in data[property]) {
+					responder.loaded(new Data(type, obj));
+				}
+				responder.finished();
 			}
 		}
 		

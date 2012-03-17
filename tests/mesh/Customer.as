@@ -10,7 +10,7 @@ package mesh
 		
 		public var accountId:int;
 		
-		[HasMany(inverse="customer", recordType="mesh.Order")]
+		[HasMany(inverse="customer", recordType="mesh.Order", isMaster="true")]
 		public var orders:HasManyAssociation;
 		
 		public function Customer(properties:Object=null)

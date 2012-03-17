@@ -23,6 +23,11 @@ package mesh.model.source
 			}
 		}
 		
+		public function belongingTo(responder:IRetrievalResponder, record:Record, type:Class):void
+		{
+			throw new IllegalOperationError();
+		}
+		
 		public function destroy(responder:IPersistenceResponder, snapshot:Snapshot):void
 		{
 			throw new IllegalOperationError();

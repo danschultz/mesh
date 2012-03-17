@@ -3,6 +3,7 @@ package mesh.model.associations
 	import flash.utils.flash_proxy;
 	import flash.utils.getDefinitionByName;
 	
+	import mesh.core.Set;
 	import mesh.mesh_internal;
 	import mesh.model.Record;
 	import mesh.model.store.Commit;
@@ -14,15 +15,19 @@ package mesh.model.associations
 	import mx.collections.IList;
 	import mx.collections.ListCollectionView;
 	import mx.events.CollectionEvent;
-	import mx.rpc.IResponder;
+	import mx.events.CollectionEventKind;
 	
 	use namespace mesh_internal;
 	use namespace flash_proxy;
 	
 	public class AssociationCollection extends Association implements IList
 	{
-		private var _list:ListCollectionView;
+		private var _resultsList:ListCollectionView;
 		private var _results:ResultsList;
+		
+		private var _records:MergedSet;
+		private var _added:Set = new Set();
+		private var _removed:Set = new Set();
 		
 		/**
 		 * @copy Association#Association()
@@ -31,8 +36,21 @@ package mesh.model.associations
 		{
 			super(source, property, options);
 			
-			_list = new ListCollectionView();
-			_list.addEventListener(CollectionEvent.COLLECTION_CHANGE, handleListCollectionChange);
+			_resultsList = new ListCollectionView();
+			_resultsList.filterFunction = filterRecord;
+			_resultsList.refresh();
+			
+			_records = new MergedSet(_resultsList, _added);
+			_records.addEventListener(CollectionEvent.COLLECTION_CHANGE, handleListCollectionChange);
+			
+			_removed.addEventListener(CollectionEvent.COLLECTION_CHANGE, handleRemovedSetChange);
+		}
+		
+		private function handleRemovedSetChange(event:CollectionEvent):void
+		{
+			if (event.kind != CollectionEventKind.UPDATE) {
+				_resultsList.refresh();
+			}
 		}
 		
 		/**
@@ -42,6 +60,8 @@ package mesh.model.associations
 		 */
 		public function add(record:Record):void
 		{
+			_added.add(record);
+			_removed.remove(record);
 			associate(record);
 		}
 		
@@ -88,7 +108,12 @@ package mesh.model.associations
 		 */
 		public function contains(record:Record):Boolean
 		{
-			return _list.contains(record);
+			return _records.contains(record);
+		}
+		
+		private function filterRecord(record:Record):Boolean
+		{
+			return !_removed.contains(record);
 		}
 		
 		/**
@@ -96,7 +121,7 @@ package mesh.model.associations
 		 */
 		public function getItemAt(index:int, prefetch:int = 0):Object
 		{
-			return _list.getItemAt(index, prefetch);
+			return _records.getItemAt(index, prefetch);
 		}
 		
 		/**
@@ -104,7 +129,7 @@ package mesh.model.associations
 		 */
 		public function getItemIndex(item:Object):int
 		{
-			return _list.getItemIndex(item);
+			return _records.getItemIndex(item);
 		}
 		
 		private function handleListCollectionChange(event:CollectionEvent):void
@@ -118,7 +143,9 @@ package mesh.model.associations
 		override mesh_internal function initialize():void
 		{
 			super.initialize();
-			_list.list = _results = query(store);
+			
+			var loadOperation:AssociationLoadOperation = new AssociationLoadOperation(store, owner, recordType);
+			_resultsList.list = _results = new ResultsList(loadOperation.results, loadOperation);
 		}
 		
 		/**
@@ -126,7 +153,7 @@ package mesh.model.associations
 		 */
 		public function itemUpdated(item:Object, property:Object = null, oldValue:Object = null, newValue:Object = null):void
 		{
-			_list.itemUpdated(item, property, oldValue, newValue);
+			_records.itemUpdated(item, property, oldValue, newValue);
 		}
 		
 		/**
@@ -180,6 +207,8 @@ package mesh.model.associations
 		{
 			if (contains(record)) {
 				unassociate(record);
+				_removed.add(record);
+				_added.remove(record);
 			}
 		}
 		
@@ -207,7 +236,15 @@ package mesh.model.associations
 		 */
 		public function toArray():Array
 		{
-			return _list.toArray();
+			return _records.toArray();
+		}
+		
+		/**
+		 * The set of records that have been removed from the association.
+		 */
+		public function get added():Array
+		{
+			return _added.toArray();
 		}
 		
 		/**
@@ -223,7 +260,7 @@ package mesh.model.associations
 		 */
 		public function get length():int
 		{
-			return _list.length;
+			return _records.length;
 		}
 		
 		/**
@@ -234,31 +271,17 @@ package mesh.model.associations
 			return _results != null ? _results.loadOperation : null;
 		}
 		
-		private var _query:Function;
-		/**
-		 * A function that is called to query the data for this association. This function expects the 
-		 * following signature: <code>function(store:Store):IList</code>.
-		 */
-		public function get query():Function
-		{
-			if (_query == null) {
-				return function(store:Store):IList
-				{
-					var options:Object = {};
-					options[inverse + "Id"] = owner.id;
-					return store.query(recordType).where(options);
-				};
-			}
-			return _query;
-		}
-		public function set query(value:Function):void
-		{
-			_query = value;
-		}
-		
 		private function get recordType():Class
 		{
 			return Class( getDefinitionByName(options.recordType) );
+		}
+		
+		/**
+		 * The set of records that have been removed from the association.
+		 */
+		public function get removed():Array
+		{
+			return _removed.toArray();
 		}
 		
 		// Proxy methods to support for each..in loops.
@@ -292,5 +315,121 @@ package mesh.model.associations
 		{
 			return _iteratingItems[index-1];
 		}
+	}
+}
+
+import flash.utils.Dictionary;
+
+import mesh.core.List;
+import mesh.core.Set;
+import mesh.mesh_internal;
+import mesh.model.Record;
+import mesh.model.associations.AssociationCollection;
+import mesh.model.source.DataSourceRetrievalOperation;
+import mesh.model.store.Data;
+import mesh.model.store.RecordCache;
+import mesh.model.store.Store;
+
+import mx.collections.IList;
+import mx.events.CollectionEvent;
+import mx.events.CollectionEventKind;
+import mx.events.PropertyChangeEvent;
+
+use namespace mesh_internal;
+
+class MergedSet extends Set
+{
+	private var _lists:Dictionary = new Dictionary();
+	
+	public function MergedSet(...lists):void
+	{
+		for each (var list:IList in lists) {
+			addList(list);
+		}
+	}
+	
+	private function addList(list:IList):void
+	{
+		addAll(list);
+		_lists[list] = list.toArray();
+		list.addEventListener(CollectionEvent.COLLECTION_CHANGE, handleListChange);
+	}
+	
+	private function handleListChange(event:CollectionEvent):void
+	{
+		switch (event.kind) {
+			case CollectionEventKind.ADD:
+				handleListAdd(IList( event.target ), event.items, event.location);
+				break;
+			case CollectionEventKind.REMOVE:
+				handleListRemove(IList( event.target ), event.items, event.location);
+				break;
+			case CollectionEventKind.REFRESH:
+				handleListRefresh(IList( event.target ));
+				break;
+			case CollectionEventKind.RESET:
+				handleListRefresh(IList( event.target ));
+				break;
+			case CollectionEventKind.REPLACE:
+				handleListReplace(IList( event.target ), event.items);
+				break;
+		}
+	}
+	
+	private function handleListAdd(list:IList, items:Array, location:int):void
+	{
+		for each (var item:Object in items) {
+			addItem(item);
+		}
+		_lists[list].splice.apply(null, [location, 0].concat(items));
+	}
+	
+	private function handleListRemove(list:IList, items:Array, location:int):void
+	{
+		for each (var item:Object in items) {
+			remove(item);
+		}
+		_lists[list].splice.apply(null, [location, items.length]);
+	}
+	
+	private function handleListRefresh(list:IList):void
+	{
+		removeEach(_lists[list]);
+		addAll(list);
+		_lists[list] = list.toArray();
+	}
+	
+	private function handleListReplace(list:IList, changeEvents:Array):void
+	{
+		for each (var event:PropertyChangeEvent in changeEvents) {
+			remove(event.oldValue);
+			add(event.newValue);
+		}
+		_lists[list] = list.toArray();
+	}
+}
+
+class AssociationLoadOperation extends DataSourceRetrievalOperation
+{
+	private var _store:Store;
+	private var _records:RecordCache;
+	
+	public function AssociationLoadOperation(store:Store, owner:Record, recordType:Class)
+	{
+		_store = store;
+		_records = store.records;
+		super(_records, _store.dataSource.belongingTo, [owner, recordType]);
+	}
+	
+	override public function loaded(data:Data):void
+	{
+		super.loaded(data);
+		_results.addItem(_records.findIndex(data.type).byId(data.id));
+	}
+	
+	private var _results:List = new List();
+	public function get results():IList
+	{
+		return _results;
 	}
 }

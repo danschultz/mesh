@@ -28,6 +28,16 @@ package mesh.model.store
 		}
 		
 		/**
+		 * Adds a record to the store.
+		 * 
+		 * @param record The record to add.
+		 */
+		public function add(record:Record):void
+		{
+			records.insert(record);
+		}
+		
+		/**
 		 * Creates a new unpersisted record in the store.
 		 * 
 		 * @param recordType The type of record to create.

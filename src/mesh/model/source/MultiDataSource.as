@@ -52,6 +52,14 @@ package mesh.model.source
 		/**
 		 * @inheritDoc
 		 */
+		override public function belongingTo(responder:IRetrievalResponder, record:Record, type:Class):void
+		{
+			invoke("belongingTo", responder, record, type);
+		}
+		
+		/**
+		 * @inheritDoc
+		 */
 		override public function create(responder:IPersistenceResponder, snapshot:Snapshot):void
 		{
 			invokeAll("create", responder, snapshot);

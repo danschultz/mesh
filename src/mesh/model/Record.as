@@ -91,6 +91,11 @@ package mesh.model
 			if (!state.equals(newState)) {
 				var oldState:RecordState = state;
 				_state = newState;
+				
+				if (state.isSynced) {
+					changes.clear();
+				}
+				
 				dispatchEvent(PropertyChangeEvent.createUpdateEvent(this, "state", oldState, newState));
 			}
 		}

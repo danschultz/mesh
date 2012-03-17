@@ -58,6 +58,7 @@ package mesh.model.associations
 		{
 			store.records.insert(record);
 			populateInverseRelationship(record, owner);
+			markMasterAsDirty();
 		}
 		
 		private function handleOwnerPropertyChange(event:PropertyChangeEvent):void
@@ -76,12 +77,27 @@ package mesh.model.associations
 			
 		}
 		
+		private function markMasterAsDirty():void
+		{
+			if (isMaster) {
+				owner.changeState(owner.state.dirty());
+			}
+		}
+		
 		private function populateInverseRelationship(record:Record, value:Record):void
 		{
 			if (inverse != null) {
 				if (record.hasOwnProperty(inverse)) record[inverse] = value;
 				else throw new IllegalOperationError("Inverse property '" + record.reflect.name + "." + inverse + "' does not exist.");
 			}
+		}
+		
+		/**
+		 * Called when the owner has been synced with the data source.
+		 */
+		mesh_internal function synced():void
+		{
+			
 		}
 		
 		/**
@@ -100,6 +116,7 @@ package mesh.model.associations
 		protected function unassociate(record:Record):void
 		{
 			populateInverseRelationship(record, null);
+			markMasterAsDirty();
 		}
 		
 		/**
