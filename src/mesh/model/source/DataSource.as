@@ -13,7 +13,7 @@ package mesh.model.source
 		
 		public function create(responder:IPersistenceResponder, snapshot:Snapshot):void
 		{
-			throw new IllegalOperationError();
+			
 		}
 		
 		public function createEach(responder:IPersistenceResponder, snapshots:Array):void
@@ -25,12 +25,12 @@ package mesh.model.source
 		
 		public function belongingTo(responder:IRetrievalResponder, record:Record, type:Class):void
 		{
-			throw new IllegalOperationError();
+			
 		}
 		
 		public function destroy(responder:IPersistenceResponder, snapshot:Snapshot):void
 		{
-			throw new IllegalOperationError();
+			
 		}
 		
 		public function destroyEach(responder:IPersistenceResponder, snapshots:Array):void
@@ -42,22 +42,22 @@ package mesh.model.source
 		
 		public function retrieve(responder:IRetrievalResponder, record:Record):void
 		{
-			throw new IllegalOperationError();
+			
 		}
 		
 		public function retrieveAll(responder:IRetrievalResponder, type:Class):void
 		{
-			throw new IllegalOperationError();
+			
 		}
 		
 		public function search(responder:IRetrievalResponder, type:Class, params:Object):void
 		{
-			throw new IllegalOperationError();
+			
 		}
 		
 		public function update(responder:IPersistenceResponder, snapshot:Snapshot):void
 		{
-			throw new IllegalOperationError();
+			
 		}
 		
 		public function updateEach(responder:IPersistenceResponder, snapshots:Array):void
