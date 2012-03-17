@@ -4,11 +4,9 @@ package mesh.model.store
 	import flash.utils.flash_proxy;
 	
 	import mesh.core.object.merge;
-	import mesh.mesh_internal;
+	import mesh.model.Record;
 	
 	import mx.utils.UIDUtil;
-	
-	use namespace mesh_internal;
 	
 	/**
 	 * The <code>ExternalData</code> class wraps data that is retrieved from a data source and is
@@ -28,18 +26,20 @@ package mesh.model.store
 		 * <ul>
 		 * <li><code>idField:String</code> - (default="<code>id</code>") The name of the ID field on
 		 * 	the data object.</li>
+		 * <li><code>parser:Function</code> - A function that's called when transfering the values
+		 * 	from the data to a record.
 		 * </ul>
 		 * 
-		 * @param data The data from the data source.
 		 * @param type The record type that maps to this data.
+		 * @param data The data from the data source.
 		 * @param options A set of options to configure this data object.
 		 */
-		public function Data(data:Object, type:Class, options:Object = null)
+		public function Data(type:Class, data:Object, options:Object = null)
 		{
 			super();
 			_data = data;
 			_type = type;
-			_options = merge({idField:"id"}, options);
+			_options = merge({idField:"id", deserializer:transfer}, options);
 		}
 		
 		/**
@@ -83,6 +83,19 @@ package mesh.model.store
 			_data[name] = value;
 		}
 		
+		private function transfer(record:Record, data:Object):void
+		{
+			for (var key:String in data) {
+				if (record.hasOwnProperty(key)) {
+					try {
+						record[key] = data[key];
+					} catch (e:Error) {
+						
+					}
+				}
+			}
+		}
+		
 		/**
 		 * Transfers the values on this data to the given object.
 		 * 
@@ -90,9 +103,8 @@ package mesh.model.store
 		 */
 		public function transferValues(to:Object):void
 		{
-			for (var key:String in _data) {
-				to[key] = _data[key];
-			}
+			_options.deserializer(to, _data);
+			to.id = id;
 		}
 		
 		/**
@@ -107,7 +119,7 @@ package mesh.model.store
 		/**
 		 * A global unique key given to this data by the store.
 		 */
-		mesh_internal function get key():Object
+		public function get key():Object
 		{
 			if (_key == null) {
 				_key = UIDUtil.createUID();
@@ -119,7 +131,7 @@ package mesh.model.store
 		/**
 		 * The record type that maps to this data.
 		 */
-		mesh_internal function get type():Class
+		public function get type():Class
 		{
 			return _type;
 		}

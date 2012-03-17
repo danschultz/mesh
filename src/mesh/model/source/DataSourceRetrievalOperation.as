@@ -37,12 +37,9 @@ package mesh.model.source
 		/**
 		 * @inheritDoc
 		 */
-		public function loaded(type:Class, data:Object, id:Object = null):void
+		public function loaded(data:Data):void
 		{
-			if (id != null) {
-				data.id = id;
-			}
-			_records.materialize(new Data(data, type), RecordState.loaded());
+			_records.materialize(data, RecordState.loaded());
 		}
 		
 		/**

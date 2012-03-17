@@ -95,7 +95,7 @@ package mesh.model.source
 			if (record.reflect.clazz != _type) {
 				throw new ArgumentError("Invalid record type.");
 			}
-			responder.loaded(record.reflect.clazz, _fixtures.grab(record.id));
+			responder.loaded(new Data(record.reflect.clazz, _fixtures.grab(record.id)));
 			responder.finished();
 		}
 		
@@ -109,7 +109,7 @@ package mesh.model.source
 			}
 			
 			for each (var fixture:Object in _fixtures.values()) {
-				responder.loaded(type, fixture);
+				responder.loaded(new Data(type, fixture));
 			}
 			responder.finished();
 		}

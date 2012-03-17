@@ -67,7 +67,7 @@ package mesh.model.associations
 		public function testPopulateForeignKeyWhenAssociationSet():void
 		{
 			var customer:Customer = _store.query(Customer).find(1).load();
-			var order:Order = _store.materialize( new Data({id:2}, Order) );
+			var order:Order = _store.materialize( new Data(Order, {id:2}) );
 			customer.orders.add(order);
 			assertThat(order.customerId, equalTo(customer.id));
 		}

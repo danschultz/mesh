@@ -1,5 +1,7 @@
 package mesh.model.source
 {
+	import mesh.model.store.Data;
+
 	/**
 	 * The <code>IRetrievalResponder</code> interface is an interface that classes can 
 	 * implement to handle retrieval callbacks from a data source.
@@ -9,14 +11,11 @@ package mesh.model.source
 	public interface IRetrievalResponder
 	{
 		/**
-		 * The data source calls this method when a record's data has been loaded. You
-		 * can optionally specify the ID for the data.
+		 * The data source calls this method when a record's data has been loaded.
 		 * 
-		 * @param type The record type that was loaded.
-		 * @param data The data for the record.
-		 * @param id An optional ID.
+		 * @param data The loaded data.
 		 */
-		function loaded(type:Class, data:Object, id:Object = null):void;
+		function loaded(data:Data):void;
 		
 		/**
 		 * The data source calls this method when it has finished retrieving the data for

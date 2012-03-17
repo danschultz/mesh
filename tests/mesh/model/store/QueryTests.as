@@ -63,7 +63,7 @@ package mesh.model.store
 			var people:ResultsList = store.query(Person).findAll().load();
 			
 			var person1:Object = {id:1, firstName:"Jimmy", lastName:"Page"};
-			store.materialize(new Data(person1, Person));
+			store.materialize(new Data(Person, person1));
 			
 			assertThat(people.toArray(), allOf(arrayWithSize(1), hasItems(hasProperties(person1))));
 		}
@@ -107,7 +107,7 @@ package mesh.model.store
 			var people:ResultsList = store.query(Person).where({firstName:"Jimmy"}).load();
 			
 			var person1:Object = {id:1, firstName:"Jimmy", lastName:"Page"};
-			store.materialize(new Data(person1, Person));
+			store.materialize(new Data(Person, person1));
 			
 			assertThat(people.toArray(), allOf(arrayWithSize(1), hasItems(hasProperties(person1))));
 		}

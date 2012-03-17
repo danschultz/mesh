@@ -31,7 +31,7 @@ package mesh.model
 		 */
 		public function testLoad():void
 		{
-			var person:Person = _store.materialize(new Data({id:_data.id}, Person));
+			var person:Person = _store.materialize(new Data(Person, {id:_data.id}));
 			person.load();
 			
 			assertThat(person, hasProperties(_data));
@@ -45,7 +45,7 @@ package mesh.model
 		 */
 		public function testOnlyLoadOnce():void
 		{
-			var person:Person = _store.materialize(new Data({id:_data.id}, Person));
+			var person:Person = _store.materialize(new Data(Person, {id:_data.id}));
 			person.load();
 			
 			var reloaded:Boolean;
@@ -60,7 +60,7 @@ package mesh.model
 		[Test]
 		public function testRefresh():void
 		{
-			var person:Person = _store.materialize(new Data({id:_data.id}, Person));
+			var person:Person = _store.materialize(new Data(Person, {id:_data.id}));
 			person.load();
 			
 			_data = {id:1, firstName:"Fox", lastName:"Mulder"};
