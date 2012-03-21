@@ -26,8 +26,9 @@ package mesh.model.store
 		 * <ul>
 		 * <li><code>idField:String</code> - (default="<code>id</code>") The name of the ID field on
 		 * 	the data object.</li>
-		 * <li><code>parser:Function</code> - A function that's called when transfering the values
-		 * 	from the data to a record.
+		 * <li><code>deserializer:Function</code> - A function that's called when transfering the 
+		 * 	values from the data to a record. The function must have the following signature:
+		 * 	<code>function(record:Record, data:Object):void</code>.
 		 * </ul>
 		 * 
 		 * @param type The record type that maps to this data.
