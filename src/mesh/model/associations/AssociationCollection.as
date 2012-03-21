@@ -273,7 +273,12 @@ package mesh.model.associations
 		
 		private function get recordType():Class
 		{
-			return Class( getDefinitionByName(options.recordType) );
+			try {
+				return Class( getDefinitionByName(options.recordType) );
+			} catch (e:ReferenceError) {
+				throw new ReferenceError("Record type '" + options.recordType + "' not found.");
+			}
+			return null;
 		}
 		
 		/**
