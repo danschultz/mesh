@@ -54,6 +54,11 @@ package mesh.model
 			return obj == this || (obj is RecordState && value == obj.value);
 		}
 		
+		public function busy():RecordState
+		{
+			return cache(value | BUSY);
+		}
+		
 		public function synced():RecordState
 		{
 			if (willBeCreated) {
@@ -69,6 +74,11 @@ package mesh.model
 			}
 			
 			throw new IllegalOperationError("Record state change not defined.");
+		}
+		
+		public function get isBusy():Boolean
+		{
+			return (value & BUSY) != 0;
 		}
 		
 		public function get isDestroyed():Boolean
