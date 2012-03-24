@@ -41,6 +41,7 @@ package mesh.model.associations
 			
 			var dataSources:MultiDataSource = new MultiDataSource();
 			dataSources.map(Customer, _customers);
+			dataSources.map(Order, new FixtureDataSource(Order));
 			
 			_store = new Store(dataSources);
 		}
