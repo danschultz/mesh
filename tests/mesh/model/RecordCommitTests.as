@@ -38,10 +38,10 @@ package mesh.model
 			_store = new Store(_dataSources);
 		}
 		
-		private function assertIsSynced(record:Record):void
+		private function assertIsSynced(record:Record, isRemote:Boolean):void
 		{
 			assertThat(ID.isPopulated(record), equalTo(true));
-			assertThat(record.state.isRemote, equalTo(true));
+			assertThat(record.state.isRemote, equalTo(isRemote));
 			assertThat(record.state.isSynced, equalTo(true));
 		}
 		
@@ -50,7 +50,7 @@ package mesh.model
 		{
 			var test:AsyncTest = new AsyncTest(this, LATENCY+100, function():void
 			{
-				assertIsSynced(customer);
+				assertIsSynced(customer, true);
 			});
 			
 			var customer:Customer = _store.create(Customer);
@@ -63,11 +63,32 @@ package mesh.model
 		}
 		
 		[Test(async)]
+		public function testDestroy():void
+		{
+			var test:AsyncTest = new AsyncTest(this, LATENCY+(200*2), function():void
+			{
+				assertIsSynced(customer, false);
+			});
+			
+			var customer:Customer = _store.query(Customer).find(1);
+			customer.loadOperation.addEventListener(FinishedOperationEvent.FINISHED, function(event:FinishedOperationEvent):void
+			{
+				customer.destroy().persist(new CommitResponder(function():void
+				{
+					test.complete();
+				}));
+				
+				assertThat(customer.state.isBusy, equalTo(true));
+			});
+			customer.load();
+		}
+		
+		[Test(async)]
 		public function testUpdate():void
 		{
 			var test:AsyncTest = new AsyncTest(this, LATENCY+(200*2), function():void
 			{
-				assertIsSynced(customer);
+				assertIsSynced(customer, true);
 			});
 			
 			var customer:Customer = _store.query(Customer).find(1);
