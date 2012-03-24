@@ -3,6 +3,7 @@ package mesh.model.source
 	import flash.errors.IllegalOperationError;
 	import flash.utils.Dictionary;
 	
+	import mesh.core.array.ArrayProxy;
 	import mesh.model.Record;
 	import mesh.model.store.Cache;
 
@@ -13,7 +14,7 @@ package mesh.model.source
 	 * 
 	 * @author Dan Schultz
 	 */
-	public class Snapshots
+	public class Snapshots extends ArrayProxy
 	{
 		private var _cache:SnapshotCache;
 		private var _snapshots:Array;
@@ -28,6 +29,7 @@ package mesh.model.source
 		 */
 		public function Snapshots(snapshots:Array)
 		{
+			super(snapshots.concat);
 			_snapshots = snapshots;
 		}
 		
