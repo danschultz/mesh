@@ -5,14 +5,15 @@ package mesh.model
 
 	public class RecordState
 	{
-		public static const DIRTY:int = 0x1;
-		public static const BUSY:int = 0x2;
+		public static const SYNCED:int = 0x1;
+		public static const DIRTY:int = 0x2;
+		public static const BUSY:int = 0x4;
 		
-		public static const ERRORED:int = 0x10;
+		public static const ERRORED:int = 0x1000;
 		
 		public static const INIT:int = 0x100;
-		public static const REMOTE:int = 0x200;
-		public static const DESTROY:int = 0x400;
+		public static const LOADED:int = 0x200;
+		public static const DESTROYED:int = 0x400;
 		
 		public function RecordState(value:int)
 		{
@@ -36,12 +37,12 @@ package mesh.model
 		
 		public static function loaded():RecordState
 		{
-			return cache(REMOTE);
+			return cache(LOADED | SYNCED);
 		}
 		
 		public static function destroy():RecordState
 		{
-			return cache(DESTROY | DIRTY);
+			return cache(DESTROYED | DIRTY);
 		}
 		
 		public function dirty():RecordState
@@ -62,10 +63,10 @@ package mesh.model
 		public function synced():RecordState
 		{
 			if (isBusy) {
-				if (!willBeDestroyed) {
+				if ((value & INIT || value & LOADED) && value & BUSY) {
 					return loaded();
-				} else {
-					return cache(DESTROY);
+				} else if (value & DESTROYED && value & BUSY) {
+					return cache(DESTROYED | SYNCED);
 				}
 			}
 			
@@ -79,12 +80,12 @@ package mesh.model
 		
 		public function get isDestroyed():Boolean
 		{
-			return (value & DESTROY) != 0;
+			return (value & DESTROYED) != 0;
 		}
 		
 		public function get isRemote():Boolean
 		{
-			return (value & REMOTE) != 0 || willBeDestroyed;
+			return (value & LOADED) != 0 || willBeDestroyed;
 		}
 		
 		public function get isSynced():Boolean
@@ -99,12 +100,12 @@ package mesh.model
 		
 		public function get willBeUpdated():Boolean
 		{
-			return (value & REMOTE) != 0 && !isSynced && !isBusy;
+			return (value & LOADED) != 0 && !isSynced && !isBusy;
 		}
 		
 		public function get willBeDestroyed():Boolean
 		{
-			return (value & DESTROY) != 0 && !isSynced && !isBusy;
+			return (value & DESTROYED) != 0 && !isSynced && !isBusy;
 		}
 		
 		private var _value:int;
