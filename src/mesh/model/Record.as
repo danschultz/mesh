@@ -233,6 +233,7 @@ package mesh.model
 		public function refresh():*
 		{
 			loadOperation.queue();
+			changeState(state.busy());
 			loadOperation.execute();
 			return this;
 		}
