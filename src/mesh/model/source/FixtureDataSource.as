@@ -53,8 +53,11 @@ package mesh.model.source
 		
 		private function invoke(block:Function):void
 		{
-			if (_options.latency > 0) setTimeout(block, _options.latency);
-			else block()
+			if (_options.latency > 0) {
+				setTimeout(block, _options.latency);
+			} else {
+				block()
+			}
 		}
 		
 		/**
@@ -63,29 +66,35 @@ package mesh.model.source
 		override public function create(responder:IPersistenceResponder, snapshot:Snapshot):void
 		{
 			if (snapshot.record.reflect.clazz == _type) {
-				var data:Object = ObjectUtil.copy(snapshot.data);
-				var id:* = data[_options.idField];
-				if (_fixtures.containsKey(id)) {
-					responder.failed("Fixture type '" + snapshot.record.reflect + "' with ID=" + id + " already exists.");
-					return;
-				}
-				
-				data[_options.idField] = ++_idCounter;
-				add(data);
-				responder.saved(snapshot, data[_options.idField]);
+				invoke(function():void
+				{
+					var data:Object = ObjectUtil.copy(snapshot.data);
+					var id:* = data[_options.idField];
+					if (_fixtures.containsKey(id)) {
+						responder.failed("Fixture type '" + snapshot.record.reflect + "' with ID=" + id + " already exists.");
+						return;
+					}
+					
+					data[_options.idField] = ++_idCounter;
+					add(data);
+					responder.saved(snapshot, data[_options.idField]);
+				});
 			}
 		}
 		
 		override public function belongingTo(responder:IRetrievalResponder, record:Record, type:Class):void
 		{
 			if (record.reflect.clazz == _type) {
-				var property:String = pluralize(camelize(reflect(type).className, false));
-				var data:Object = _fixtures.grab(record.id);
-				
-				for each (var obj:Object in data[property]) {
-					responder.loaded(new Data(type, obj));
-				}
-				responder.finished();
+				invoke(function():void
+				{
+					var property:String = pluralize(camelize(reflect(type).className, false));
+					var data:Object = _fixtures.grab(record.id);
+					
+					for each (var obj:Object in data[property]) {
+						responder.loaded(new Data(type, obj));
+					}
+					responder.finished();
+				});
 			}
 		}
 		
@@ -95,12 +104,15 @@ package mesh.model.source
 		override public function destroy(responder:IPersistenceResponder, snapshot:Snapshot):void
 		{
 			if (snapshot.record.reflect.clazz == _type) {
-				var id:* = snapshot.data[_options.idField];
-				if (_fixtures.remove(id) == null) {
-					responder.failed("Fixture type '" + snapshot.record.reflect + "' does not exist with ID=" + id + ".");
-					return;
-				}
-				responder.saved(snapshot);
+				invoke(function():void
+				{
+					var id:* = snapshot.data[_options.idField];
+					if (_fixtures.remove(id) == null) {
+						responder.failed("Fixture type '" + snapshot.record.reflect + "' does not exist with ID=" + id + ".");
+						return;
+					}
+					responder.saved(snapshot);
+				});
 			}
 		}
 		
@@ -109,11 +121,14 @@ package mesh.model.source
 		 */
 		override public function retrieve(responder:IRetrievalResponder, record:Record):void
 		{
-			if (record.reflect.clazz != _type) {
-				throw new ArgumentError("Invalid record type.");
-			}
-			responder.loaded(new Data(record.reflect.clazz, _fixtures.grab(record.id)));
-			responder.finished();
+			invoke(function():void
+			{
+				if (record.reflect.clazz != _type) {
+					throw new ArgumentError("Invalid record type.");
+				}
+				responder.loaded(new Data(record.reflect.clazz, _fixtures.grab(record.id)));
+				responder.finished();
+			});
 		}
 		
 		/**
@@ -121,10 +136,18 @@ package mesh.model.source
 		 */
 		override public function retrieveAll(responder:IRetrievalResponder, type:Class):void
 		{
-			if (type != _type) {
-				throw new ArgumentError("Invalid record type.");
-			}
-			
+			invoke(function():void
+			{
+				if (type != _type) {
+					throw new ArgumentError("Invalid record type.");
+				}
+				
+				internalRetrieveAll(responder, type);
+			});
+		}
+		
+		private function internalRetrieveAll(responder:IRetrievalResponder, type:Class):void
+		{
 			for each (var fixture:Object in _fixtures.values()) {
 				responder.loaded(new Data(type, fixture));
 			}
@@ -136,11 +159,14 @@ package mesh.model.source
 		 */
 		override public function search(responder:IRetrievalResponder, type:Class, params:Object):void
 		{
-			if (type != _type) {
-				throw new ArgumentError("Invalid record type.");
-			}
-			
-			retrieveAll(responder, type);
+			invoke(function():void
+			{
+				if (type != _type) {
+					throw new ArgumentError("Invalid record type.");
+				}
+				
+				internalRetrieveAll(responder, type);
+			});
 		}
 		
 		/**
@@ -148,14 +174,17 @@ package mesh.model.source
 		 */
 		override public function update(responder:IPersistenceResponder, snapshot:Snapshot):void
 		{
-			if (snapshot.record.reflect.clazz == _type) {
-				if (!ID.isPopulated(snapshot.data, _options.idField)) {
-					responder.failed("Cannot update fixture type '" + snapshot.record.reflect + "' without ID.");
-					return;
+			invoke(function():void
+			{
+				if (snapshot.record.reflect.clazz == _type) {
+					if (!ID.isPopulated(snapshot.data, _options.idField)) {
+						responder.failed("Cannot update fixture type '" + snapshot.record.reflect + "' without ID.");
+						return;
+					}
+					add(ObjectUtil.copy(snapshot.data));
+					responder.saved(snapshot);
 				}
-				add(ObjectUtil.copy(snapshot.data));
-				responder.saved(snapshot);
-			}
+			});
 		}
 	}
 }
