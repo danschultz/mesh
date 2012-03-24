@@ -61,16 +61,12 @@ package mesh.model
 		
 		public function synced():RecordState
 		{
-			if (willBeCreated) {
-				return loaded();
-			}
-			
-			if (willBeUpdated) {
-				return loaded();
-			}
-			
-			if (willBeDestroyed) {
-				return cache(DESTROY);
+			if (isBusy) {
+				if (!willBeDestroyed) {
+					return loaded();
+				} else {
+					return cache(DESTROY);
+				}
 			}
 			
 			throw new IllegalOperationError("Record state change not defined.");
@@ -98,17 +94,17 @@ package mesh.model
 		
 		public function get willBeCreated():Boolean
 		{
-			return (value & INIT) != 0 && !isSynced;
+			return (value & INIT) != 0 && !isSynced && !isBusy;
 		}
 		
 		public function get willBeUpdated():Boolean
 		{
-			return (value & REMOTE) != 0 && !isSynced;
+			return (value & REMOTE) != 0 && !isSynced && !isBusy;
 		}
 		
 		public function get willBeDestroyed():Boolean
 		{
-			return (value & DESTROY) != 0 && !isSynced;
+			return (value & DESTROY) != 0 && !isSynced && !isBusy;
 		}
 		
 		private var _value:int;
