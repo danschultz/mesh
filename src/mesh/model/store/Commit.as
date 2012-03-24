@@ -88,11 +88,14 @@ package mesh.model.store
 
 import flash.utils.Dictionary;
 
+import mesh.mesh_internal;
 import mesh.model.source.DataSource;
 import mesh.model.source.IPersistenceResponder;
 import mesh.model.source.Snapshot;
 import mesh.model.source.Snapshots;
 import mesh.operations.Operation;
+
+use namespace mesh_internal;
 
 class DataSourcePersistenceOperation extends Operation implements IPersistenceResponder
 {
@@ -139,6 +142,10 @@ class DataSourcePersistenceOperation extends Operation implements IPersistenceRe
 		super.executeRequest();
 		
 		if (_snapshots.length > 0) {
+			for each (var snapshot:Snapshot in _snapshots) {
+				snapshot.record.changeState(snapshot.record.state.busy());
+			}
+			
 			_saveCounter = 0;
 			_persistedSnapshots = new Dictionary();
 			
