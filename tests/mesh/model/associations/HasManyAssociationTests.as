@@ -36,12 +36,17 @@ package mesh.model.associations
 				firstName: "Jimmy", 
 				lastName: "Page", 
 				accountId: 1,
-				orders: [{id:1, customerId:1}, {id:2, customerId:1}, {id:3, customerId:1}]
+				orders: [{id:1}, {id:2}, {id:3}]
 			});
+			
+			_orders = new FixtureDataSource(Order);
+			_orders.add({id:1, customerId:1});
+			_orders.add({id:2, customerId:1});
+			_orders.add({id:3, customerId:1});
 			
 			var dataSources:MultiDataSource = new MultiDataSource();
 			dataSources.map(Customer, _customers);
-			dataSources.map(Order, new FixtureDataSource(Order));
+			dataSources.map(Order, _orders);
 			
 			_store = new Store(dataSources);
 		}
@@ -52,14 +57,6 @@ package mesh.model.associations
 			var customer:Customer = _store.query(Customer).find(1).load();
 			customer.orders.load();
 			assertThat(customer.orders.toArray(), allOf(arrayWithSize(3), everyItem(hasPropertyChain("state.isSynced", equalTo(true)))));
-		}
-		
-		[Test]
-		public function testAutoUpdateFromStore():void
-		{
-			var customer:Customer = _store.query(Customer).find(1).load();
-			var orders:ResultsList = _store.query(Order).findAll().load();
-			assertThat(customer.orders.toArray(), arrayWithSize(3));
 		}
 		
 		[Test]
@@ -84,13 +81,29 @@ package mesh.model.associations
 		}
 		
 		[Test]
+		public function testAddRecord():void
+		{
+			var customer:Customer = _store.query(Customer).find(1).load();
+			customer.orders.load();
+			
+			var originalLength:int = customer.orders.length;
+			
+			var order:Order = new Order();
+			customer.orders.add(order);
+			customer.orders.persist();
+			
+			assertThat(order.state.isSynced, equalTo(true));
+			assertThat(customer.orders.length, equalTo(originalLength+1));
+			assertThat(customer.orders.added, emptyArray());
+		}
+		
+		[Test]
 		public function testRemoveRecord():void
 		{
 			var customer:Customer = _store.query(Customer).find(1).load();
 			customer.orders.load();
 			
 			var order:Order = customer.orders.removeItemAt(0) as Order;
-			assertThat(customer.state.isSynced, equalTo(false));
 			assertThat(customer.orders.removed.length, equalTo(1));
 			assertThat(customer.orders.length, equalTo(2));
 			assertThat(order.customer, nullValue());
@@ -103,7 +116,6 @@ package mesh.model.associations
 			customer.orders.load();
 			
 			customer.orders.removeAll();
-			assertThat(customer.state.isSynced, equalTo(false));
 			assertThat(customer.orders.removed.length, equalTo(3));
 			assertThat(customer.orders.length, equalTo(0));
 		}

@@ -6,6 +6,7 @@ package mesh.model.associations
 	import mesh.core.Set;
 	import mesh.mesh_internal;
 	import mesh.model.Record;
+	import mesh.model.RecordState;
 	import mesh.model.store.Commit;
 	import mesh.model.store.ICommitResponder;
 	import mesh.model.store.ResultsList;
@@ -13,19 +14,19 @@ package mesh.model.associations
 	import mesh.operations.Operation;
 	
 	import mx.collections.IList;
-	import mx.collections.ListCollectionView;
 	import mx.events.CollectionEvent;
 	import mx.events.CollectionEventKind;
+	import mx.events.PropertyChangeEvent;
 	
 	use namespace mesh_internal;
 	use namespace flash_proxy;
 	
 	public class AssociationCollection extends Association implements IList
 	{
-		private var _resultsList:ListCollectionView;
+		private var _loadOperation:AssociationLoadOperation;
 		private var _results:ResultsList;
 		
-		private var _records:MergedSet;
+		private var _records:AssociationCollectionSet;
 		private var _added:Set = new Set();
 		private var _removed:Set = new Set();
 		
@@ -36,21 +37,8 @@ package mesh.model.associations
 		{
 			super(source, property, options);
 			
-			_resultsList = new ListCollectionView();
-			_resultsList.filterFunction = filterRecord;
-			_resultsList.refresh();
-			
-			_records = new MergedSet(_resultsList, _added);
-			_records.addEventListener(CollectionEvent.COLLECTION_CHANGE, handleListCollectionChange);
-			
+			_added.addEventListener(CollectionEvent.COLLECTION_CHANGE, handleAddedSetChange);
 			_removed.addEventListener(CollectionEvent.COLLECTION_CHANGE, handleRemovedSetChange);
-		}
-		
-		private function handleRemovedSetChange(event:CollectionEvent):void
-		{
-			if (event.kind != CollectionEventKind.UPDATE) {
-				_resultsList.refresh();
-			}
 		}
 		
 		/**
@@ -60,9 +48,11 @@ package mesh.model.associations
 		 */
 		public function add(record:Record):void
 		{
-			_added.add(record);
-			_removed.remove(record);
-			associate(record);
+			if (!contains(record)) {
+				_added.add(record);
+				_removed.remove(record);
+				_records.add(record);
+			}
 		}
 		
 		/**
@@ -92,7 +82,7 @@ package mesh.model.associations
 		private function collectDirtyRecords():Array
 		{
 			var records:Array = [];
-			for each (var record:Record in toArray()) {
+			for each (var record:Record in toArray().concat(removed)) {
 				if (!record.state.isSynced) {
 					records.push(record);
 				}
@@ -111,11 +101,6 @@ package mesh.model.associations
 			return _records.contains(record);
 		}
 		
-		private function filterRecord(record:Record):Boolean
-		{
-			return !_removed.contains(record);
-		}
-		
 		/**
 		 * @inheritDoc
 		 */
@@ -132,9 +117,35 @@ package mesh.model.associations
 			return _records.getItemIndex(item);
 		}
 		
-		private function handleListCollectionChange(event:CollectionEvent):void
+		private function handleAddedSetChange(event:CollectionEvent):void
+		{
+			if (event.kind == CollectionEventKind.UPDATE) {
+				for each (var changeEvent:PropertyChangeEvent in event.items) {
+					if (changeEvent.property == "state" && Record( changeEvent.source ).state.isSynced) {
+						var record:Record = changeEvent.source as Record;
+						var state:RecordState = record.state;
+						_added.remove(changeEvent.source);
+						_records.add(changeEvent.source);
+						record.changeState(state);
+					}
+				}
+			}
+		}
+		
+		private function handleRecordsListCollectionChange(event:CollectionEvent):void
 		{
 			dispatchEvent(event);
+		}
+		
+		private function handleRemovedSetChange(event:CollectionEvent):void
+		{
+			if (event.kind == CollectionEventKind.UPDATE) {
+				for each (var changeEvent:PropertyChangeEvent in event.items) {
+					if (changeEvent.property == "state" && Record( changeEvent.source ).state.isSynced) {
+						_removed.remove(changeEvent.source);
+					}
+				}
+			}
 		}
 		
 		/**
@@ -144,8 +155,13 @@ package mesh.model.associations
 		{
 			super.initialize();
 			
-			var loadOperation:AssociationLoadOperation = new AssociationLoadOperation(store, owner, recordType);
-			_resultsList.list = _results = new ResultsList(loadOperation.results, loadOperation);
+			_loadOperation = new AssociationLoadOperation(store, owner, recordType);
+			_results = new ResultsList(_loadOperation.results, loadOperation);
+			
+			_records = new AssociationCollectionSet([_results, _added]);
+			_records.associateFunc = associate;
+			_records.unassociateFunc = unassociate;
+			_records.addEventListener(CollectionEvent.COLLECTION_CHANGE, handleRecordsListCollectionChange);
 		}
 		
 		/**
@@ -206,7 +222,7 @@ package mesh.model.associations
 		public function remove(record:Record):void
 		{
 			if (contains(record)) {
-				unassociate(record);
+				_records.remove(record);
 				_removed.add(record);
 				_added.remove(record);
 			}
@@ -268,7 +284,7 @@ package mesh.model.associations
 		 */
 		public function get loadOperation():Operation
 		{
-			return _results != null ? _results.loadOperation : null;
+			return _loadOperation;
 		}
 		
 		private function get recordType():Class
@@ -329,6 +345,7 @@ import mesh.core.List;
 import mesh.core.Set;
 import mesh.mesh_internal;
 import mesh.model.Record;
+import mesh.model.RecordState;
 import mesh.model.associations.AssociationCollection;
 import mesh.model.source.DataSourceRetrievalOperation;
 import mesh.model.store.Data;
@@ -346,7 +363,7 @@ class MergedSet extends Set
 {
 	private var _lists:Dictionary = new Dictionary();
 	
-	public function MergedSet(...lists):void
+	public function MergedSet(lists:Array):void
 	{
 		for each (var list:IList in lists) {
 			addList(list);
@@ -414,6 +431,34 @@ class MergedSet extends Set
 	}
 }
 
+class AssociationCollectionSet extends MergedSet
+{
+	public var associateFunc:Function;
+	public var unassociateFunc:Function;
+	
+	public function AssociationCollectionSet(lists:Array)
+	{
+		super(lists);
+	}
+	
+	override public function addItemAt(item:Object, index:int):void
+	{
+		if (!contains(item)) {
+			super.addItemAt(item, index);
+			associateFunc(item);
+		}
+	}
+	
+	override public function removeItemAt(index:int):Object
+	{
+		var item:Object = super.removeItemAt(index);
+		if (item != null) {
+			unassociateFunc(item);
+		}
+		return item;
+	}
+}
+
 class AssociationLoadOperation extends DataSourceRetrievalOperation
 {
 	private var _store:Store;
@@ -429,7 +474,9 @@ class AssociationLoadOperation extends DataSourceRetrievalOperation
 	override public function loaded(data:Data):void
 	{
 		super.loaded(data);
-		_results.addItem(_records.findIndex(data.type).byId(data.id));
+		var record:Record = _records.findIndex(data.type).byId(data.id);
+		_results.addItem(record);
+		record.changeState(RecordState.loaded());
 	}
 	
 	private var _results:List = new List();
