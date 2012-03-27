@@ -29,7 +29,7 @@
 		<context name="setter"/>
 		<context name="variable"/>
 		
-		<attribute name="isMaster" type="Boolean" hint="properties"/>
+		<attribute name="isMaster" type="Boolean"/>
 		<attribute name="foreignKey" type="String" hint="properties"/>
 	</metadata>
 	
@@ -41,7 +41,7 @@
 		<context name="setter"/>
 		<context name="variable"/>
 		
-		<attribute name="isMaster" type="Boolean" hint="properties"/>
+		<attribute name="isMaster" type="Boolean"/>
 		<attribute name="inverse" type="String" required="true"/>
 	</metadata>
 	
