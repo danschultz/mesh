@@ -1,5 +1,6 @@
 package mesh.model.store
 {
+	import mesh.model.Record;
 	import mesh.model.source.DataSource;
 	import mesh.model.source.IPersistenceResponder;
 	import mesh.model.source.Snapshots;
@@ -30,7 +31,10 @@ package mesh.model.store
 		{
 			super();
 			_dataSource = dataSource;
-			_snapshots = Snapshots.create(records);
+			_snapshots = Snapshots.create(records.filter(function(record:Record, ...args):Boolean
+			{
+				return !record.state.isSynced;
+			}));
 		}
 		
 		/**
@@ -149,9 +153,20 @@ class DataSourcePersistenceOperation extends Operation implements IPersistenceRe
 			_saveCounter = 0;
 			_persistedSnapshots = new Dictionary();
 			
-			_dataSource.createEach(this, _snapshots.create);
-			_dataSource.updateEach(this, _snapshots.update);
-			_dataSource.destroyEach(this, _snapshots.destroy);
+			var create:Array = _snapshots.create;
+			if (create.length > 0) {
+				_dataSource.createEach(this, create);
+			}
+			
+			var update:Array = _snapshots.update;
+			if (update.length > 0) {
+				_dataSource.updateEach(this, update);
+			}
+			
+			var destroy:Array = _snapshots.destroy;
+			if (destroy.length > 0) {
+				_dataSource.destroyEach(this, destroy);
+			}
 		} else {
 			finish(true);
 		}
