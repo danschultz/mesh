@@ -81,7 +81,7 @@ package mesh.model.store
 			var store:Store = new Store(fixtures);
 			var people:ResultsList = store.query(Person).findAll().load();
 			var jimmy:Person = store.query(Person).find(1);
-			jimmy.destroy();
+			jimmy.destroy().persist();
 			assertThat(people.toArray(), allOf(arrayWithSize(1), hasItems(hasProperties(person2))));
 		}
 		
@@ -124,7 +124,7 @@ package mesh.model.store
 			
 			var store:Store = new Store(fixtures);
 			var people:ResultsList = store.query(Person).where({firstName:"Jimmy"}).load();
-			store.query(Person).find(1).destroy();
+			store.query(Person).find(1).destroy().persist();
 			assertThat(people.toArray(), emptyArray());
 		}
 	}
