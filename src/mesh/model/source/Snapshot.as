@@ -2,6 +2,8 @@ package mesh.model.source
 {
 	import mesh.model.Record;
 	import mesh.model.RecordState;
+	import mesh.model.associations.Association;
+	import mesh.model.associations.AssociationCollection;
 	
 	import mx.utils.ObjectUtil;
 
@@ -26,6 +28,14 @@ package mesh.model.source
 		private function snap():void
 		{
 			_data = ObjectUtil.copy(record);
+			
+			for each (var association:Association in record.associations) {
+				if (association is AssociationCollection) {
+					var collection:AssociationCollection = (association as AssociationCollection);
+					_data[association.property] = new AssociationCollectionSnapshot(collection.toArray(), collection.added, collection.removed);
+				}
+			}
+			
 			_state = record.state;
 		}
 		
