@@ -62,7 +62,7 @@ package mesh.model.source
 		 */
 		override public function create(responder:IPersistenceResponder, snapshot:Snapshot):void
 		{
-			invokeAll("create", responder, snapshot);
+			invoke("create", responder, snapshot);
 		}
 		
 		/**
@@ -70,7 +70,7 @@ package mesh.model.source
 		 */
 		override public function createEach(responder:IPersistenceResponder, snapshots:Array):void
 		{
-			invokeAll("createEach", responder, snapshots);
+			groupAndInvoke("createEach", responder, snapshots);
 		}
 		
 		/**
@@ -78,7 +78,7 @@ package mesh.model.source
 		 */
 		override public function destroy(responder:IPersistenceResponder, snapshot:Snapshot):void
 		{
-			invokeAll("destroy", responder, snapshot);
+			invoke("destroy", responder, snapshot);
 		}
 		
 		/**
@@ -86,7 +86,7 @@ package mesh.model.source
 		 */
 		override public function destroyEach(responder:IPersistenceResponder, snapshots:Array):void
 		{
-			invokeAll("destroyEach", responder, snapshots);
+			groupAndInvoke("destroyEach", responder, snapshots);
 		}
 		
 		/**
@@ -118,7 +118,7 @@ package mesh.model.source
 		 */
 		override public function update(responder:IPersistenceResponder, snapshot:Snapshot):void
 		{
-			invokeAll("update", responder, snapshot);
+			invoke("update", responder, snapshot);
 		}
 		
 		/**
@@ -126,7 +126,7 @@ package mesh.model.source
 		 */
 		override public function updateEach(responder:IPersistenceResponder, snapshots:Array):void
 		{
-			invokeAll("updateEach", responder, snapshots);
+			groupAndInvoke("updateEach", responder, snapshots);
 		}
 		
 		/**
@@ -138,7 +138,17 @@ package mesh.model.source
 		 */
 		protected function sourceFor(record:Object):DataSource
 		{
-			record = record is Record ? (record as Record).reflect.clazz : record;
+			if (record is Array) {
+				record = record[0];
+			}
+			
+			if (record is Snapshot) {
+				record = (record as Snapshot).record;
+			}
+			
+			if (record is Record) {
+				record = (record as Record).reflect.clazz;
+			}
 			
 			var source:DataSource = _mapping[record];
 			if (source != null) {
@@ -160,10 +170,25 @@ package mesh.model.source
 			return source[method].apply(null, args);
 		}
 		
-		private function invokeAll(method:String, ...args):*
+		private function group(snapshots:Array):Array
 		{
-			for each (var dataSource:DataSource in _dataSources) {
-				dataSource[method].apply(null, args);
+			var cache:Dictionary = new Dictionary();
+			var groups:Array = [];
+			for each (var snapshot:Snapshot in snapshots) {
+				var type:Class = snapshot.record.reflect.clazz;
+				if (cache[type] == null) {
+					cache[type] = [];
+					groups.push(cache[type]);
+				}
+				cache[type].push(snapshot);
+			}
+			return groups;
+		}
+		
+		private function groupAndInvoke(method:String, ...args):*
+		{
+			for each (var g:Array in group(args[1])) {
+				invoke(method, args[0], g);
 			}
 		}
 		
