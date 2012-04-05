@@ -11,7 +11,7 @@ package mesh.model
 		
 		public static const ERRORED:int = 0x1000;
 		
-		public static const INIT:int = 0x100;
+		public static const CREATED:int = 0x100;
 		public static const LOADED:int = 0x200;
 		public static const DESTROYED:int = 0x400;
 		
@@ -30,9 +30,9 @@ package mesh.model
 			return result;
 		}
 		
-		public static function init():RecordState
+		public static function created():RecordState
 		{
-			return cache(INIT | DIRTY);
+			return cache(CREATED | DIRTY);
 		}
 		
 		public static function loaded():RecordState
@@ -63,7 +63,7 @@ package mesh.model
 		public function synced():RecordState
 		{
 			if (isBusy) {
-				if ((value & INIT || value & LOADED) && value & BUSY) {
+				if ((value & CREATED || value & LOADED) && value & BUSY) {
 					return loaded();
 				} else if (value & DESTROYED && value & BUSY) {
 					return cache(DESTROYED | SYNCED);
@@ -95,7 +95,7 @@ package mesh.model
 		
 		public function get willBeCreated():Boolean
 		{
-			return (value & INIT) != 0 && !isSynced && !isBusy;
+			return (value & CREATED) != 0 && !isSynced && !isBusy;
 		}
 		
 		public function get willBeUpdated():Boolean

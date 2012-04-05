@@ -17,6 +17,7 @@ package mesh.model
 	import mesh.model.validators.Validator;
 	import mesh.operations.FinishedOperationEvent;
 	import mesh.operations.Operation;
+	import mesh.operations.OperationEvent;
 	
 	import mx.events.PropertyChangeEvent;
 	
@@ -362,6 +363,10 @@ package mesh.model
 		{
 			if (_loadOperation == null) {
 				_loadOperation = new DataSourceRetrievalOperation(store.records, store.dataSource.retrieve, [this]);
+				_loadOperation.addEventListener(OperationEvent.BEFORE_EXECUTE, function(event:OperationEvent):void
+				{
+					//changeState(
+				});
 				_loadOperation.addEventListener(FinishedOperationEvent.FINISHED, function(event:FinishedOperationEvent):void
 				{
 					if (event.successful) {
@@ -385,7 +390,7 @@ package mesh.model
 			return _reflect;
 		}
 		
-		private var _state:RecordState = RecordState.init();
+		private var _state:RecordState = RecordState.created();
 		[Bindable(event="propertyChange")]
 		public function get state():RecordState
 		{
