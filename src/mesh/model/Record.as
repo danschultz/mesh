@@ -27,7 +27,7 @@ package mesh.model
 	 * 
 	 * @author Dan Schultz
 	 */
-	public class Record extends EventDispatcher
+	public class Record extends EventDispatcher implements ILoadable, IPersistable
 	{
 		private var _associations:Associations;
 		private var _aggregates:Aggregates;
@@ -175,33 +175,13 @@ package mesh.model
 		}
 		
 		/**
-		 * Loads the data for this record. If the data has already been loaded, then it will not
-		 * be reloaded. Use <code>refresh()</code> to reload the data.
-		 * 
-		 * @see #refresh()
-		 * @return This instance.
+		 * @inheritDoc
 		 */
 		public function load():*
 		{
 			if (!isLoaded) {
 				refresh();
 			}
-			return this;
-		}
-		
-		/**
-		 * Persists the changes made to this record.
-		 * 
-		 * @param responder An optional responder to handle persistence callbacks.
-		 * @return This instance.
-		 */
-		public function save(responder:ICommitResponder = null):Record
-		{
-			var commit:Commit = new Commit(store.dataSource, [this]);
-			if (responder != null) {
-				commit.addResponder(responder);
-			}
-			commit.persist();
 			return this;
 		}
 		
@@ -224,17 +204,26 @@ package mesh.model
 		}
 		
 		/**
-		 * Reloads the data for this record. Unlike <code>load()</code>, this method will load
-		 * the data for the record even if it's already been retrieved.
-		 * 
-		 * @see #load()
-		 * @return This instance.
+		 * @inheritDoc
 		 */
 		public function refresh():*
 		{
 			loadOperation.queue();
 			changeState(state.busy());
 			loadOperation.execute();
+			return this;
+		}
+		
+		/**
+		 * @inheritDoc
+		 */
+		public function save(responder:ICommitResponder = null):*
+		{
+			var commit:Commit = new Commit(store.dataSource, [this]);
+			if (responder != null) {
+				commit.addResponder(responder);
+			}
+			commit.persist();
 			return this;
 		}
 		
@@ -358,7 +347,7 @@ package mesh.model
 		
 		private var _isLoaded:Boolean;
 		/**
-		 * Checks if the data for this record has been loaded.
+		 * @inheritDoc
 		 */
 		public function get isLoaded():Boolean
 		{

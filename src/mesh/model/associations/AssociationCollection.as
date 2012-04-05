@@ -5,6 +5,8 @@ package mesh.model.associations
 	
 	import mesh.core.Set;
 	import mesh.mesh_internal;
+	import mesh.model.ILoadable;
+	import mesh.model.IPersistable;
 	import mesh.model.Record;
 	import mesh.model.RecordState;
 	import mesh.model.store.Commit;
@@ -21,7 +23,7 @@ package mesh.model.associations
 	use namespace mesh_internal;
 	use namespace flash_proxy;
 	
-	public class AssociationCollection extends Association implements IList
+	public class AssociationCollection extends Association implements IList, ILoadable, IPersistable
 	{
 		private var _loadOperation:AssociationLoadOperation;
 		private var _results:ResultsList;
@@ -173,7 +175,7 @@ package mesh.model.associations
 		}
 		
 		/**
-		 * @copy mesh.model.store.ResultsList#load()
+		 * @inheritDoc
 		 */
 		public function load():*
 		{
@@ -183,18 +185,8 @@ package mesh.model.associations
 			return this;
 		}
 		
-		public function save(responder:ICommitResponder = null):AssociationCollection
-		{
-			var commit:Commit = new Commit(store.dataSource, collectDirtyRecords());
-			if (responder != null) {
-				commit.addResponder(responder);
-			}
-			commit.persist();
-			return this;
-		}
-		
 		/**
-		 * @copy mesh.model.store.ResultsList#refresh()
+		 * @inheritDoc
 		 */
 		public function refresh():*
 		{
@@ -241,6 +233,19 @@ package mesh.model.associations
 		/**
 		 * @inheritDoc
 		 */
+		public function save(responder:ICommitResponder = null):*
+		{
+			var commit:Commit = new Commit(store.dataSource, collectDirtyRecords());
+			if (responder != null) {
+				commit.addResponder(responder);
+			}
+			commit.persist();
+			return this;
+		}
+		
+		/**
+		 * @inheritDoc
+		 */
 		public function setItemAt(item:Object, index:int):Object
 		{
 			// Not supported.
@@ -264,7 +269,7 @@ package mesh.model.associations
 		}
 		
 		/**
-		 * @copy mesh.model.store.ResultsList#isLoaded
+		 * @inheritDoc
 		 */
 		public function get isLoaded():Boolean
 		{
@@ -346,7 +351,6 @@ import mesh.core.Set;
 import mesh.mesh_internal;
 import mesh.model.Record;
 import mesh.model.RecordState;
-import mesh.model.associations.AssociationCollection;
 import mesh.model.source.DataSourceRetrievalOperation;
 import mesh.model.store.Data;
 import mesh.model.store.RecordCache;
