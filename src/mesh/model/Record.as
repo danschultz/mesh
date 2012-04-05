@@ -365,7 +365,7 @@ package mesh.model
 				_loadOperation = new DataSourceRetrievalOperation(store.records, store.dataSource.retrieve, [this]);
 				_loadOperation.addEventListener(OperationEvent.BEFORE_EXECUTE, function(event:OperationEvent):void
 				{
-					//changeState(
+					changeState(state.busy());
 				});
 				_loadOperation.addEventListener(FinishedOperationEvent.FINISHED, function(event:FinishedOperationEvent):void
 				{

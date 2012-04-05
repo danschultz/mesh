@@ -11,6 +11,7 @@ package mesh.model
 		
 		public static const ERRORED:int = 0x1000;
 		
+		public static const INIT:int = 0x000;
 		public static const CREATED:int = 0x100;
 		public static const LOADED:int = 0x200;
 		public static const DESTROYED:int = 0x400;
@@ -28,6 +29,11 @@ package mesh.model
 				result = CACHE[value] = new RecordState(value);
 			}
 			return result;
+		}
+		
+		public static function init():RecordState
+		{
+			return cache(INIT);
 		}
 		
 		public static function created():RecordState
