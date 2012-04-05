@@ -195,7 +195,7 @@ package mesh.model
 		 * @param responder An optional responder to handle persistence callbacks.
 		 * @return This instance.
 		 */
-		public function persist(responder:ICommitResponder = null):Record
+		public function save(responder:ICommitResponder = null):Record
 		{
 			var commit:Commit = new Commit(store.dataSource, [this]);
 			if (responder != null) {

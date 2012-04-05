@@ -54,7 +54,7 @@ package mesh.model
 			});
 			
 			var customer:Customer = _store.create(Customer);
-			customer.persist(new CommitResponder(function():void
+			customer.save(new CommitResponder(function():void
 			{
 				test.complete();
 			}));
@@ -73,7 +73,7 @@ package mesh.model
 			var customer:Customer = _store.query(Customer).find(1);
 			customer.loadOperation.addEventListener(FinishedOperationEvent.FINISHED, function(event:FinishedOperationEvent):void
 			{
-				customer.destroy().persist(new CommitResponder(function():void
+				customer.destroy().save(new CommitResponder(function():void
 				{
 					test.complete();
 				}));
@@ -95,7 +95,7 @@ package mesh.model
 			customer.loadOperation.addEventListener(FinishedOperationEvent.FINISHED, function(event:FinishedOperationEvent):void
 			{
 				customer.name = new Name("Steve", "Jobs");
-				customer.persist(new CommitResponder(function():void
+				customer.save(new CommitResponder(function():void
 				{
 					test.complete();
 				}));

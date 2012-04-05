@@ -90,7 +90,7 @@ package mesh.model.associations
 			
 			var order:Order = new Order();
 			customer.orders.add(order);
-			customer.orders.persist();
+			customer.orders.save();
 			
 			assertThat(order.state.isSynced, equalTo(true));
 			assertThat(customer.orders.length, equalTo(originalLength+1));
@@ -129,7 +129,7 @@ package mesh.model.associations
 			var order:Order = customer.orders.at(0);
 			order.total = 10;
 			
-			customer.orders.persist();
+			customer.orders.save();
 			assertThat(order.state.isSynced, equalTo(true));
 		}
 		
@@ -142,7 +142,7 @@ package mesh.model.associations
 			var order:Order = customer.orders.at(1);
 			order.destroy();
 			
-			customer.orders.persist();
+			customer.orders.save();
 			
 			assertThat(customer.orders.toArray(), arrayWithSize(2));
 			assertThat(order.state.isRemote, equalTo(false));
@@ -157,7 +157,7 @@ package mesh.model.associations
 			
 			var order:Order = customer.orders.removeItemAt(1) as Order;
 			
-			customer.orders.persist();
+			customer.orders.save();
 			
 			assertThat(customer.orders.toArray(), arrayWithSize(2));
 			assertThat(order.state.isRemote, equalTo(true));

@@ -183,7 +183,7 @@ package mesh.model.associations
 			return this;
 		}
 		
-		public function persist(responder:ICommitResponder = null):AssociationCollection
+		public function save(responder:ICommitResponder = null):AssociationCollection
 		{
 			var commit:Commit = new Commit(store.dataSource, collectDirtyRecords());
 			if (responder != null) {
