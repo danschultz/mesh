@@ -390,7 +390,7 @@ package mesh.model
 			return _reflect;
 		}
 		
-		private var _state:RecordState = RecordState.created();
+		private var _state:RecordState = RecordState.init();
 		[Bindable(event="propertyChange")]
 		public function get state():RecordState
 		{

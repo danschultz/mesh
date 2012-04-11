@@ -11,10 +11,10 @@ package mesh.model
 		
 		public static const ERRORED:int = 0x1000;
 		
-		public static const INIT:int = 0x000;
-		public static const CREATED:int = 0x100;
-		public static const LOADED:int = 0x200;
-		public static const DESTROYED:int = 0x400;
+		public static const INIT:int = 0x100;
+		public static const CREATED:int = 0x200;
+		public static const LOADED:int = 0x400;
+		public static const DESTROYED:int = 0x800;
 		
 		public function RecordState(value:int)
 		{
@@ -89,9 +89,25 @@ package mesh.model
 			return (value & DESTROYED) != 0;
 		}
 		
+		public function get isInit():Boolean
+		{
+			return (value & INIT) != 0;
+		}
+		
+		public function get isLoading():Boolean
+		{
+			return isBusy && ((value & INIT) != 0 || !isSaving);
+		}
+		
 		public function get isRemote():Boolean
 		{
-			return (value & LOADED) != 0 || willBeDestroyed;
+			return (value & LOADED) != 0 || (isDestroyed && (isBusy || !isSynced));
+		}
+		
+		public function get isSaving():Boolean
+		{
+			var isCreated:Boolean = (value & CREATED) != 0;
+			return (isRemote || isCreated) && isBusy;
 		}
 		
 		public function get isSynced():Boolean

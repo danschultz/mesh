@@ -10,6 +10,7 @@ package mesh.model.associations
 	import mesh.core.reflection.Type;
 	import mesh.mesh_internal;
 	import mesh.model.Record;
+	import mesh.model.RecordState;
 	import mesh.model.store.Store;
 	
 	import mx.events.PropertyChangeEvent;
@@ -57,6 +58,11 @@ package mesh.model.associations
 		protected function associate(record:Record):void
 		{
 			store.records.insert(record);
+			
+			if (record.state.isInit) {
+				record.changeState(RecordState.created());
+			}
+			
 			populateInverseRelationship(record, owner);
 			markMasterAsDirty();
 		}

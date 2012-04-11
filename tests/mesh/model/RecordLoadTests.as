@@ -56,6 +56,7 @@ package mesh.model
 			person.load();
 			
 			assertThat(person.state.isBusy, equalTo(true));
+			assertThat(person.state.isLoading, equalTo(true));
 		}
 		
 		[Test(async)]
@@ -106,6 +107,7 @@ package mesh.model
 			person.refresh();
 			
 			assertThat(person.state.isBusy, equalTo(true));
+			assertThat(person.state.isLoading, equalTo(true));
 		}
 	}
 }

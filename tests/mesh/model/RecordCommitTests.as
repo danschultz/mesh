@@ -60,6 +60,7 @@ package mesh.model
 			}));
 			
 			assertThat(customer.state.isBusy, equalTo(true));
+			assertThat(customer.state.isSaving, equalTo(true));
 		}
 		
 		[Test(async)]
@@ -79,6 +80,7 @@ package mesh.model
 				}));
 				
 				assertThat(customer.state.isBusy, equalTo(true));
+				assertThat(customer.state.isSaving, equalTo(true));
 			});
 			customer.load();
 		}
@@ -101,6 +103,7 @@ package mesh.model
 				}));
 				
 				assertThat(customer.state.isBusy, equalTo(true));
+				assertThat(customer.state.isSaving, equalTo(true));
 			});
 			customer.load();
 		}

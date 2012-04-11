@@ -46,6 +46,7 @@ package mesh.model.store
 		public function create(recordType:Class):*
 		{
 			var record:Record = newInstance(recordType);
+			record.changeState(RecordState.created());
 			records.insert(record);
 			return record;
 		}
