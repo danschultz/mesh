@@ -1,108 +1,127 @@
 package mesh.model.associations
 {
 	import flash.errors.IllegalOperationError;
-	import flash.utils.flash_proxy;
 	
-	import mesh.model.Entity;
-	import mesh.services.Request;
+	import mesh.model.ID;
+	import mesh.model.Record;
 	
-	use namespace flash_proxy;
+	import mx.events.PropertyChangeEvent;
 	
+	/**
+	 * The base class for any association that links to a single record.
+	 * 
+	 * @author Dan Schultz
+	 */
 	public class HasAssociation extends Association
 	{
 		/**
 		 * @copy AssociationProxy#AssociationProxy()
 		 */
-		public function HasAssociation(owner:Entity, relationship:HasOneDefinition)
+		public function HasAssociation(owner:Record, property:String, options:Object = null)
 		{
-			super(owner, relationship);
-			afterLoad(loaded);
-			beforeAdd(populateForeignKey);
-		}
-		
-		private function loaded():void
-		{
-			if (object != null) {
-				(object as Entity).callback("afterFind");
-			}
-		}
-		
-		private function populateForeignKey(entity:Entity):void
-		{
-			if (definition.hasForeignKey) {
-				if (owner.hasOwnProperty(definition.foreignKey)) {
-					owner[definition.foreignKey] = entity.id;
-				} else {
-					throw new IllegalOperationError("Foreign key '" + definition.foreignKey + "' is not defined on " + entity.reflect.name);
-				}
-			}
+			super(owner, property, options);
+			checkForRequiredFields();
+			owner.addEventListener(PropertyChangeEvent.PROPERTY_CHANGE, handleOwnerPropertyChange);
 		}
 		
 		/**
 		 * @inheritDoc
 		 */
-		override public function revert():void
+		override protected function associate(record:Record):void
 		{
-			object = _persistedTarget;
+			super.associate(record);
+			populateForeignKey();
+			record.addEventListener(PropertyChangeEvent.PROPERTY_CHANGE, handleAssociatedRecordPropertyChange);
+		}
+		
+		private function checkForRequiredFields():void
+		{
+			if (recordType == null) throw new IllegalOperationError("Undefined record type for " + this);
+			if (options.foreignKey != null && !owner.hasOwnProperty(options.foreignKey)) throw new IllegalOperationError("Undefined foreign key '" + options.foreignKey + " for " + this);
+		}
+		
+		private function handleAssociatedRecordPropertyChange(event:PropertyChangeEvent):void
+		{
+			if (event.property == "id") {
+				populateForeignKey();
+			}
+		}
+		
+		private function handleOwnerPropertyChange(event:PropertyChangeEvent):void
+		{
+			if (event.property == foreignKey) {
+				populateRecord();
+			}
+		}
+		
+		private function populateRecord():void
+		{
+			owner[property] = ID.isPopulated(owner, foreignKey) ? store.query(recordType).find(owner[foreignKey]) : null;
+		}
+		
+		private function populateForeignKey():void
+		{
+			// If the foreign key is undefined, try to automagically set it.
+			var key:String = foreignKey;
 			
-			if (object != null) {
-				object.revert();
+			if (owner.hasOwnProperty(key)) {
+				owner[key] = _record.id;
 			}
 		}
 		
-		private function targetDestroyed(entity:Entity):void
+		private function unassociateForeignKey():void
 		{
-			_persistedTarget = null;
-			object = null;
-		}
-		
-		private function targetSaved(entity:Entity):void
-		{
-			_persistedTarget = entity;
-		}
-		
-		/**
-		 * @inheritDoc
-		 */
-		override public function save():Request
-		{
-			return object.save();
-		}
-		
-		/**
-		 * @inheritDoc
-		 */
-		override flash_proxy function get dirtyEntities():Array
-		{
-			return [_persistedTarget, object].filter(function(entity:Entity, ...args):Boolean
-			{
-				return entity != null && entity.isDirty;
-			});
-		}
-		
-		private var _persistedTarget:*;
-		/**
-		 * @inheritDoc
-		 */
-		override flash_proxy function get object():*
-		{
-			return super.object;
-		}
-		override flash_proxy function set object(value:*):void
-		{
-			if (object != null) {
-				object.removeObserver("afterDestroy", targetDestroyed);
-				object.removeObserver("afterSave", targetSaved);
+			// If the foreign key is undefined, try to automagically set it.
+			var key:String = foreignKey;
+			
+			if (owner.hasOwnProperty(key)) {
+				owner[key] = null;
 			}
-			
-			super.object = value;
-			
-			if (object != null) {
-				object.revive();
+		}
+		
+		/**
+		 * @inheritDoc
+		 */
+		override protected function unassociate(record:Record):void
+		{
+			super.unassociate(record);
+			record.removeEventListener(PropertyChangeEvent.PROPERTY_CHANGE, handleAssociatedRecordPropertyChange);
+			unassociateForeignKey();
+		}
+		
+		/**
+		 * The property on the owner that defines the foreign key to load this association.
+		 */
+		public function get foreignKey():String
+		{
+			return options.foreignKey != null ? options.foreignKey : property + "Id";
+		}
+		
+		/**
+		 * The associated type of record. If the type is not defined as an option, then the association
+		 * will look up the type defined on the record through reflection.
+		 */
+		protected function get recordType():Class
+		{
+			try {
+				return options.recordType != null ? options.recordType : owner.reflect.property(property).type.clazz;
+			} catch (e:Error) {
 				
-				object.addObserver("afterSave", targetSaved);
-				object.addObserver("afterSave", populateForeignKey);
-				object.addObserver("afterDestroy", targetDestroyed);
+			}
+			return null;
+		}
+		
+		private var _record:Record;
+		/**
+		 * @inheritDoc
+		 */
+		override public function set object(value:*):void
+		{
+			if (value != _record) {
+				if (_record != null) unassociate(_record);
+				_record = value;
+				super.object = _record;
+				if (_record != null) associate(_record);
 			}
 		}
 	}

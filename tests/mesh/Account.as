@@ -1,44 +1,17 @@
 package mesh
 {
-	import flash.utils.flash_proxy;
+	import mesh.model.Record;
 	
-	import mesh.core.object.copy;
-	import mesh.model.Entity;
-	import mesh.model.associations.HasOneAssociation;
-	import mesh.services.TestService;
-	
-	use namespace flash_proxy;
-	
-	public class Account extends Entity
+	[Bindable]
+	public class Account extends Record
 	{
-		Mesh.services.map(Account, new TestService(Account));
+		[HasOne]
+		public var customer:Customer;
+		public var customerId:int;
 		
-		[Bindable] public var number:String;
-		
-		public function Account()
+		public function Account(values:Object=null)
 		{
-			super();
-		}
-		
-		override public function translateFrom(object:Object):void
-		{
-			copy(object, this);
-		}
-		
-		override public function translateTo():*
-		{
-			var object:Object = {};
-			copy(this, object, {includes:["id", "number"]});
-			return object;
-		}
-		
-		public function get customer():HasOneAssociation
-		{
-			return hasOne("customer", Customer);
-		}
-		public function set customer(value:HasOneAssociation):void
-		{
-			customer.object = value;
+			super(values);
 		}
 	}
 }

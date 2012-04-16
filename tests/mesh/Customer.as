@@ -1,47 +1,21 @@
 package mesh
 {
-	import flash.utils.flash_proxy;
-	
-	import mesh.core.object.copy;
 	import mesh.model.associations.HasManyAssociation;
-	import mesh.model.associations.HasOneAssociation;
-	import mesh.model.validators.PresenceValidator;
-	import mesh.services.TestService;
 	
-	use namespace flash_proxy;
-	
+	[Bindable]
 	public class Customer extends Person
 	{
-		Mesh.services.map(Customer, new TestService(Customer));
+		[HasOne]
+		public var account:Account;
 		
-		public static var validate:Object = 
-		{
-			address: [{validator:PresenceValidator}]
-		};
+		public var accountId:int;
 		
-		[Bindable] public var address:Address;
-		[Bindable] public var accountId:int;
+		[HasMany(inverse="customer", recordType="mesh.Order")]
+		public var orders:HasManyAssociation;
 		
-		public function Customer(properties:Object = null)
+		public function Customer(properties:Object=null)
 		{
 			super(properties);
-		}
-		
-		override public function translateTo():*
-		{
-			var result:Object = super.translateTo();
-			copy(this, result, {includes:["address", "accountId"]});
-			return result;
-		}
-		
-		public function get account():HasOneAssociation
-		{
-			return hasOne("account", Account, {foreignKey:"accountId", autoSave:true});
-		}
-		
-		public function get orders():HasManyAssociation
-		{
-			return hasMany("orders", Order, {inverse:"customer", autoSave:true});
 		}
 	}
 }

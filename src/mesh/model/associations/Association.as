@@ -1,19 +1,21 @@
 package mesh.model.associations
 {
 	import flash.errors.IllegalOperationError;
-	import flash.utils.flash_proxy;
+	import flash.events.Event;
+	import flash.events.EventDispatcher;
+	import flash.events.IEventDispatcher;
+	import flash.utils.Proxy;
 	
-	import mesh.Mesh;
 	import mesh.core.inflection.humanize;
-	import mesh.core.proxy.DataProxy;
 	import mesh.core.reflection.Type;
-	import mesh.model.Callbacks;
-	import mesh.model.Entity;
-	import mesh.services.Request;
+	import mesh.mesh_internal;
+	import mesh.model.Record;
+	import mesh.model.RecordState;
+	import mesh.model.store.Store;
 	
 	import mx.events.PropertyChangeEvent;
 	
-	use namespace flash_proxy;
+	use namespace mesh_internal;
 	
 	/**
 	 * An association class is a proxy object that contains the references to the objects in
@@ -22,265 +24,223 @@ package mesh.model.associations
 	 * 
 	 * @author Dan Schultz
 	 */
-	public dynamic class Association extends DataProxy
+	public class Association extends Proxy implements IEventDispatcher
 	{
-		private var _callbacks:Callbacks = new Callbacks();
+		private var _dispatcher:EventDispatcher;
 		
 		/**
 		 * Constructor.
 		 * 
 		 * @param owner The parent that owns the relationship.
-		 * @param relationship The relationship being represented by the proxy.
+		 * @param property The property name on the owner that association is mapped to.
+		 * @param options The options for this association.
 		 */
-		public function Association(owner:Entity, definition:AssociationDefinition)
+		public function Association(owner:Record, property:String, options:Object = null)
 		{
 			super();
 			
+			_dispatcher = new EventDispatcher(this);
 			_owner = owner;
-			_definition = definition;
+			_property = property;
+			_options = options != null ? options : {};
 			
-			beforeLoad(loading);
-			afterLoad(loaded);
-			
-			beforeAdd(associated);
-			beforeRemove(unassociated);
+			// Watch for assignments to the mapped property on the owner. If the property is reassigned,
+			// then we'll need the association to wrap the new object.
+			owner.addEventListener(PropertyChangeEvent.PROPERTY_CHANGE, handleOwnerPropertyChange);
 		}
 		
-		private function associated(entity:Entity):void
-		{
-			entity.associated();
-		}
-		
-		private function unassociated(entity:Entity):void
-		{
-			entity.unassociated();
-		}
-		
-		private function addCallback(method:String, block:Function):void
-		{
-			_callbacks.addCallback(method, block);
-		}
-		
-		protected function beforeAdd(block:Function):void
-		{
-			addCallback("beforeAdd", block);
-		}
-		
-		protected function beforeRemove(block:Function):void
-		{
-			addCallback("beforeRemove", block);
-		}
-		
-		protected function beforeLoad(block:Function):void
-		{
-			addCallback("beforeLoad", block);
-		}
-		
-		protected function afterAdd(block:Function):void
-		{
-			addCallback("afterAdd", block);
-		}
-		
-		protected function afterRemove(block:Function):void
-		{
-			addCallback("afterRemove", block);
-		}
-		
-		protected function afterLoad(block:Function):void
-		{
-			addCallback("afterLoad", block);
-		}
-		
-		public function callback(method:String, entity:Entity = null):void
-		{
-			if (entity != null) {
-				_callbacks.callback(method, entity);
-			} else {
-				_callbacks.callback(method);
-			}
-		}
-		
-		protected function callbackIfNotNull(method:String, entity:Entity):void
-		{
-			if (entity != null) {
-				callback(method, entity);
-			}
-		}
-		
-		private var _loadRequest:Request;
 		/**
-		 * Executes an operation that will load the object for this association.
+		 * Called by sub-classes when an record is added to an association.
 		 * 
-		 * @return An executing operation.
+		 * @param record The record that was associated.
+		 * @param revive Indicates if the record should be revived when associated.
 		 */
-		public function load():Request
+		protected function associate(record:Record):void
 		{
-			if (isLoading) {
-				return _loadRequest;
+			store.records.insert(record);
+			
+			if (record.state.isInit) {
+				record.changeState(RecordState.created());
 			}
 			
-			if (!isLoaded) {
-				callback("beforeLoad");
-				_loadRequest = definition.hasLoadRequest ? definition.loadRequest.apply(owner) : createLoadRequest();
-				_loadRequest.addHandler({
-					success:function():void
-					{
-						object = _loadRequest.object;
-						callback("afterLoad");
-					}
-				});
-				return _loadRequest;
-			}
-			
-			return new Request(function():void {});
+			populateInverseRelationship(record, owner);
+			markMasterAsDirty();
 		}
 		
-		protected function createLoadRequest():Request
+		private function handleOwnerPropertyChange(event:PropertyChangeEvent):void
 		{
-			throw new IllegalOperationError("Load function not implemented for " + definition);
-		}
-		
-		private function loading():void
-		{
-			if (!_isLoading) {
-				_isLoading = true;
-				dispatchEvent( PropertyChangeEvent.createUpdateEvent(this, "isLoading", false, true) );
-			}
-		}
-		
-		private function loaded():void
-		{
-			if (!_isLoaded) {
-				_isLoaded = true;
-				_isLoading = false;
-				dispatchEvent( PropertyChangeEvent.createUpdateEvent(this, "isLoading", true, false) );
-				dispatchEvent( PropertyChangeEvent.createUpdateEvent(this, "isLoaded", false, true) );
-			}
-		}
-		
-		protected function markEntitiesAsFound():void
-		{
-			throw new IllegalOperationError(reflect.name + ".markEntitiesAsFound() is not implemented.");
-		}
-		
-		/**
-		 * Clears the association of its loaded data.
-		 */
-		public function reset():void
-		{
-			if (isLoading) {
-				_loadRequest.cancel();
-				_isLoading = false;
-				dispatchEvent( PropertyChangeEvent.createUpdateEvent(this, "isLoading", true, false) );
-			}
-			
-			if (isLoaded) {
-				_isLoaded = false;
-				dispatchEvent( PropertyChangeEvent.createUpdateEvent(this, "isLoaded", true, false) );
+			if (event.property is String && event.property.toString() == property) {
+				object = event.newValue;
 			}
 		}
 		
 		/**
-		 * Changes the state of the object for this association back to what it was at the last save.
+		 * Called when the owner has been inserted into the store, and the association can be
+		 * initialized.
 		 */
-		public function revert():void
+		mesh_internal function initialize():void
 		{
 			
 		}
 		
-		public function save():Request
+		private function markMasterAsDirty():void
 		{
-			var toSave:Array = dirtyEntities;
-			if (toSave.length > 0) {
-				return Mesh.service((toSave[0] as Entity).reflect.clazz).save(toSave);
+			if (isMaster) {
+				owner.changeState(owner.state.dirty());
 			}
-			return new Request();
 		}
 		
+		private function populateInverseRelationship(record:Record, value:Record):void
+		{
+			if (inverse != null) {
+				if (record.hasOwnProperty(inverse)) record[inverse] = value;
+				else throw new IllegalOperationError("Inverse property '" + record.reflect.name + "." + inverse + "' does not exist.");
+			}
+		}
+		
+		/**
+		 * Called when the owner has been synced with the data source.
+		 */
+		mesh_internal function synced():void
+		{
+			
+		}
+		
+		/**
+		 * @private
+		 */
 		public function toString():String
 		{
-			return humanize(reflect.className).toLowerCase();
+			return humanize(reflect.className).toLowerCase() + " on " + owner.reflect.name + "." + property
 		}
 		
 		/**
-		 * The set of <code>Entity</code>s that are dirty and need to be persisted.
+		 * Called by a sub-class when an record has been removed from an association.
+		 * 
+		 * @param record The record to unassociate.
 		 */
-		flash_proxy function get dirtyEntities():Array
+		protected function unassociate(record:Record):void
 		{
-			return [];
+			populateInverseRelationship(record, null);
+			markMasterAsDirty();
 		}
 		
 		/**
-		 * @copy Entity#isDirty
+		 * The property on each associated object that maps back to the owner of the association.
 		 */
-		public function get isDirty():Boolean
+		public function get inverse():String
 		{
-			return dirtyEntities.length > 0;
-		}
-		
-		private var _isLoaded:Boolean;
-		[Bindable(event="propertyChange")]
-		/**
-		 * <code>true</code> if the association objects for this relationship have been loaded.
-		 */
-		public function get isLoaded():Boolean
-		{
-			return _isLoaded;
-		}
-		
-		private var _isLoading:Boolean;
-		[Bindable(event="propertyChange")]
-		/**
-		 * <code>true</code> if this association is in the process of loading its data.
-		 */
-		public function get isLoading():Boolean
-		{
-			return _isLoading;
-		}
-		
-		private var _definition:AssociationDefinition;
-		/**
-		 * The relationship model that this association represents.
-		 */
-		flash_proxy function get definition():AssociationDefinition
-		{
-			return _definition;
+			return options.inverse;
 		}
 		
 		/**
-		 * @inheritDoc
+		 * Indicates that this side of the association is the parent.
 		 */
-		override flash_proxy function get object():*
+		public function get isMaster():Boolean
 		{
-			return super.object;
-		}
-		override flash_proxy function set object(value:*):void
-		{
-			if (object != value) {
-				super.object = value;
-				owner.dispatchEvent( PropertyChangeEvent.createUpdateEvent(owner, definition.property, this, this) );
-			}
+			return options.isMaster;
 		}
 		
-		private var _owner:Entity;
+		private var _object:*;
+		/**
+		 * The data assigned to this association.
+		 */
+		public function get object():*
+		{
+			return _object;
+		}
+		public function set object(value:*):void
+		{
+			_object = value;
+		}
+		
+		private var _options:Object;
+		/**
+		 * The options defined for this association.
+		 */
+		protected function get options():Object
+		{
+			return _options;
+		}
+		
+		private var _owner:Record;
 		/**
 		 * The instance of the parent owning this association.
 		 */
-		protected function get owner():Entity
+		protected function get owner():Record
 		{
 			return _owner;
+		}
+		
+		private var _property:String;
+		/**
+		 * The property name on the owner that this association is mapped to.
+		 */
+		public function get property():String
+		{
+			return _property;
 		}
 		
 		private var _reflect:Type;
 		/**
 		 * A reflection on this object.
 		 */
-		protected function get reflect():Type
+		public function get reflect():Type
 		{
 			if (_reflect == null) {
 				_reflect = Type.reflect(this);
 			}
 			return _reflect;
+		}
+		
+		/**
+		 * The store that the owner belongs to.
+		 */
+		protected function get store():Store
+		{
+			return owner.store;
+		}
+		
+		// Methods for IEventDispatcher
+		
+		/**
+		 * @inheritDoc
+		 */
+		public function addEventListener(type:String, listener:Function, useCapture:Boolean = false, priority:int = 0, useWeakReference:Boolean = false):void
+		{
+			_dispatcher.addEventListener(type, listener, useCapture, priority, useWeakReference);
+		}
+		
+		/**
+		 * @inheritDoc
+		 */
+		public function dispatchEvent(event:Event):Boolean
+		{
+			return _dispatcher.dispatchEvent(event);
+		}
+		
+		/**
+		 * @inheritDoc
+		 */
+		public function hasEventListener(type:String):Boolean
+		{
+			return _dispatcher.hasEventListener(type);
+		}
+		
+		/**
+		 * @inheritDoc
+		 */
+		public function removeEventListener(type:String, listener:Function, useCapture:Boolean = false):void
+		{
+			_dispatcher.removeEventListener(type, listener, useCapture);
+		}
+		
+		/**
+		 * @inheritDoc
+		 */
+		public function willTrigger(type:String):Boolean
+		{
+			return _dispatcher.willTrigger(type);
 		}
 	}
 }

@@ -2,27 +2,27 @@ package mesh
 {
 	public class Name
 	{
-		public function Name(firstName:String, lastName:String)
+		public function Name(first:String, last:String)
 		{
-			_firstName = firstName;
-			_lastName = lastName;
+			_first = first;
+			_last = last;
 		}
 		
 		public function equals(name:Name):Boolean
 		{
-			return firstName == name.firstName && lastName == name.lastName;
+			return first == name.first && last == name.last;
 		}
 		
-		private var _firstName:String;
-		public function get firstName():String
+		private var _first:String;
+		public function get first():String
 		{
-			return _firstName;
+			return _first;
 		}
 		
-		private var _lastName:String;
-		public function get lastName():String
+		private var _last:String;
+		public function get last():String
 		{
-			return _lastName;
+			return _last;
 		}
 	}
 }

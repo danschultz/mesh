@@ -2,13 +2,16 @@ package mesh.model
 {
 	import collections.Collection;
 	
+	import flash.utils.Proxy;
+	import flash.utils.flash_proxy;
+	
 	/**
 	 * The <code>Changes</code> class represents a storage container for values that have
-	 * changed on an instance of an <code>Entity</code>.
+	 * changed on an instance of an <code>Record</code>.
 	 * 
 	 * @author Dan Schultz
 	 */
-	public class Changes
+	public class Changes extends Proxy
 	{
 		private var _host:Object;
 		private var _oldValues:Object = {};
@@ -18,7 +21,7 @@ package mesh.model
 		 * 
 		 * @param host The object to hold changes for.
 		 */
-		public function Changes(host:Object)
+		public function Changes(host:Object = null)
 		{
 			_host = host;
 		}
@@ -34,6 +37,7 @@ package mesh.model
 		{
 			if (!_oldValues.hasOwnProperty(property)) {
 				_oldValues[property] = oldValue;
+				_properties.push(property);
 			}
 		}
 		
@@ -46,14 +50,16 @@ package mesh.model
 		{
 			if (property != null) {
 				delete _oldValues[property];
+				_properties.splice(_properties.indexOf(property), 1);
 			} else {
 				_oldValues = {};
+				_properties = [];
 			}
 		}
 		
 		/**
 		 * Performs a check to see if the given property has changed. This method will
-		 * first check based on the identity of the changed values. If this fails, it 
+		 * first check based on the idrecord of the changed values. If this fails, it 
 		 * will use the <code>equals()</code> method defined on the value, if the method
 		 * exists.
 		 * 
@@ -103,16 +109,55 @@ package mesh.model
 		}
 		
 		/**
+		 * @private
+		 */
+		override flash_proxy function nextName(index:int):String
+		{
+			return (index-1).toString();
+		}
+		
+		private var _iteratingItems:Array;
+		private var _len:int;
+		/**
+		 * @private
+		 */
+		override flash_proxy function nextNameIndex(index:int):int
+		{
+			if (index == 0) {
+				_iteratingItems = properties;
+				_len = _iteratingItems.length;
+			}
+			return index < _len ? index+1 : 0;
+		}
+		
+		/**
+		 * @private
+		 */
+		override flash_proxy function nextValue(index:int):*
+		{
+			return _iteratingItems[index-1];
+		}
+		
+		/**
 		 * <code>true</code> if the values of the properties have changed on the host.
 		 */
 		public function get hasChanges():Boolean
 		{
-			for (var property:String in _oldValues) {
+			for each (var property:String in _properties) {
 				if (hasChanged(property)) {
 					return true;
 				}
 			}
 			return false;
+		}
+		
+		private var _properties:Array = [];
+		/**
+		 * The properties that have changed.
+		 */
+		public function get properties():Array
+		{
+			return _properties.concat();
 		}
 	}
 }

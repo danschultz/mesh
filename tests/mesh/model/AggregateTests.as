@@ -7,29 +7,29 @@ package mesh.model
 
 	public class AggregateTests
 	{
-		private var _entity:AggregateTestMockEntity;
+		private var _record:AggregateTestMockRecord;
 		
 		[Before]
 		public function setup():void
 		{
-			_entity = new AggregateTestMockEntity();
+			_record = new AggregateTestMockRecord();
 		}
 		
 		[Test]
 		public function testPropertyChangeUpdatesAggregate():void
 		{
-			_entity.firstName = "Thom";
-			_entity.lastName = "Yorke";
-			assertThat(_entity.name.firstName, equalTo(_entity.firstName));
-			assertThat(_entity.name.lastName, equalTo(_entity.lastName));
+			_record.firstName = "Thom";
+			_record.last = "Yorke";
+			assertThat(_record.name.first, equalTo(_record.firstName));
+			assertThat(_record.name.last, equalTo(_record.last));
 		}
 		
 		[Test]
 		public function testAggregateChangeUpdatesProperties():void
 		{
-			_entity.name = new Name("Thom", "Yorke");
-			assertThat(_entity.firstName, equalTo(_entity.name.firstName));
-			assertThat(_entity.lastName, equalTo(_entity.name.lastName));
+			_record.name = new Name("Thom", "Yorke");
+			assertThat(_record.firstName, equalTo(_record.name.first));
+			assertThat(_record.last, equalTo(_record.name.last));
 		}
 	}
 }

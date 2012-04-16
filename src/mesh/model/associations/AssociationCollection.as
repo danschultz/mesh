@@ -1,55 +1,60 @@
 package mesh.model.associations
 {
-	import collections.ArraySequence;
-	import collections.HashSet;
-	
-	import flash.errors.IllegalOperationError;
 	import flash.utils.flash_proxy;
+	import flash.utils.getDefinitionByName;
 	
-	import mesh.core.object.copy;
-	import mesh.model.Entity;
-	import mesh.services.Request;
+	import mesh.core.Set;
+	import mesh.mesh_internal;
+	import mesh.model.ILoadable;
+	import mesh.model.IPersistable;
+	import mesh.model.Record;
+	import mesh.model.RecordState;
+	import mesh.model.store.Commit;
+	import mesh.model.store.ICommitResponder;
+	import mesh.model.store.ResultsList;
+	import mesh.model.store.Store;
+	import mesh.operations.Operation;
 	
-	import mx.collections.ArrayCollection;
 	import mx.collections.IList;
 	import mx.events.CollectionEvent;
 	import mx.events.CollectionEventKind;
+	import mx.events.PropertyChangeEvent;
 	
+	use namespace mesh_internal;
 	use namespace flash_proxy;
 	
-	public dynamic class AssociationCollection extends Association implements IList
+	public class AssociationCollection extends Association implements IList, ILoadable, IPersistable
 	{
-		private var _originalEntities:Array;
-		private var _mirroredEntities:ArraySequence;
-		private var _removedEntities:HashSet = new HashSet();
+		private var _loadOperation:AssociationLoadOperation;
+		private var _results:ResultsList;
+		
+		private var _records:AssociationCollectionSet;
+		private var _added:Set = new Set();
+		private var _removed:Set = new Set();
 		
 		/**
-		 * @copy AssociationProxy#AssociationProxy()
+		 * @copy Association#Association()
 		 */
-		public function AssociationCollection(source:Entity, definition:HasManyDefinition)
+		public function AssociationCollection(source:Record, property:String, options:Object = null)
 		{
-			super(source, definition);
-			object = [];
+			super(source, property, options);
 			
-			afterLoad(loaded);
-			afterAdd(populateInverseAssociation);
-			afterAdd(registerObserversOnEntity);
+			_added.addEventListener(CollectionEvent.COLLECTION_CHANGE, handleAddedSetChange);
+			_removed.addEventListener(CollectionEvent.COLLECTION_CHANGE, handleRemovedSetChange);
 		}
 		
 		/**
-		 * @copy #addItem()
+		 * Adds the given record to this association.
+		 * 
+		 * @param record The record to add.
 		 */
-		public function add(item:Object):void
+		public function add(record:Record):void
 		{
-			addItem(item);
-		}
-		
-		/**
-		 * @copy #addItemAt()
-		 */
-		public function addAt(item:Object, index:int):void
-		{
-			addItemAt(item, index);
+			if (!contains(record)) {
+				_added.add(record);
+				_removed.remove(record);
+				_records.add(record);
+			}
 		}
 		
 		/**
@@ -57,7 +62,7 @@ package mesh.model.associations
 		 */
 		public function addItem(item:Object):void
 		{
-			addItemAt(item, length);
+			add(Record( item ));
 		}
 		
 		/**
@@ -65,66 +70,37 @@ package mesh.model.associations
 		 */
 		public function addItemAt(item:Object, index:int):void
 		{
-			callbackIfNotNull("beforeAdd", Entity( item ));
-			object.addItemAt(item, index);
+			add(Record( item ));
 		}
 		
 		/**
-		 * Returns either a new entity or an array of new entities of the associated type.
-		 * These object will be instantiated from the passed in properties and their relationships
-		 * populated. However, they will not be saved.
-		 * 
-		 * @param properties The properties for each new entity.
-		 * @return Either a new entity, or an array of new entities.
+		 * @copy mesh.core.List#at()
 		 */
-		public function build(...properties):*
+		public function at(index:int):*
 		{
-			var result:Array = [];
-			for each (var property:Object in properties) {
-				var entity:Entity = new definition.target();
-				copy(property, entity);
-				populateInverseAssociation(entity);
-				result.push(entity);
+			return getItemAt(index);
+		}
+		
+		private function collectDirtyRecords():Array
+		{
+			var records:Array = [];
+			for each (var record:Record in toArray().concat(removed)) {
+				if (!record.state.isSynced) {
+					records.push(record);
+				}
 			}
-			return result.length == 1 ? result.pop() : result;
+			return records;
 		}
 		
 		/**
-		 * Checks if the association has the given entity. This method will only check for entities
-		 * that have already been loaded.
+		 * Checks if a record belongs to this association.
 		 * 
-		 * @param item The item to check.
-		 * @return <code>true</code> if the item was found.
+		 * @param record The record to check.
+		 * @return <code>true</code> if the record was found.
 		 */
-		public function contains(item:Object):Boolean
+		public function contains(record:Record):Boolean
 		{
-			return getItemIndex(item) >= 0;
-		}
-		
-		/**
-		 * Creates a new entity of the associated type that is populated with the given properties.
-		 * 
-		 * @param properties The properties to populate the new entity with.
-		 * @return An executing operation that saves the entity to the backend.
-		 */
-		public function create(properties:Object):Request
-		{
-			var entity:Entity = build(properties);
-			add(entity);
-			return entity.save();
-		}
-		
-		/**
-		 * Executes an operation that will remove the given entity from this association and from the
-		 * backend. If the entity does not belong to this association, an empty operation is executed
-		 * and nothing is performed.
-		 * 
-		 * @param entity The entity to destroy.
-		 * @return An executing operation.
-		 */
-		public function destroy(entity:Entity):Request
-		{
-			return contains(entity) ? entity.destroy() : new Request();
+			return _records.contains(record);
 		}
 		
 		/**
@@ -132,7 +108,7 @@ package mesh.model.associations
 		 */
 		public function getItemAt(index:int, prefetch:int = 0):Object
 		{
-			return object.getItemAt(index, prefetch);
+			return _records.getItemAt(index, prefetch);
 		}
 		
 		/**
@@ -140,56 +116,54 @@ package mesh.model.associations
 		 */
 		public function getItemIndex(item:Object):int
 		{
-			return _mirroredEntities.indexOf(item);
+			return _records.getItemIndex(item);
 		}
 		
-		private function handleEntitiesCollectionChange(event:CollectionEvent):void
+		private function handleAddedSetChange(event:CollectionEvent):void
 		{
-			switch (event.kind) {
-				case CollectionEventKind.ADD:
-					handleEntitiesAdded(event.items);
-					break;
-				case CollectionEventKind.REMOVE:
-					handleEntitiesRemoved(event.items);
-					break;
-				case CollectionEventKind.RESET:
-					handleEntitiesRemoved(_mirroredEntities.difference(object).toArray());
-					handleEntitiesAdded(toArray());
-					break;
-			}
-			
-			if (event.kind != CollectionEventKind.UPDATE) {
-				_mirroredEntities = new ArraySequence(object.source);
-			}
-			
-			dispatchEvent(event.clone());
-		}
-		
-		protected function handleEntitiesAdded(entities:Array):void
-		{
-			for each (var entity:Entity in entities) {
-				_removedEntities.remove(entity);
-				callbackIfNotNull("afterAdd", entity);
-			}
-		}
-		
-		protected function handleEntitiesRemoved(entities:Array):void
-		{
-			for each (var entity:Entity in entities) {
-				if (entity.isPersisted) {
+			if (event.kind == CollectionEventKind.UPDATE) {
+				for each (var changeEvent:PropertyChangeEvent in event.items) {
+					if (changeEvent.property == "state" && Record( changeEvent.source ).state.isSynced) {
+						var record:Record = changeEvent.source as Record;
+						var state:RecordState = record.state;
+						_added.remove(changeEvent.source);
+						_records.add(changeEvent.source);
+						record.changeState(state);
+					}
 				}
-				_removedEntities.add(entity);
-				callbackIfNotNull("afterRemove", entity);
 			}
 		}
 		
-		private function handleEntityDestroyed(entity:Entity):void
+		private function handleRecordsListCollectionChange(event:CollectionEvent):void
 		{
-			if (entity.isMarkedForRemoval) {
-				remove(entity);
-				_removedEntities.remove(entity);
-				unregisterObserversOnEntity(entity);
+			dispatchEvent(event);
+		}
+		
+		private function handleRemovedSetChange(event:CollectionEvent):void
+		{
+			if (event.kind == CollectionEventKind.UPDATE) {
+				for each (var changeEvent:PropertyChangeEvent in event.items) {
+					if (changeEvent.property == "state" && Record( changeEvent.source ).state.isSynced) {
+						_removed.remove(changeEvent.source);
+					}
+				}
 			}
+		}
+		
+		/**
+		 * @inheritDoc
+		 */
+		override mesh_internal function initialize():void
+		{
+			super.initialize();
+			
+			_loadOperation = new AssociationLoadOperation(store, owner, recordType);
+			_results = new ResultsList(_loadOperation.results, loadOperation);
+			
+			_records = new AssociationCollectionSet([_results, _added]);
+			_records.associateFunc = associate;
+			_records.unassociateFunc = unassociate;
+			_records.addEventListener(CollectionEvent.COLLECTION_CHANGE, handleRecordsListCollectionChange);
 		}
 		
 		/**
@@ -197,51 +171,29 @@ package mesh.model.associations
 		 */
 		public function itemUpdated(item:Object, property:Object = null, oldValue:Object = null, newValue:Object = null):void
 		{
-			object.itemUpdated(item, property, oldValue, newValue);
-		}
-		
-		private function loaded():void
-		{
-			snapshot();
-			
-			for each (var entity:Entity in this) {
-				entity.callback("afterFind");
-			}
-		}
-		
-		private function populateInverseAssociation(entity:Entity):void
-		{
-			if (definition.hasInverse) {
-				if (entity.hasOwnProperty(definition.inverse)) {
-					// if the inverse relationship is an association, then we populate the inverse 
-					// association's object. otherwise, we just set the property to the association's owner.
-					if (entity[definition.inverse] is Association) {
-						entity[definition.inverse].object = owner;
-					} else {
-						entity[definition.inverse] = owner;
-					}
-				} else {
-					throw new IllegalOperationError("Inverse property '" + definition.inverse + "' not defined on " + entity.reflect.name);
-				}
-			}
-		}
-		
-		private function registerObserversOnEntity(entity:Entity):void
-		{
-			entity.addObserver("afterDestroy", handleEntityDestroyed);
-		}
-		
-		private function unregisterObserversOnEntity(entity:Entity):void
-		{
-			entity.removeObserver("afterDestroy", handleEntityDestroyed);
+			_records.itemUpdated(item, property, oldValue, newValue);
 		}
 		
 		/**
-		 * @copy #removeItem()
+		 * @inheritDoc
 		 */
-		public function remove(item:Object):void
+		public function load():*
 		{
-			removeItem(item);
+			if (_results != null) {
+				_results.load();
+			}
+			return this;
+		}
+		
+		/**
+		 * @inheritDoc
+		 */
+		public function refresh():*
+		{
+			if (_results != null) {
+				_results.refresh();
+			}
+			return this;
 		}
 		
 		/**
@@ -249,28 +201,22 @@ package mesh.model.associations
 		 */
 		public function removeAll():void
 		{
-			object.removeAll();
+			while (length > 0) {
+				removeItemAt(0);
+			}
 		}
 		
 		/**
-		 * @copy #removeItemAt()
-		 */
-		public function removeAt(index:int):void
-		{
-			removeItemAt(index);
-		}
-		
-		/**
-		 * Removes the given entity from this association. This method will only remove entities
-		 * that have been loaded into the association.
+		 * Unassociates the record from this association.
 		 * 
-		 * @param item The entity to remove.
+		 * @param record The record to remove.
 		 */
-		public function removeItem(item:Object):void
+		public function remove(record:Record):void
 		{
-			var index:int = getItemIndex(item);
-			if (index >= 0) {
-				removeItemAt(index);
+			if (contains(record)) {
+				_records.remove(record);
+				_removed.add(record);
+				_added.remove(record);
 			}
 		}
 		
@@ -279,38 +225,22 @@ package mesh.model.associations
 		 */
 		public function removeItemAt(index:int):Object
 		{
-			callbackIfNotNull("beforeRemove", Entity( getItemAt(index) ));
-			return object.removeItemAt(index);
+			var record:Record = Record( getItemAt(index) );
+			remove(record);
+			return record;
 		}
 		
 		/**
 		 * @inheritDoc
 		 */
-		override public function reset():void
+		public function save(responder:ICommitResponder = null):*
 		{
-			for each (var entity:Entity in toArray().concat(_removedEntities.toArray())) {
-				unregisterObserversOnEntity(entity);
+			var commit:Commit = new Commit(store.dataSource, collectDirtyRecords());
+			if (responder != null) {
+				commit.addResponder(responder);
 			}
-			object.removeEventListener(CollectionEvent.COLLECTION_CHANGE, handleEntitiesCollectionChange);
-			
-			object = undefined;
-			_removedEntities.clear();
-			
-			super.reset();
-		}
-		
-		/**
-		 * @inheritDoc
-		 */
-		override public function revert():void
-		{
-			super.revert();
-			
-			object = _originalEntities;
-			
-			for each (var entity:Entity in this) {
-				entity.revert();
-			}
+			commit.persist();
+			return this;
 		}
 		
 		/**
@@ -318,12 +248,8 @@ package mesh.model.associations
 		 */
 		public function setItemAt(item:Object, index:int):Object
 		{
-			return object.setItemAt(item, index);
-		}
-		
-		private function snapshot():void
-		{
-			_originalEntities = toArray();
+			// Not supported.
+			return null;
 		}
 		
 		/**
@@ -331,15 +257,23 @@ package mesh.model.associations
 		 */
 		public function toArray():Array
 		{
-			return object.toArray();
+			return _records.toArray();
 		}
 		
 		/**
-		 * <code>true</code> if the collection doesn't contain any elements.
+		 * The set of records that have been removed from the association.
 		 */
-		public function get isEmpty():Boolean
+		public function get added():Array
 		{
-			return length == 0;
+			return _added.toArray();
+		}
+		
+		/**
+		 * @inheritDoc
+		 */
+		public function get isLoaded():Boolean
+		{
+			return _results != null ? _results.isLoaded : false;
 		}
 		
 		/**
@@ -347,80 +281,39 @@ package mesh.model.associations
 		 */
 		public function get length():int
 		{
-			return object.length;
+			return _records.length;
 		}
 		
 		/**
-		 * @inheritDoc
+		 * @copy mesh.model.store.ResultsList#loadOperation
 		 */
-		override flash_proxy function get dirtyEntities():Array
+		public function get loadOperation():Operation
 		{
-			var result:Array = [];
-			for each (var entity:Entity in toArray().concat(_removedEntities.toArray())) {
-				if (entity.isDirty) {
-					result.push(entity);
-				}
+			return _loadOperation;
+		}
+		
+		private function get recordType():Class
+		{
+			try {
+				return Class( getDefinitionByName(options.recordType) );
+			} catch (e:ReferenceError) {
+				throw new ReferenceError("Record type '" + options.recordType + "' not found.");
 			}
-			return result;
+			return null;
 		}
 		
 		/**
-		 * <code>true</code> if this collection contains entities that have been removed, but not
-		 * yet persisted.
+		 * The set of records that have been removed from the association.
 		 */
-		public function get hasUnsavedRemovedEntities():Boolean
+		public function get removed():Array
 		{
-			for each (var entity:Entity in _removedEntities) {
-				if (entity.isPersisted) {
-					return true;
-				}
-			}
-			return false;
+			return _removed.toArray();
 		}
 		
-		/**
-		 * @inheritDoc
-		 */
-		override flash_proxy function get object():*
-		{
-			return super.object;
-		}
-		override flash_proxy function set object(value:*):void
-		{
-			if (value is Entity) {
-				value = [value];
-			}
-			
-			if (value != null && (!(value is Array) && !value.hasOwnProperty("toArray"))) {
-				throw new ArgumentError("AssociationCollection.object must be an Array, have a 'toArray' method, or be null.");
-			}
-			
-			if (value != object) {
-				if (object != null) {
-					object.removeEventListener(CollectionEvent.COLLECTION_CHANGE, handleEntitiesCollectionChange);
-				}
-				
-				if (value != null && value.hasOwnProperty("toArray")) {
-					value = value.toArray();
-				}
-				
-				for each (var entity:Entity in value) {
-					callbackIfNotNull("beforeAdd", entity);
-				}
-				
-				super.object = new ArrayCollection(value);
-				
-				if (_mirroredEntities == null) {
-					_mirroredEntities = new ArraySequence(value);
-				}
-				
-				object.addEventListener(CollectionEvent.COLLECTION_CHANGE, handleEntitiesCollectionChange);
-				object.dispatchEvent(new CollectionEvent(CollectionEvent.COLLECTION_CHANGE, false, false, CollectionEventKind.RESET));
-			}
-		}
+		// Proxy methods to support for each..in loops.
 		
 		/**
-		 *  @inheritDoc
+		 * @private
 		 */
 		override flash_proxy function nextName(index:int):String
 		{
@@ -430,7 +323,7 @@ package mesh.model.associations
 		private var _iteratingItems:Array;
 		private var _len:int;
 		/**
-		 * @inheritDoc
+		 * @private
 		 */
 		override flash_proxy function nextNameIndex(index:int):int
 		{
@@ -442,11 +335,157 @@ package mesh.model.associations
 		}
 		
 		/**
-		 * @inheritDoc
+		 * @private
 		 */
 		override flash_proxy function nextValue(index:int):*
 		{
 			return _iteratingItems[index-1];
 		}
+	}
+}
+
+import flash.utils.Dictionary;
+
+import mesh.core.List;
+import mesh.core.Set;
+import mesh.mesh_internal;
+import mesh.model.Record;
+import mesh.model.RecordState;
+import mesh.model.source.DataSourceRetrievalOperation;
+import mesh.model.store.Data;
+import mesh.model.store.RecordCache;
+import mesh.model.store.Store;
+
+import mx.collections.IList;
+import mx.events.CollectionEvent;
+import mx.events.CollectionEventKind;
+import mx.events.PropertyChangeEvent;
+
+use namespace mesh_internal;
+
+class MergedSet extends Set
+{
+	private var _lists:Dictionary = new Dictionary();
+	
+	public function MergedSet(lists:Array):void
+	{
+		for each (var list:IList in lists) {
+			addList(list);
+		}
+	}
+	
+	private function addList(list:IList):void
+	{
+		addAll(list);
+		_lists[list] = list.toArray();
+		list.addEventListener(CollectionEvent.COLLECTION_CHANGE, handleListChange);
+	}
+	
+	private function handleListChange(event:CollectionEvent):void
+	{
+		switch (event.kind) {
+			case CollectionEventKind.ADD:
+				handleListAdd(IList( event.target ), event.items, event.location);
+				break;
+			case CollectionEventKind.REMOVE:
+				handleListRemove(IList( event.target ), event.items, event.location);
+				break;
+			case CollectionEventKind.REFRESH:
+				handleListRefresh(IList( event.target ));
+				break;
+			case CollectionEventKind.RESET:
+				handleListRefresh(IList( event.target ));
+				break;
+			case CollectionEventKind.REPLACE:
+				handleListReplace(IList( event.target ), event.items);
+				break;
+		}
+	}
+	
+	private function handleListAdd(list:IList, items:Array, location:int):void
+	{
+		for each (var item:Object in items) {
+			addItem(item);
+		}
+		_lists[list].splice.apply(null, [location, 0].concat(items));
+	}
+	
+	private function handleListRemove(list:IList, items:Array, location:int):void
+	{
+		for each (var item:Object in items) {
+			remove(item);
+		}
+		_lists[list].splice.apply(null, [location, items.length]);
+	}
+	
+	private function handleListRefresh(list:IList):void
+	{
+		removeEach(_lists[list]);
+		addAll(list);
+		_lists[list] = list.toArray();
+	}
+	
+	private function handleListReplace(list:IList, changeEvents:Array):void
+	{
+		for each (var event:PropertyChangeEvent in changeEvents) {
+			remove(event.oldValue);
+			add(event.newValue);
+		}
+		_lists[list] = list.toArray();
+	}
+}
+
+class AssociationCollectionSet extends MergedSet
+{
+	public var associateFunc:Function;
+	public var unassociateFunc:Function;
+	
+	public function AssociationCollectionSet(lists:Array)
+	{
+		super(lists);
+	}
+	
+	override public function addItemAt(item:Object, index:int):void
+	{
+		if (!contains(item)) {
+			super.addItemAt(item, index);
+			associateFunc(item);
+		}
+	}
+	
+	override public function removeItemAt(index:int):Object
+	{
+		var item:Object = super.removeItemAt(index);
+		if (item != null) {
+			unassociateFunc(item);
+		}
+		return item;
+	}
+}
+
+class AssociationLoadOperation extends DataSourceRetrievalOperation
+{
+	private var _store:Store;
+	private var _records:RecordCache;
+	
+	public function AssociationLoadOperation(store:Store, owner:Record, recordType:Class)
+	{
+		_store = store;
+		_records = store.records;
+		super(_records, _store.dataSource.belongingTo, [owner, recordType]);
+	}
+	
+	override public function loaded(data:Data):void
+	{
+		super.loaded(data);
+		var record:Record = _records.findIndex(data.type).byId(data.id);
+		_results.addItem(record);
+		record.changeState(RecordState.loaded());
+	}
+	
+	private var _results:List = new List();
+	public function get results():IList
+	{
+		return _results;
 	}
 }

@@ -1,22 +1,20 @@
 package mesh.model
 {
+	import mesh.Name;
+	import mesh.Person;
 	
 	import org.flexunit.assertThat;
 	import org.hamcrest.collection.arrayWithSize;
 	import org.hamcrest.collection.emptyArray;
 	import org.hamcrest.object.equalTo;
-	import mesh.Address;
-	import mesh.Customer;
-	import mesh.Name;
 
 	public class ValidationTests
 	{
 		[Test]
 		public function testValidatePasses():void
 		{
-			var customer:Customer = new Customer();
+			var customer:Person = new Person();
 			customer.name = new Name("John", "Doe");
-			customer.address = new Address("1 Infinite Loop", "Cupertino");
 			customer.age = 10;
 			
 			assertThat(customer.isValid(), equalTo(true));
@@ -27,14 +25,13 @@ package mesh.model
 		[Test]
 		public function testValidateFails():void
 		{
-			var customer:Customer = new Customer();
+			var customer:Person = new Person();
 			customer.name = null;
-			customer.address = null;
 			customer.age = 0;
 			
 			assertThat(customer.isValid(), equalTo(false));
 			assertThat(customer.isInvalid(), equalTo(true));
-			assertThat(customer.errors.toArray(), arrayWithSize(3));
+			assertThat(customer.errors.toArray(), arrayWithSize(2));
 		}
 	}
 }
